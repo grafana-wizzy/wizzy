@@ -1,0 +1,29 @@
+{
+  "name": "wizzy",
+  "version": "1.0.0",
+  "description": "Lets you automate Grafana interaction",
+  "main": "index.js",
+  "scripts": {
+    "test": "wizzy magic"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utkarshcmu/wizzy.git"
+  },
+  "keywords": [
+    "Grafana"
+  ],
+  "author": "Utkarsh Bhatnagar <utkarsh.cmu@gmail.com> (https://github.com/utkarshcmu)",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/utkarshcmu/wizzy/issues"
+  },
+  "homepage": "https://github.com/utkarshcmu/wizzy#readme",
+  "bin": {
+    "wizzy": "./index.js"
+  },
+  "dependencies": {
+    "commander": "^2.9.0",
+    "config": "^1.24.0"
+  }
+}

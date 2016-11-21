@@ -1,0 +1,6 @@
+{
+	//Grafana configuration
+	"Grafana": {
+		"Endpoint": "localhost:3000"
+	}
+}
