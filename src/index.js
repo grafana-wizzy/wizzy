@@ -23,11 +23,15 @@ program
   .action(init);
 
 program
+	.command('reset')
+	.action(reset);
+
+program
 	.command('help')
   .action(help);
 
 program
-	.command('show conf')
+	.command('conf')
   .action(showConfig);
 
 program
@@ -53,9 +57,12 @@ function init() {
 	if (!fs.existsSync(dashDir)){
     fs.mkdirSync(dashDir);
 	}
-	
-	nconf.set('config:grafana:url', process.argv[3]);
-	saveConfig();
+
+	if (nconf.get('config:grafana:url')) {
+		console.log('wizzy already initialized. use `wizzy update`');
+	} else {
+		reset();
+	}
 }
 
 function help() {
@@ -63,12 +70,21 @@ function help() {
 	console.log('\n Commands:');
 	console.log('\n  wizzy init GRAFANA_URL')
 	console.log('\t- initializes and connects wizzy to Grafana');
+	console.log('\t- Example: wizzy init http://localhost:3000');
+	console.log('\n  wizzy create org ORG_NAME');
+	console.log('\t- creates a new org in Grafana');
+	console.log('\t- Example: wizzy create org my_org');
 	console.log('\n  wizzy use org ORG_NAME');
 	console.log('\t- switches wizzy\'s context to an org');
 	console.log('\n  wizzy create dashboard DASHBOARD_NAME');
 	console.log('\t- creates a new dashboard');
 	console.log('\n  wizzy use dashboard DASHBOARD_NAME');
 	console.log('\t- switches wizzy\'s context to a dashboard');
+	console.log('\n  wizzy reset GRAFANA_URL')
+	console.log('\t- resets Grafana URL in config');
+	console.log('\t- Example: wizzy reset http://localhost:6000');
+	console.log('\n  wizzy help')
+	console.log('\t- shows all available commands');
 	console.log('\n');
 }
 
@@ -76,10 +92,18 @@ function showConfig() {
 	console.log(prettyjson.render(nconf.get('config')));
 }
 
+function reset() {
+	nconf.set('config:grafana:url', process.argv[3]);
+	saveConfig();
+	console.log("Configuration updated successfully.")
+}
+
 function saveConfig() {
 	nconf.save(function (err) {
   	fs.readFile(confFile, function (err, data) {
-    	console.dir(JSON.parse(data.toString()))
+    	if (err != null) {
+    		console.err(err);
+    	}
   	});
 	});
 }

@@ -20,7 +20,7 @@
   },
   "homepage": "https://github.com/utkarshcmu/wizzy#readme",
   "bin": {
-    "wizzy": "./index.js"
+    "wizzy": "./src/index.js"
   },
   "dependencies": {
     "commander": "^2.9.0",
