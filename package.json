@@ -24,6 +24,8 @@
   },
   "dependencies": {
     "commander": "^2.9.0",
-    "config": "^1.24.0"
+    "fs": "0.0.1-security",
+    "nconf": "^0.8.4",
+    "prettyjson": "^1.2.0"
   }
 }
