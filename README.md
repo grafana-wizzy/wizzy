@@ -25,7 +25,7 @@ $ wizzy grafana password password
 ```
 - Test wizzy setup
 ```
-$ wizzy test setup
+$ wizzy status
 ```
 
 # Available Commands
