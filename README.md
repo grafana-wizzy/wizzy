@@ -1,3 +1,5 @@
+[Wizzy](https://github.com/utkarshcmu/wizzy) [![Circle CI](https://circleci.com/gh/utkarshcmu/wizzy.svg?style=svg)](https://circleci.com/gh/utkarshcmu/wizzy)
+
 # wizzy
 Managing Grafana via Wizzy's magic commands
 
