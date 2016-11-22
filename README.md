@@ -20,7 +20,7 @@ $ wizzy init
 - Configure wizzy for Grafana
 ```
 $ wizzy grafana url GRAFANA_URL
-$ wizzy grafana user user
+$ wizzy grafana username user
 $ wizzy grafana password password
 ```
 - Test wizzy setup
