@@ -42,7 +42,6 @@ $ wizzy version - shows wizzy version
 These commands imports dashboard JSONs from Grafana and create local dashboard JSON files under dashboards directory
 ```
 $ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file
-$ wizzy import dashboards - imports all Grafana dashboards and creates their respective dashboard JSON files
 ```
 
 ## Export and Publish Commands
@@ -50,7 +49,6 @@ These commands exports local JSONs from dashboards directory to Grafana and will
 ```
 $ wizzy export dashboard DASHBOARD_NAME - imports local json dashboard in Grafana
 $ wizzy publish dashboard DASHBOARD_NAME - saves or overrides a dashboard in Grafana by local dashboard JSON
-$ wizzy publish dashboards - saves all local dashboards in Grafana
 ```
 
 ## Organization Commands
