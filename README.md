@@ -38,17 +38,21 @@ $ wizzy conf - shows wizzy configuration
 $ wizzy version - shows wizzy version
 ```
 
-## Remote Execution Commands
-These commands executes actions via API directly to Grafana. Please be careful while using them!
+## Import Commands
+These commands imports dashboard JSONs from Grafana and create local dashboard JSON files under dashboards directory
+```
+$ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file
+$ wizzy import dashboards - imports all Grafana dashboards and creates their respective dashboard JSON files
+```
+
+## Export and Publish Commands
+These commands exports local JSONs from dashboards directory to Grafana and will replace existing dashboards. Please be careful while using them!
 ```
 $ wizzy export dashboard DASHBOARD_NAME - imports local json dashboard in Grafana and open in your browser for viewing
 $ wizzy publish dashboard DASHBOARD_NAME - saves or overrides Grafana dashboard with same name by local dashboard JSON
-$ wizzy create org ORG_NAME - creates an org in Grafana
 ```
 
-## Local Execution Commands
-These commands are executed locally and make changes to dashboard's local json.
+## Organization Commands
 ```
-$ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file under dashboards directory
-$ wizzy import dashboards - imports all Grafana dashboards and creates their respective dashboard JSON files
+$ wizzy create org ORG_NAME - creates an org in Grafana
 ```
