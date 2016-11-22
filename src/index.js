@@ -25,14 +25,12 @@ commands.addCommand(program, 'status', commands.showStatus, 'wizzy status',
 commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 	'shows wizzy configuration');
 
+commands.addCommand(program, 'import', commands.importEntity, 'wizzy import dashboard DASHBOARD_NAME',
+	'imports a dashboard from Grafana in local json file', 'wizzy import dashboard my-dash');
+
 commands.addCommand(program, 'create', commands.createEntity, 'wizzy create ENTITY ENTITY_NAME',
 	'creates a new entity in Grafana', 'wizzy create dashboard my-dash');
 
-commands.addCommand(program, 'use', commands.useEntity, 'wizzy use ENTITY ENTITY_NAME',
-	'points context to an existing entity', 'wizzy use org my-org');
-
-commands.addCommand(program, 'delete', commands.deleteEntity, 'wizzy delete ENTITY ENTITY_NAME',
-	'deletes entity from Grafana', 'wizzy use org my-org');
 
 // For any other command wizzy will show help
 program.command('*').action(commands.showHelp);

@@ -10,6 +10,7 @@ nconf.argv().env().file({ file: confFile });
 var prettyjson = require('prettyjson');
 var Logger = require('./logger.js');
 var Grafana = require('./grafana.js');
+var grafana;
 var logger = new Logger();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
@@ -117,12 +118,23 @@ Commands.prototype.showStatus = function() {
 
 // Creates an entity
 Commands.prototype.createEntity = function(entityType, entityValue) {
-	this.grafana.create(entityType, entityValue)
+	loadConfig();
+	grafana.create(entityType, entityValue);
 }
 
 // Updates context with an existing entity
-Commands.prototype.useEntity = function(entityType, entityValue) {
-	this.grafana.use(entityType, entityValue)
+Commands.prototype.importEntity = function(entityType, entityValue) {
+	loadConfig();
+	grafana.import(entityType, entityValue);
+}
+
+function loadConfig() {
+	if (!nconf.get('config:grafana')) {
+		logger.showError('Grafana configuration not found. Command failed. Try running `wizzy grafana ...` commands.')
+		process.exit();
+	} else {
+		grafana = new Grafana(nconf.get('config:grafana'));
+	}
 }
 
 // Save wizzy config
