@@ -1,28 +1,38 @@
-[Wizzy](https://github.com/utkarshcmu/wizzy) [![Circle CI](https://circleci.com/gh/utkarshcmu/wizzy.svg?style=svg)](https://circleci.com/gh/utkarshcmu/wizzy)
+[wizzy](https://github.com/utkarshcmu/wizzy) [![Circle CI](https://circleci.com/gh/utkarshcmu/wizzy.svg?style=svg)](https://circleci.com/gh/utkarshcmu/wizzy)
+================
+Manage Grafana with Easy Wizzy
 
-# wizzy
-Managing Grafana via Wizzy's magic commands
+# Installation
+```
+npm install wizzy
+```
+================
+# Commands
+
+## Help
+- `wizzy help`
 
 ## Initializing wizzy
-`wizzy init GRAFANA_URL`
+- `wizzy init`
 
-## Join an org
-`wizzy join ORG_NAME`
+## Configure Grafana
+- `wizzy grafana url GRAFANA_URL`
+- `wizzy grafana user user`
+- `wizzy grafana password password`
 
-## Create a new dashboard
-`wizzy create dashboard DASHBOARD_NAME`
+## Show Configuration
+- `wizzy conf`
 
-## Edit a dashboard
-`wizzy edit dashboard DASHBOARD_NAME`
+## Create a Grafana entity
+- `wizzy create org ORG_NAME`
+- `wizzy create dashboard DASHBOARD_NAME`
 
-## Create a row in dashboard with name row-1
-`wizzy add row ROW_NAME`
+## Use a Grafana entity in Context
+- `wizzy use org ORG_NAME`
+- `wizzy use dashboard DASHBOARD_NAME`
+- `wizzy use row DASHBOARD_ROW`
 
-## Edit a row
-`wizzy edit row ROW_NAME`
+## Add dashboard elements
+- `wizzy add row ROW_NAME`
+- `wizzy add panel PANEL_TITLE --type graph --width 250`
 
-## Add a graph panel to a row
-`wizzy add panel graph PANEL_TITLE`
-
-## Where am I command - to know what your wizzy context is pointing to
-`wizzy whereami`
