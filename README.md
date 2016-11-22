@@ -56,5 +56,5 @@ $ wizzy publish dashboard DASHBOARD_NAME - saves or overrides a dashboard in Gra
 $ wizzy create org ORG_NAME - creates an org in Grafana
 ```
 
-### Author:
+# Author:
 Utkarsh Bhatnagar, @utkrashcmu, <utkarsh.cmu@gmail.com>
