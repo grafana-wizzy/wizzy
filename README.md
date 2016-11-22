@@ -38,27 +38,20 @@ $ wizzy conf - shows wizzy configuration
 $ wizzy version - shows wizzy version
 ```
 
-## Context Commands
-These commands set wizzy's context.
+## Import Commands
+These commands imports dashboard JSONs from Grafana and create local dashboard JSON files under dashboards directory
 ```
-$ wizzy use org ORG_NAME - sets the context to use an org for all future commands
-$ wizzy use dashboard DASHBOARD_NAME - sets the context to use a dashboard for all future commands
-$ wizzy use row DASHBOARD_ROW - sets the context to use a row in a dashboard for all future commands
+$ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file
 ```
 
-## Remote Execution Commands
-These commands executes actions via API directly to Grafana. Please be careful while using them!
+## Export and Publish Commands
+These commands exports local JSONs from dashboards directory to Grafana and will replace existing dashboards. Please be careful while using them!
+```
+$ wizzy export dashboard DASHBOARD_NAME - imports local json dashboard in Grafana
+$ wizzy publish dashboard DASHBOARD_NAME - saves or overrides a dashboard in Grafana by local dashboard JSON
+```
+
+## Organization Commands
 ```
 $ wizzy create org ORG_NAME - creates an org in Grafana
-$ wizzy delete org ORG_NAME - deletes an org in Grafana
-$ wizzy export dashboard DASHBOARD_NAME - imports local json dashboard in Grafana and open in your browser for viewing
-$ wizzy publish dashboard DASHBOARD_NAME - saves or overrides Grafana dashboard with same name by local json dashboard
-```
-
-## Local Execution Commands
-These commands are executed locally and make changes to dashboard's local json.
-```
-$ wizzy create dashboard DASHBOARD_NAME - creates a new json dashboard under dashboards directory
-$ wizzy add row ROW_NAME - adds a row in a dashboard
-$ wizzy add panel PANEL_TITLE --type graph --width 250 - adds a panel in a row
 ```
