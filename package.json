@@ -4,7 +4,7 @@
   "description": "Lets you automate Grafana interaction",
   "main": "index.js",
   "scripts": {
-    "test": "wizzy magic"
+    "test": "node ./test/index.js"
   },
   "repository": {
     "type": "git",
