@@ -8,23 +8,30 @@ var prettyjson = require('prettyjson');
 var fs    = require('fs');
 var nconf = require('nconf');
 var confFile = 'conf/wizzy.json';
-
-var help = '\nUsage: wizzy [commands]\n\ncCommands:';
-
 nconf.argv()
 	.env()
  	.file({ file: confFile });
+
+// Initializng Grafana object
+var Grafana = require('./grafana.js');
+var grafana;
+
+// Load all config in cli
+loadConfig();
+
+// Initializing help
+var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
 // Setting up commands
 var program = require('commander');
 program
   .version('1.0.0');
 
-addCommand(program, 'init', init, 'wizzy init GRAFANA_URL',
+addCommand(program, 'init', init, 'wizzy init',
 	'initializes and connects wizzy to Grafana', 'wizzy init http://localhost:3000');
 
-addCommand(program, 'reset', reset, 'wizzy reset GRAFANA_URL',
-	'resets Grafana URL in config', 'wizzy reset http://localhost:6000');
+addCommand(program, 'grafana', confGrafana, 'wizzy grafana CONFIG_NAME CONFIG_VALUE',
+	'sets Grafana config options for wizzy', 'wizzy grafana url http://localhost:3000');
 
 addCommand(program, 'help', showHelp, 'wizzy help',
 	'shows all available commands');
@@ -71,6 +78,7 @@ function init() {
 
 // Prints help for the user
 function showHelp() {
+	help += '\n';
 	console.log(help);
 }
 
@@ -79,10 +87,22 @@ function showConfig() {
 	console.log(prettyjson.render(nconf.get('config')));
 }
 
+// Loads config and initialize Grafana object
+function loadConfig() {
+	grafana = new Grafana(nconf.get('config:grafana'));
+}
+
 // Resets Grafana URL
-function reset() {
-	nconf.set('config:grafana:url', process.argv[3]);
+function confGrafana() {
+	if (process.argv[3] === 'url') {
+		nconf.set('config:grafana:url', process.argv[4]);
+	} else if(process.argv[3] === 'username') {
+		nconf.set('config:grafana:username', process.argv[4]);
+	} else if(process.argv[3] === 'password') {
+		nconf.set('config:grafana:password', process.argv[4]);
+	}	
 	saveConfig();
+	grafana = new Grafana(process.argv[3]);
 	console.log("Configuration updated successfully.")
 }
 
@@ -117,10 +137,10 @@ function addCommand(program, command, func, syntax, description, example) {
 
 // Creates an entity
 function createEntity() {
-	console.log("Creating entity");
+	grafana.create(process.argv[3],process.argv[4])
 }
 
 // Updates context with an existing entity
 function useEntity() {
-	console.log("Using entity");
+	grafana.use(process.argv[3],process.argv[4])
 }
