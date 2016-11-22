@@ -1,6 +1,6 @@
 [wizzy](https://github.com/utkarshcmu/wizzy) [![Circle CI](https://circleci.com/gh/utkarshcmu/wizzy.svg?style=svg)](https://circleci.com/gh/utkarshcmu/wizzy)
 ================
-`wizzy` is a user-friendly command line tool to manage Grafana entities. It can also store dashboards in a Github repo creating version control for dashboards. It also stores local history of successful and failed commands so that its easy to check which commands were executed in the past.
+`wizzy` is a user-friendly command line tool to manage Grafana entities. It can also be used to store dashboards in a Github repo creating version control available for dashboards. It also stores local history of successful and failed commands so that its easy to check which commands were executed in the past.
 
 # How to start using `wizzy` with Grafana?
 - Install wizzy using npm
