@@ -116,16 +116,22 @@ Commands.prototype.showStatus = function() {
 	}
 }
 
-// Creates an entity
+// Creates an entity in wizzy or Grafana
 Commands.prototype.createEntity = function(entityType, entityValue) {
 	loadConfig();
 	grafana.create(entityType, entityValue);
 }
 
-// Updates context with an existing entity
+// Imports an entity from Grafana into wizzy
 Commands.prototype.importEntity = function(entityType, entityValue) {
 	loadConfig();
 	grafana.import(entityType, entityValue);
+}
+
+// Exports an entity from wizzy to Grafana
+Commands.prototype.exportEntity = function(entityType, entityValue) {
+	loadConfig();
+	grafana.export(entityType, entityValue);
 }
 
 function loadConfig() {

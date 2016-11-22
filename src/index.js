@@ -28,8 +28,11 @@ commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 commands.addCommand(program, 'import', commands.importEntity, 'wizzy import dashboard DASHBOARD_NAME',
 	'imports a dashboard from Grafana in local json file', 'wizzy import dashboard my-dash');
 
+commands.addCommand(program, 'export', commands.exportEntity, 'wizzy export dashboard DASHBOARD_NAME',
+	'exports a dashboard from local json file to Grafana', 'wizzy export dashboard my-dash');
+
 commands.addCommand(program, 'create', commands.createEntity, 'wizzy create ENTITY ENTITY_NAME',
-	'creates a new entity in Grafana', 'wizzy create dashboard my-dash');
+	'creates a new entity in Grafana', 'wizzy create org my-org');
 
 
 // For any other command wizzy will show help
