@@ -21,9 +21,9 @@ Grafana.prototype.create = function(entity_type, entity_value) {
 			break;
 	}
 
-	console.log(this.url);
-	console.log(this.auth);
-	console.log(this.body);
+	//console.log(this.url);
+	//console.log(this.auth);
+	//console.log(this.body);
 
 	request.post(this.url, {auth: this.auth, body: this.body, json: true}, function (error, response, body) {
       if (!error && response.statusCode == 200) {

@@ -40,10 +40,13 @@ addCommand(program, 'conf', showConfig, 'wizzy conf',
 	'shows wizzy configuration');
 
 addCommand(program, 'create', createEntity, 'wizzy create ENTITY ENTITY_NAME',
-	'creates a new entity like a new org or a new dashboard', 'wizzy create dashboard my-dash');
+	'creates a new entity in Grafana', 'wizzy create dashboard my-dash');
 
 addCommand(program, 'use', useEntity, 'wizzy use ENTITY ENTITY_NAME',
 	'points context to an existing entity', 'wizzy use org my-org');
+
+addCommand(program, 'delete', deleteEntity, 'wizzy delete ENTITY ENTITY_NAME',
+	'deletes entity from Grafana', 'wizzy use org my-org');
 
 program
 	.command('*')
