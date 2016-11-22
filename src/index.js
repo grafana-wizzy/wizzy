@@ -5,11 +5,12 @@
 var Logger = require('./logger.js');
 var logger = new Logger();
 
-// Setting up commands for cli
+// Setting up version and commands for cli
 var program = require('commander');
-program.version('1.0.0');
+var version = '1.0.1';
+
 var Commands = require('./commands.js');
-var commands = new Commands(program);
+var commands = new Commands(program, version);
 
 // Setting up wizzy commands in this function
 commands.addCommand(program, 'init', commands.initWizzy, 'wizzy init',
@@ -20,9 +21,6 @@ commands.addCommand(program, 'grafana', commands.setGrafanaConfig, 'wizzy grafan
 
 commands.addCommand(program, 'status', commands.showStatus, 'wizzy status',
 	'tests Github and Grafana setup for wizzy and return status');
-
-commands.addCommand(program, 'help', commands.showHelp, 'wizzy help',
-	'shows all available commands');
 
 commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 	'shows wizzy configuration');

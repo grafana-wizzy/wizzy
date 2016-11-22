@@ -3,12 +3,12 @@
 
 function Logger() {}
 
-Logger.prototype.showResult = function(result_line) {
-	console.log('\u2714 ' + result_line);
+Logger.prototype.showResult = function(resultLine) {
+	console.log('\u2714 ' + resultLine);
 }
 
-Logger.prototype.showError = function(error_line) {
-	console.error('\u2718 ' + error_line);
+Logger.prototype.showError = function(errorLine) {
+	console.error('\u2718 ' + errorLine);
 }
 
 module.exports = Logger;

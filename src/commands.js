@@ -11,10 +11,12 @@ var prettyjson = require('prettyjson');
 var Logger = require('./logger.js');
 var Grafana = require('./grafana.js');
 var logger = new Logger();
+var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
-function Commands(program) {
+function Commands(program, version) {
 	this.program = program;
-	this.help = '\nUsage: wizzy [commands]\n\nCommands:\n';
+	this.version = version;
+	this.program.version(this.version);
 }
 
 Commands.prototype.addCommand = function(program, command, func, syntax, description, example) {
@@ -23,19 +25,20 @@ Commands.prototype.addCommand = function(program, command, func, syntax, descrip
 	this.program.command(command).action(func);
 
   // Adding command to help
-  this.help += '\n  ' + syntax;
+  help += '\n  ' + syntax;
   if (description != null) {
-		this.help += '\n\t- ' + description;
+		help += '\n\t- ' + description;
 	}
 	if (example != null) {
-		this.help += '\n\t- Example: ' + example;
+		help += '\n\t- Example: ' + example;
 	}
+
 }
 
 // Shows wizzy help
 Commands.prototype.showHelp = function() {
-	this.help += '\n';
-	console.log(this.help);
+	help += '\n';
+	console.log(help);
 }
 
 // Initialize wizzy
@@ -90,7 +93,7 @@ Commands.prototype.showConfig = function() {
 	console.log(prettyjson.render(nconf.get('config')));
 }
 
-// Show wizzy status
+// Shows wizzy status
 Commands.prototype.showStatus = function() {
 	var setupProblem = false;
 	if (!fs.existsSync('.git')){
