@@ -7,7 +7,7 @@ wizzy is always open for contributions from the community. Let make it super eas
 
 2. Fork https://github.com/utkarshcmu/wizzy.
 
-3. clone your fork and run init scripts:
+3. clone your fork and run following commands:
 ```
 $ git clone https://github.com/<your_github_username>/wizzy.git
 $ cd wizzy
