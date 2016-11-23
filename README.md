@@ -5,7 +5,7 @@
 # How to start using `wizzy` with Grafana?
 - Install wizzy using npm
 ```
-$ npm install wizzy
+$ npm install -g wizzy
 ```
 - Create a Github repo for storing dashboards
 ```
