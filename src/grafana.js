@@ -4,6 +4,7 @@
 var Logger = require('./logger.js');
 var dashDir = 'dashboards';
 var request = require('request');
+request.debug = true;
 var fs = require('fs');
 var logger = new Logger();
 
@@ -54,7 +55,7 @@ Grafana.prototype.export = function(entityType, entityValue) {
 
 	switch(entityType) {
 		case 'dashboard': 
-			this.url += '/api/dashboards/db/' + entityValue;
+			this.url += '/api/dashboards/db/';
 			break;
 	};
 
