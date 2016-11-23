@@ -30,7 +30,7 @@ $ wizzy init
 $ wizzy grafana url GRAFANA_URL - required setting
 $ wizzy grafana username user - depends on your access to Grafana, set if you have one
 $ wizzy grafana password password - depends on your access to Grafana, set if you have one
-$ wizzy grafana debug_api - optional, false by default
+$ wizzy grafana debug_api true - optional, false by default
 ```
 - Test wizzy setup
 ```
