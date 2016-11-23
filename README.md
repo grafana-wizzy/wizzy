@@ -52,10 +52,11 @@ These commands imports dashboard JSONs from Grafana and create local dashboard J
 $ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file
 ```
 
-## Export and Publish Commands
+## Export Commands
 These commands exports local JSONs from dashboards directory to Grafana and will replace existing dashboards. Please be careful while using them!
 ```
-$ wizzy export dashboard DASHBOARD_NAME - imports local json dashboard in Grafana and saves it.
+$ wizzy export dashboard DASHBOARD_NAME - exports an existing dashboard from json file to Grafana and saves it.
+$ wizzy export new-dashboard DASHBOARD_NAME - exports a new dashboard from json file to Grafana and saves it.
 ```
 
 ## Organization Commands
