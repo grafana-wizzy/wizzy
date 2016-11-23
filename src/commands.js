@@ -71,29 +71,6 @@ Commands.prototype.initWizzy = function() {
 	logger.showResult('wizzy successfully initialized.')
 }
 
-// Resets Grafana URL
-Commands.prototype.setGrafanaConfig = function(configType, configValue) {	
-
-	if (configType === 'url') {
-		nconf.set('config:grafana:url', configValue);
-	} else if(configType === 'username') {
-		nconf.set('config:grafana:username', configValue);
-	} else if(configType === 'password') {
-		nconf.set('config:grafana:password', configValue);
-	}	else {
-		logger.showError('Unknown Grafana setting.');
-		return;
-	}
-	saveConfig();
-	logger.showResult('Grafana ' + configType + ' updated successfully.');
-	//this.grafana = new Grafana(nconf.get('config:grafana'));
-}
-
-// Shows wizzy config
-Commands.prototype.showConfig = function() {
-	console.log(prettyjson.render(nconf.get('config')));
-}
-
 // Shows wizzy status
 Commands.prototype.showStatus = function() {
 	var setupProblem = false;
@@ -134,6 +111,7 @@ Commands.prototype.exportEntity = function(entityType, entityValue) {
 	grafana.export(entityType, entityValue);
 }
 
+// Loads config for running wizzy command
 function loadConfig() {
 	if (!nconf.get('config:grafana')) {
 		logger.showError('Grafana configuration not found. Command failed. Try running `wizzy grafana ...` commands.')
@@ -154,6 +132,29 @@ function saveConfig(){
     	}
   	});
 	});
+}
+
+// Resets Grafana URL
+Commands.prototype.setGrafanaConfig = function(configType, configValue) {	
+
+	if (configType === 'url') {
+		nconf.set('config:grafana:url', configValue);
+	} else if(configType === 'username') {
+		nconf.set('config:grafana:username', configValue);
+	} else if(configType === 'password') {
+		nconf.set('config:grafana:password', configValue);
+	}	else {
+		logger.showError('Unknown Grafana setting.');
+		return;
+	}
+	saveConfig();
+	logger.showResult('Grafana ' + configType + ' updated successfully.');
+	//this.grafana = new Grafana(nconf.get('config:grafana'));
+}
+
+// Shows wizzy config
+Commands.prototype.showConfig = function() {
+	console.log(prettyjson.render(nconf.get('config')));
 }
 
 module.exports = Commands;

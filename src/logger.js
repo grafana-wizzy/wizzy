@@ -11,4 +11,8 @@ Logger.prototype.showError = function(errorLine) {
 	console.error('\u2718 ' + errorLine);
 }
 
+Logger.prototype.showOutput = function(output) {
+	console.log('Output:\n' + output);
+}
+
 module.exports = Logger;

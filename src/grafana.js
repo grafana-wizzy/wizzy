@@ -4,12 +4,13 @@
 var Logger = require('./logger.js');
 var dashDir = 'dashboards';
 var request = require('request');
-request.debug = true;
+//request.debug = true;
 var fs = require('fs');
 var logger = new Logger();
+var url;
 
 function Grafana(config) {
-	this.url = config.url;
+	url = config.url;
 	this.auth = {
 		'user': config.username,
 		'pass': config.password
@@ -18,26 +19,37 @@ function Grafana(config) {
 }
 
 Grafana.prototype.create = function(entityType, entityValue) {
-	
-	switch(entityType) {
-		case 'org': 
-			this.url += '/api/orgs';
-			this.body['name'] = entityValue;
-			break;
-	};
 
-	request.post(this.url, {auth: this.auth, body: this.body, json: true}, printResponse);
+	createURL('create', entityType, entityValue);
+	this.body['name'] = entityValue;
+
+	request.post(url, {auth: this.auth, body: this.body, json: true}, function(error, response, body) {
+
+		var output = '';
+		if (!error && response.statusCode == 200) {
+  	  output += body;
+  	  logger.showOutput(output);
+    	logger.showResult('Org creation successful.');
+  	} else {
+  		output += '  Grafana API response status code = ' + response.statusCode;
+  		if (error === null) {
+  			output += '\n  No error body from Grafana API.';	
+  		}
+  		else {
+  			output += '\n' + error;
+  		}
+  		logger.showOutput(output);
+  		logger.showError('Org creation failed.');
+  	}
+	});
+
 }
 
 Grafana.prototype.import = function(entityType, entityValue) {
 
-	switch(entityType) {
-		case 'dashboard': 
-			this.url += '/api/dashboards/db/' + entityValue;
-			break;
-	};
+	createURL('import', entityType, entityValue);
 
-	request.get({url: this.url, auth: this.auth, json: true}, function(error, response, body){
+	request.get({url: url, auth: this.auth, json: true}, function(error, response, body){
 		if (!error && response.statusCode == 200) {
 			saveDashboard(entityValue, body.dashboard);
 		} else {
@@ -53,18 +65,18 @@ Grafana.prototype.import = function(entityType, entityValue) {
 
 Grafana.prototype.export = function(entityType, entityValue) {
 
-	switch(entityType) {
-		case 'dashboard': 
-			this.url += '/api/dashboards/db/';
-			break;
-	};
+	createURL('export', entityType, entityValue);
 
 	var dashBody = {
 		dashboard: readDashboard(entityValue),
 		overwrite: true
 	}
 
-	request.post({url: this.url, auth: this.auth, body: dashBody, json: true}, function(error, response, body){
+	if (entityType === 'new-dashboard') {
+		dashBody.dashboard.id = null;
+	}
+
+	request.post({url: url, auth: this.auth, body: dashBody, json: true}, function(error, response, body){
 		if (!error && response.statusCode == 200) {
 			logger.showResult('Successfully exported dashboard to Grafana.');
 		} else {
@@ -78,13 +90,29 @@ Grafana.prototype.export = function(entityType, entityValue) {
 	});
 }
 
-// prints error or response from an http request
-function printResponse(error, response, body) {
-	if (!error && response.statusCode == 200) {
-      console.log(body)
-    } else {
-    	console.error(error);
-    }
+// Create url for calling Grafana API
+function createURL(command, entityType, entityValue) {
+
+	// Editing URL depending on entityType
+	switch(entityType) {
+		case 'org':
+			url += '/api/orgs';
+			break;
+		case 'dashboard':
+			url += '/api/dashboards/db';
+			break;
+		case 'new-dashboard':
+			url += '/api/dashboards/db';
+			break;
+	}
+
+	// Editing URL depending on command
+	switch(command) {
+		case 'import':
+			url += '/' + entityValue;
+			break;
+	}
+
 }
 
 // Saves a dashboard json in a file.
