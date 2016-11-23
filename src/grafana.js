@@ -2,116 +2,184 @@
 "use strict";
 
 var Logger = require('./logger.js');
-var dashDir = 'dashboards';
-var request = require('request');
-//request.debug = true;
-var fs = require('fs');
 var logger = new Logger();
-var url;
+var prettyjson = require('prettyjson');
+var fs = require('fs');
+var successMessage;
+var failureMessage;
+var dashDir = 'dashboards';
 
 function Grafana(config) {
-	url = config.url;
+	this.url = config.url;
 	this.auth = {
 		'user': config.username,
 		'pass': config.password
 	};
 	this.body = {};
+	this.request = require('request');
+	if (config.debug_api === true || config.debug_api === 'true') {
+		this.request.debug = true;
+	} else {
+		this.request.debug = false;
+	}
 }
 
-Grafana.prototype.create = function(entityType, entityValue) {
+Grafana.prototype.create = function(command, entityType, entityValue) {
 
-	createURL('create', entityType, entityValue);
-	this.body['name'] = entityValue;
+	if (entityType === 'org') {
+		this.body['name'] = entityValue;
+		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
+		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
+	}
+	else {
+		showEntityError(entityType);
+	}
+	this.url += createURL(this.url, command, entityType, entityValue);
+	sendRequest(this, 'POST');
+	
+}
 
-	request.post(url, {auth: this.auth, body: this.body, json: true}, function(error, response, body) {
+Grafana.prototype.delete = function(command, entityType, entityValue) {
 
+	if (entityType === 'org') {
+		successMessage = 'Deleted Grafana org ' + entityValue + ' successfully.';
+		failureMessage = 'Error in deleting Grafana org ' + entityValue + '.';
+	} else if (entityType === 'dashboard') {
+		successMessage = 'Deleted Grafana dashboard ' + entityValue + ' successfully.';
+		failureMessage = 'Error in deleting Grafana dashboard ' + entityValue + '.';
+	} else {
+		showEntityError(entityType);
+	}
+	this.url += createURL(this.url, command, entityType, entityValue);
+	sendRequest(this, 'DELETE');
+
+}
+
+Grafana.prototype.show = function(command, entityType, entityValue) {
+
+	if (entityType === 'orgs') {
+		successMessage = 'Showed Grafana orgs successfully.';
+		failureMessage = 'Error in showing Grafana orgs.';
+	} else if (entityType === 'org') {
+		successMessage = 'Showed Grafana org ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing Grafana org ' + entityValue + '.';
+	} else if (entityType === 'dashboard') {
+		successMessage = 'Showed Grafana dashboard ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing Grafana dashboard ' + entityValue + '.';
+	} else {
+		showEntityError(entityType);
+	}
+	this.url += createURL(this.url, command, entityType, entityValue);
+	sendRequest(this, 'GET');
+
+}
+
+Grafana.prototype.import = function(command, entityType, entityValue) {
+
+	if (entityType === 'dashboard') {
+		successMessage = 'Dashboard '+ entityValue + ' import successful.';
+		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
+	} else {
+		showEntityError(entityType);
+	}
+	this.url += createURL(this.url, command, entityType, entityValue);
+	this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
   	  output += body;
-  	  logger.showOutput(output);
-    	logger.showResult('Org creation successful.');
+			saveDashboard(entityValue, body.dashboard);
+    	logger.showResult(successMessage);
   	} else {
-  		output += '  Grafana API response status code = ' + response.statusCode;
+  		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
-  			output += '\n  No error body from Grafana API.';	
+  			output += '\nNo error body from Grafana API.';	
   		}
   		else {
   			output += '\n' + error;
   		}
   		logger.showOutput(output);
-  		logger.showError('Org creation failed.');
+  		logger.showError(failureMessage);
   	}
 	});
+}
+
+Grafana.prototype.export = function(command, entityType, entityValue) {
+
+	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+		var dashBody = {
+			dashboard: readDashboard(entityValue),
+			overwrite: true
+		}
+		if (entityType === 'new-dashboard') {
+			dashBody.dashboard.id = null;
+		}
+		successMessage = 'Dashboard '+ entityValue + ' export successful.';
+		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
+		this.body = dashBody;
+	} else {
+		showEntityError(entityType);
+	}
+	this.url += createURL(this.url, command, entityType, entityValue);
+	sendRequest(this, 'POST');
 
 }
 
-Grafana.prototype.import = function(entityType, entityValue) {
-
-	createURL('import', entityType, entityValue);
-
-	request.get({url: url, auth: this.auth, json: true}, function(error, response, body){
-		if (!error && response.statusCode == 200) {
-			saveDashboard(entityValue, body.dashboard);
-		} else {
-			if (!error) {
-				console.error(error);
-			} else if (response.statusCode != 200) {
-				console.error(body);
-			}
-			logger.showError('Unable to import dashboard from Grafana.');
-		}
-	});
+// Shows error for unknown entity types to the user
+function showEntityError(entityType) {
+	logger.showError('Unsupported entity type ' + entityType);
+	process.exit();
 }
 
-Grafana.prototype.export = function(entityType, entityValue) {
-
-	createURL('export', entityType, entityValue);
-
-	var dashBody = {
-		dashboard: readDashboard(entityValue),
-		overwrite: true
+// Sends an HTTP API request to Grafana
+function sendRequest(grafana, method) {
+	
+	if (method === 'POST') {
+		grafana.request.post({url: grafana.url, auth: grafana.auth, json: true, body: grafana.body}, printResponse); 
+	} else if (method === 'GET') {
+		grafana.request.get({url: grafana.url, auth: grafana.auth, json: true, method: method}, printResponse);
+	} else if (method === 'DELETE') {
+		grafana.request.delete({url: grafana.url, auth: grafana.auth, json: true, method: method}, printResponse);
 	}
+	
+}
 
-	if (entityType === 'new-dashboard') {
-		dashBody.dashboard.id = null;
-	}
-
-	request.post({url: url, auth: this.auth, body: dashBody, json: true}, function(error, response, body){
+// Handles HTTP response from Grafana
+function printResponse(error, response, body) {
+	var output = '';
 		if (!error && response.statusCode == 200) {
-			logger.showResult('Successfully exported dashboard to Grafana.');
-		} else {
-			if (!error) {
-				console.error(error);
-			} else if (response.statusCode != 200) {
-				console.error(body);
-			}
-			logger.showError('Unable to export dashboard to Grafana.');
-		}
-	});
+  	  output += body;
+  	  logger.showOutput(prettyjson.render(body));
+    	logger.showResult(successMessage);
+  	} else {
+  		output += 'Grafana API response status code = ' + response.statusCode;
+  		if (error === null) {
+  			output += '\nNo error body from Grafana API.';	
+  		}
+  		else {
+  			output += '\n' + error;
+  		}
+  		logger.showOutput(output);
+  		logger.showError(failureMessage);
+  	}
 }
 
 // Create url for calling Grafana API
-function createURL(command, entityType, entityValue) {
+function createURL(url, command, entityType, entityValue) {
 
+	var url = '';
 	// Editing URL depending on entityType
-	switch(entityType) {
-		case 'org':
-			url += '/api/orgs';
-			break;
-		case 'dashboard':
-			url += '/api/dashboards/db';
-			break;
-		case 'new-dashboard':
-			url += '/api/dashboards/db';
-			break;
+	if (entityType === 'org' || entityType === 'orgs') {
+		url += '/api/orgs';
+	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+		url += '/api/dashboards/db';
 	}
 
 	// Editing URL depending on command
-	switch(command) {
-		case 'import':
-			url += '/' + entityValue;
-			break;
+	if (command === 'import' || command === 'delete' ||
+	 	(command === 'show' && (entityType === 'dashboard' || entityType === 'org'))){
+		url += '/' + entityValue;
 	}
+	return url;
 
 }
 
@@ -119,7 +187,7 @@ function createURL(command, entityType, entityValue) {
 function saveDashboard(slug, dashboard) {
 	var dashFile = dashDir + '/' + slug + '.json';
 	fs.writeFileSync(dashFile, JSON.stringify(dashboard, null, 2));
-	logger.showResult(slug + ' dashboard imported successfully, please check dashboards directory.');
+	logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 }
 
 // Reads dashboard json from file.

@@ -25,15 +25,20 @@ commands.addCommand(program, 'status', commands.showStatus, 'wizzy status',
 commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 	'shows wizzy configuration');
 
-commands.addCommand(program, 'import', commands.importEntity, 'wizzy import dashboard DASHBOARD_NAME',
+commands.addCommand(program, 'import', commands.instruct, 'wizzy import dashboard DASHBOARD_NAME',
 	'imports a dashboard from Grafana in local json file', 'wizzy import dashboard my-dash');
 
-commands.addCommand(program, 'export', commands.exportEntity, 'wizzy export dashboard DASHBOARD_NAME',
+commands.addCommand(program, 'export', commands.instruct, 'wizzy export dashboard DASHBOARD_NAME',
 	'exports a dashboard from local json file to Grafana', 'wizzy export dashboard my-dash');
 
-commands.addCommand(program, 'create', commands.createEntity, 'wizzy create ENTITY ENTITY_NAME',
+commands.addCommand(program, 'create', commands.instruct, 'wizzy create ENTITY ENTITY_NAME',
 	'creates a new entity in Grafana', 'wizzy create org my-org');
 
+commands.addCommand(program, 'delete', commands.instruct, 'wizzy delete ENTITY ENTITY_NAME',
+	'deletes an entity from Grafana', 'wizzy delete org org_id');
+
+commands.addCommand(program, 'show', commands.instruct, 'wizzy show ENTITY <ENTITY_NAME>',
+	'shows a new entity from Grafana in JSON format', 'wizzy show orgs');
 
 // For any other command wizzy will show help
 program.command('*').action(commands.showHelp);

@@ -94,21 +94,52 @@ Commands.prototype.showStatus = function() {
 }
 
 // Creates an entity in wizzy or Grafana
-Commands.prototype.createEntity = function(entityType, entityValue) {
+Commands.prototype.instruct = function() {
+	var command = process.argv[2];
+	var entityType = process.argv[3];
+	var entityValue = process.argv[4];
 	loadConfig();
-	grafana.create(entityType, entityValue);
+	switch(command) {
+		case 'import':
+			grafana.import(command, entityType, entityValue);
+			break;
+		case 'export':
+			grafana.export(command, entityType, entityValue);
+			break;
+		case 'create':
+			grafana.create(command, entityType, entityValue);
+			break;
+		case 'delete':
+			grafana.delete(command, entityType, entityValue);
+			break;
+		case 'show':
+			grafana.show(command, entityType, entityValue);
+	}
 }
 
-// Imports an entity from Grafana into wizzy
-Commands.prototype.importEntity = function(entityType, entityValue) {
-	loadConfig();
-	grafana.import(entityType, entityValue);
+// Resets Grafana URL
+Commands.prototype.setGrafanaConfig = function(configType, configValue) {	
+
+	if (configType === 'url') {
+		nconf.set('config:grafana:url', configValue);
+	} else if(configType === 'username') {
+		nconf.set('config:grafana:username', configValue);
+	} else if(configType === 'password') {
+		nconf.set('config:grafana:password', configValue);
+	} else if(configType === 'debug_api') {
+		nconf.set('config:grafana:debug_api', configValue);
+	} else {
+		logger.showError('Unknown Grafana setting.');
+		return;
+	}
+	saveConfig();
+	logger.showResult('Grafana ' + configType + ' updated successfully.');
+	//this.grafana = new Grafana(nconf.get('config:grafana'));
 }
 
-// Exports an entity from wizzy to Grafana
-Commands.prototype.exportEntity = function(entityType, entityValue) {
-	loadConfig();
-	grafana.export(entityType, entityValue);
+// Shows wizzy config
+Commands.prototype.showConfig = function() {
+	console.log(prettyjson.render(nconf.get('config')));
 }
 
 // Loads config for running wizzy command
@@ -132,29 +163,6 @@ function saveConfig(){
     	}
   	});
 	});
-}
-
-// Resets Grafana URL
-Commands.prototype.setGrafanaConfig = function(configType, configValue) {	
-
-	if (configType === 'url') {
-		nconf.set('config:grafana:url', configValue);
-	} else if(configType === 'username') {
-		nconf.set('config:grafana:username', configValue);
-	} else if(configType === 'password') {
-		nconf.set('config:grafana:password', configValue);
-	}	else {
-		logger.showError('Unknown Grafana setting.');
-		return;
-	}
-	saveConfig();
-	logger.showResult('Grafana ' + configType + ' updated successfully.');
-	//this.grafana = new Grafana(nconf.get('config:grafana'));
-}
-
-// Shows wizzy config
-Commands.prototype.showConfig = function() {
-	console.log(prettyjson.render(nconf.get('config')));
 }
 
 module.exports = Commands;

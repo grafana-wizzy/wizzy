@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 "use strict";
 
+var prettyjson = require('prettyjson');
+
 function Logger() {}
 
 Logger.prototype.showResult = function(resultLine) {

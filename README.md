@@ -27,9 +27,10 @@ $ wizzy init
 ```
 - Configure wizzy for Grafana
 ```
-$ wizzy grafana url GRAFANA_URL
-$ wizzy grafana username user
-$ wizzy grafana password password
+$ wizzy grafana url GRAFANA_URL - required setting
+$ wizzy grafana username user - depends on your access to Grafana, set if you have one
+$ wizzy grafana password password - depends on your access to Grafana, set if you have one
+$ wizzy grafana debug_api - optional, false by default
 ```
 - Test wizzy setup
 ```
@@ -46,22 +47,22 @@ $ wizzy conf - shows wizzy configuration
 $ wizzy version - shows wizzy version
 ```
 
-## Import Commands
-These commands imports dashboard JSONs from Grafana and create local dashboard JSON files under dashboards directory
+## Dashboard Commands
 ```
-$ wizzy import dashboard DASHBOARD_NAME - imports a Grafana dashboard and creates dashboard JSON file
-```
+$ wizzy import dashboard DASHBOARD_SLUG - imports a Grafana dashboard and creates dashboard JSON file under dashboards directory
+$ wizzy export dashboard DASHBOARD_SLUG - exports an existing dashboard from JSON file from dashboards directory to Grafana and saves it
+$ wizzy export new-dashboard DASHBOARD_SLUG - exports a new dashboard from JSON file from dashboards directory to Grafana and saves it
+$ wizzy show dashboard DASHBOARD_SLUG - pretty print dashboard json from Grafana
+$ wizzy delete dashboard DASHBOARD_SLUG - deletes a dashbaord in Grafana
 
-## Export Commands
-These commands exports local JSONs from dashboards directory to Grafana and will replace existing dashboards. Please be careful while using them!
-```
-$ wizzy export dashboard DASHBOARD_NAME - exports an existing dashboard from json file to Grafana and saves it.
-$ wizzy export new-dashboard DASHBOARD_NAME - exports a new dashboard from json file to Grafana and saves it.
 ```
 
 ## Organization Commands
 ```
 $ wizzy create org ORG_NAME - creates an org in Grafana
+$ wizzy show orgs - shows all orgs from Grafana
+$ wizzy show org ORG_ID - shows an org from Grafana
+$ wiizy delete org ORG_ID - deletes an org in Grafana
 ```
 
 # Author
