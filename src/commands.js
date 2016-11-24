@@ -7,7 +7,6 @@ var nconf = require('nconf');
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json'; // Config file location
 nconf.argv().env().file({ file: confFile });
-var prettyjson = require('prettyjson');
 var Logger = require('./logger.js');
 var Grafana = require('./grafana.js');
 var grafana;
@@ -113,6 +112,8 @@ Commands.prototype.instruct = function() {
 			break;
 		case 'show':
 			grafana.show(command, entityType, entityValue);
+		case 'summarize':
+			grafana.summarize(command, entityType, entityValue);
 	}
 }
 
@@ -138,7 +139,7 @@ Commands.prototype.setGrafanaConfig = function(configType, configValue) {
 
 // Shows wizzy config
 Commands.prototype.showConfig = function() {
-	console.log(prettyjson.render(nconf.get('config')));
+	console.log(logger.stringify(nconf.get('config')));
 }
 
 // Loads config for running wizzy command

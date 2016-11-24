@@ -4,7 +4,6 @@
 var _ = require('lodash');
 var Logger = require('./logger.js');
 var logger = new Logger();
-var prettyjson = require('prettyjson');
 var fs = require('fs');
 var successMessage;
 var failureMessage;
@@ -76,7 +75,7 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 		this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
-	  	  output += prettyjson.render(extractDashArch(body));
+	  	  output += logger.stringify(extractDashArch(body));
 	  	  logger.showOutput(output);
 	    	logger.showResult(successMessage);
 	  	} else {
@@ -97,6 +96,23 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 		return;
 	}
 	this.sendRequest('GET');
+
+}
+
+Grafana.prototype.summarize = function(command, entityType, entityValue) {
+
+	this.createURL(command, entityType, entityValue);
+	if (entityType === 'dashboard') {
+		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
+		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
+		var summarizedOutput = logger.stringify(extractDashArch(readDashboard(entityValue)), null, 2);
+		logger.showOutput(summarizedOutput);
+		logger.showResult(successMessage);
+		return;
+	}	else {
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
+	}
 
 }
 
@@ -189,7 +205,7 @@ function printResponse(error, response, body) {
 	var output = '';
 		if (!error && response.statusCode == 200) {
   	  output += body;
-  	  logger.showOutput(prettyjson.render(body));
+  	  logger.showOutput(body, true);
     	logger.showResult(successMessage);
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
@@ -207,7 +223,7 @@ function printResponse(error, response, body) {
 // Saves a dashboard json in a file.
 function saveDashboard(slug, dashboard) {
 	var dashFile = dashDir + '/' + slug + '.json';
-	fs.writeFileSync(dashFile, JSON.stringify(dashboard, null, 2));
+	fs.writeFileSync(dashFile, logger.stringify(dashboard, null, 2));
 	logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 }
 
@@ -227,26 +243,26 @@ function readDashboard(slug) {
 }
 
 // Extract dashboard architecture and prints it in a user friendly style.
-function extractDashArch(body) {
+function extractDashArch(dashboard) {
 	var arch = {};
 
 	// Extracting row information
-	arch.title = body.dashboard.title;
-	arch.rowCount = _.size(body.dashboard.rows);
+	arch.title = dashboard.title;
+	arch.rowCount = _.size(dashboard.rows);
 	arch.rows = [];
-	_.forEach(body.dashboard.rows, function(row) {
+	_.forEach(dashboard.rows, function(row) {
 		arch.rows.push({
   		title: row.title,
 			panelCount: _.size(row.panels),
 			panelTitles: _.join(_.map(row.panels,'title'), ', ')
 		});
 	});
-	if ('templating' in body.dashboard) {
-		arch.templateVariableCount = _.size(body.dashboard.templating.list);
-		arch.templateValiableNames = _.join(_.map(body.dashboard.templating.list, 'name'), ', ');
+	if ('templating' in dashboard) {
+		arch.templateVariableCount = _.size(dashboard.templating.list);
+		arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
 	}
-	arch.timeAndTimezone = body.dashboard.time;
-	arch.timeAndTimezone.timezone = body.dashboard.timezone;
+	arch.time = dashboard.time;
+	arch.time.timezone = dashboard.timezone;
 	return arch;
 }
 

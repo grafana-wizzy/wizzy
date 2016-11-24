@@ -26,19 +26,22 @@ commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 	'shows wizzy configuration');
 
 commands.addCommand(program, 'import', commands.instruct, 'wizzy import dashboard DASHBOARD_NAME',
-	'imports a dashboard from Grafana in local json file', 'wizzy import dashboard my-dash');
+	'imports an entity from Grafana to local repo', 'wizzy import dashboard my-dash');
 
 commands.addCommand(program, 'export', commands.instruct, 'wizzy export dashboard DASHBOARD_NAME',
-	'exports a dashboard from local json file to Grafana', 'wizzy export dashboard my-dash');
+	'exports an entity from local repo to Grafana', 'wizzy export dashboard my-dash');
 
 commands.addCommand(program, 'create', commands.instruct, 'wizzy create ENTITY ENTITY_NAME',
-	'creates a new entity in Grafana', 'wizzy create org my-org');
+	'creates a new entity', 'wizzy create org my-org');
 
 commands.addCommand(program, 'delete', commands.instruct, 'wizzy delete ENTITY ENTITY_NAME',
-	'deletes an entity from Grafana', 'wizzy delete org org_id');
+	'deletes an entity', 'wizzy delete org org_id');
 
 commands.addCommand(program, 'show', commands.instruct, 'wizzy show ENTITY <ENTITY_NAME>',
-	'shows a new entity from Grafana in JSON format', 'wizzy show orgs');
+	'shows an entity', 'wizzy show org 1, wizzy show orgs');
+
+commands.addCommand(program, 'summarize', commands.instruct, 'wizzy summarize ENTITY <ENTITY_NAME>',
+	'summarize a large entity in a short user-friendly manner', 'wizzy summarize dashboard dash-cpu');
 
 // For any other command wizzy will show help
 program.command('*').action(commands.showHelp);

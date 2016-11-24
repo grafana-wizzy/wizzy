@@ -48,17 +48,29 @@ $ wizzy version - shows wizzy version
 ```
 
 ## Dashboard Commands
-```
-$ wizzy import dashboard DASHBOARD_SLUG - imports a Grafana dashboard and creates dashboard JSON file under dashboards directory
-$ wizzy export dashboard DASHBOARD_SLUG - exports an existing dashboard from JSON file from dashboards directory to Grafana and saves it
-$ wizzy show dashboard DASHBOARD_SLUG - pretty prints dashboard json directly from Grafana
-$ wizzy delete dashboard DASHBOARD_SLUG - deletes a dashbaord in Grafana
-$ wizzy export newdash DASHBOARD_SLUG - exports a new dashboard from JSON file from dashboards directory to Grafana and saves it
-$ wizzy show dasharch DASHBOARD_SLUG - pretty prints dashboard architecture directly from Grafana
 
+###Convetions
+- *local dashboard* - a json file representing a dashboard located under dashboards directory.
+- *remote dashboard* - a dashbord currently live/stored in Grafana.
+
+### Local Commands
+These commands operates on json dashboard files under dashboards directory locally on disk.
+```
+$ wizzy import dashboard DASHBOARD_SLUG - imports a remote dashboard and creates a local json file
+$ wizzy summarize dashboard DASHBOARD_SLUG - prints summarized version of a local dashboard
+```
+
+### Remote Commands
+These commands operates directly on Grafana via API, so please use them carefully.
+```
+$ wizzy show dashboard DASHBOARD_SLUG - prints a remote dashboard
+$ wizzy delete dashboard DASHBOARD_SLUG - deletes a remote dashboard
+$ wizzy export dashboard DASHBOARD_SLUG - exports a local dashboard to be saved as a remote dashboard and go live
+$ wizzy export newdash DASHBOARD_SLUG - exports a new local dashboard to be saved as a remote dashboard and go live
 ```
 
 ## Organization Commands
+These commands operates directly on Grafana via API, so please use them carefully.
 ```
 $ wizzy create org ORG_NAME - creates an org in Grafana
 $ wizzy show orgs - shows all orgs from Grafana
