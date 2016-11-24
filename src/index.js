@@ -7,7 +7,7 @@ var logger = new Logger();
 
 // Setting up version and commands for cli
 var program = require('commander');
-var version = '0.1.3';
+var version = '0.1.4';
 
 var Commands = require('./commands.js');
 var commands = new Commands(program, version);
