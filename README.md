@@ -51,7 +51,7 @@ You are ready to use wizzy. Read further or check examples.
 # Available Commands
 
 ## Help Commands
-Help commands are built-in commands to help you debug wizzy's configuration. Also, they show which commands are valid help commands.
+Help commands lets you explore wizzy's info, health, configuration.
 ```
 $ wizzy conf
 	- shows wizzy configuration
