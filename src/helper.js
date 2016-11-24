@@ -6,22 +6,13 @@ var Logger = require('./logger.js');
 var logger = new Logger();
 
 var fs = require('fs');
-var dashDir = 'dashboards';
 var nconf = require('nconf');
-var confDir = 'conf';
-var confFile = 'conf/wizzy.json'; // Config file location
-nconf.argv().env().file({ file: confFile });
 
-var Grafana = require('./grafana.js');
-var grafana;
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
-function Commands(program, version, dashDir, confDir, confFile) {
-	this.program = program;
-	this.program.version(version);
-	this.dashDir = dashDir;
-	this.confDir = confDir;
-	this.confFile = confFile;
+function Helper(commands) {
+	this.commands = commands;
+	nconf.argv().env().file({ file: commands.confFile });
 }
 
 Commands.prototype.addCommand = function(program, command, func, syntax, description, example) {
@@ -37,18 +28,17 @@ Commands.prototype.addCommand = function(program, command, func, syntax, descrip
 	if (example != null) {
 		help += '\n\t- Example: ' + example;
 	}
-	help += '\n';
 
 }
 
 // Shows wizzy help
-Commands.prototype.help = function() {
+Commands.prototype.showHelp = function() {
 	help += '\n';
 	console.log(help);
 }
 
 // Initialize wizzy
-Commands.prototype.init = function() {
+Commands.prototype.initWizzy = function() {
 	// Initialize the conf dir
 	if (!fs.existsSync(confDir)){
     fs.mkdirSync(confDir);
@@ -77,7 +67,7 @@ Commands.prototype.init = function() {
 }
 
 // Shows wizzy status
-Commands.prototype.status = function() {
+Commands.prototype.showStatus = function() {
 	var setupProblem = false;
 	if (!fs.existsSync('.git')){
 		logger.showError('Github not setup in the current directory.');
@@ -125,7 +115,7 @@ Commands.prototype.instruct = function() {
 }
 
 // Resets Grafana URL
-Commands.prototype.set = function(configType, configValue) {	
+Commands.prototype.setGrafanaConfig = function(configType, configValue) {	
 
 	if (configType === 'url') {
 		nconf.set('config:grafana:url', configValue);
@@ -145,7 +135,7 @@ Commands.prototype.set = function(configType, configValue) {
 }
 
 // Shows wizzy config
-Commands.prototype.conf = function() {
+Commands.prototype.showConfig = function() {
 	logger.showOutput(logger.stringify(nconf.get('config')));
 }
 
