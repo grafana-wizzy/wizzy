@@ -155,10 +155,14 @@ Note: PANEL_NUMBER starts from 1 too.
 ## Organization Commands
 These commands operates directly on Grafana via API, so please use them carefully.
 ```
-$ wizzy create org ORG_NAME - creates an org in Grafana
-$ wizzy show orgs - shows all orgs from Grafana
-$ wizzy show org ORG_ID - shows an org from Grafana
-$ wiizy delete org ORG_ID - deletes an org in Grafana
+$ wizzy create org ORG_NAME
+	- creates an org in Grafana
+$ wizzy show orgs
+	- shows all orgs from Grafana
+$ wizzy show org ORG_ID
+	- shows an org from Grafana
+$ wiizy delete org ORG_ID
+	- deletes an org in Grafana
 ```
 
 # Author
