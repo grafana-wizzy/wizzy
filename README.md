@@ -1,6 +1,6 @@
 [wizzy](https://github.com/utkarshcmu/wizzy) [![Circle CI](https://circleci.com/gh/utkarshcmu/wizzy.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/utkarshcmu/wizzy) [![Coverage Status](https://coveralls.io/repos/github/utkarshcmu/wizzy/badge.svg?branch=master&bust=1)](https://coveralls.io/github/utkarshcmu/wizzy?branch=master)
 ================
-`wizzy` is a user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day while editing managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
+`wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
 # Getting statrted with wizzy
 
