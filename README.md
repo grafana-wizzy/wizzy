@@ -63,17 +63,17 @@ $ wizzy version
 ```
 
 ## Set Grafana properties
-Grafana properties can be set in wizzy by running following commands, if you have not set:
+Grafana properties can be set in wizzy by running following commands, if you have not set already:
 ```
 $ wizzy set grafana url GRAFANA_URL
 $ wizzy set grafana username USERNAME
 $ wizzy set grafana password PASSWORD
-$ wizzy set grafana debug_api TRUE/FALSE
-	- an optional setting to debug Grafana API calls, false by default
+$ wizzy set grafana debug_api true
+	- an optional setting to debug Grafana API calls, `false` by default
 ```
 
 ## Command Set
-There can be multiple arguments associated with each of the following commands representing Grafana entities. This is just a broader classification of the rich command set wizzy has.
+There can be multiple arguments, representing Grafana entities, associated with each of the following command sets. This is just a broader classification of the rich command set wizzy has.
 ```
 $ wizzy set ....
 $ wizzy create ....
@@ -91,20 +91,19 @@ Note: Please read further to see example use cases and commands.
 ## Dashboard Commands
 
 ###Dashboard Terminology
-Dashboardw 
 - *local dashboard* - a json dashboard file under dashboards directory on local disk
-- *remote dashboard* - a dashbord currently live/stored in Grafana
+- *remote dashboard* - a dashboard currently live in Grafana
 
 ### Dashboard Context
-A user can set the Dashboard Context in wizzy using the `use` command so that the wizzy is aware about the local dashboard on which it should operate on. This is an optional settings for some commands to make wizzy cli more intuitive and user-friendly.
+A user can set the dashboard context in wizzy by the `use` command so that the wizzy is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
 ```
 wizzy use dashboard DASHBOARD_SLUG
 ```
-Note: Once context is set, wizzy will fall back to these defaults if no entity is supplied.
+Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
 
 
 ### Local Commands
-These commands operates on local dashboards. Using Dashboard Context is option for this set of commands. If you have set context dashboard, you do not need to type DASHBOARD_SLUG for each dashboard command.
+These commands operates on local json file based dashboards.
 ```
 $ wizzy import dashboard DASHBOARD_SLUG
 	- copies a remote dashboard json and creates a local dashboard
@@ -142,14 +141,10 @@ Note: ROW_NUMBER starts from 1.
 ### Panel Commands
 These commands operate on local dashboards for editing the dashboards quickly. Please set Dashboard Context to use them.
 ```
-$ wizzy move panel PANEL_NUMBER to PANEL_NUMBER
-	- moves a panel from one position to another on the same dashboard
 $ wizzy move panel PANEL_NUMBER to ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current row to another row on the same dashboard
 $ wizzy move panel PANEL_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current dashboard to another dashboard
-$ wizzy copy panel PANEL_NUMBER to PANEL_NUMBER
-	- copies a panel from one position to another on the same dashboard
 $ wizzy copy panel PANEL_NUMBER to ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current row to another row on the same dashboard
 $ wizzy copy panel PANEL_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER.PANEL_NUMBER
