@@ -26,6 +26,7 @@
   "dependencies": {
     "commander": "^2.9.0",
     "fs": "0.0.1-security",
+    "lodash": "^4.17.2",
     "nconf": "^0.8.4",
     "prettyjson": "^1.2.0",
     "request": "^2.79.0"

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 
+var _ = require('lodash');
 var Logger = require('./logger.js');
 var logger = new Logger();
 var prettyjson = require('prettyjson');
@@ -59,20 +60,42 @@ Grafana.prototype.delete = function(command, entityType, entityValue) {
 
 Grafana.prototype.show = function(command, entityType, entityValue) {
 
+	this.createURL(command, entityType, entityValue);
 	if (entityType === 'orgs') {
-		successMessage = 'Showed Grafana orgs successfully.';
-		failureMessage = 'Error in showing Grafana orgs.';
+		successMessage = 'Showed orgs successfully.';
+		failureMessage = 'Error in showing orgs.';
 	} else if (entityType === 'org') {
-		successMessage = 'Showed Grafana org ' + entityValue + ' successfully.';
-		failureMessage = 'Error in showing Grafana org ' + entityValue + '.';
+		successMessage = 'Showed org ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing org ' + entityValue + '.';
 	} else if (entityType === 'dashboard') {
-		successMessage = 'Showed Grafana dashboard ' + entityValue + ' successfully.';
-		failureMessage = 'Error in showing Grafana dashboard ' + entityValue + '.';
-	} else {
+		successMessage = 'Showed dashboard ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing dashboard ' + entityValue + '.';
+	} else if (entityType === 'dasharch') {
+		successMessage = 'Showed architecture for dashboard ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing architecture for dashboard ' + entityValue + '.';
+		this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+	  	  output += prettyjson.render(extractDashArch(body));
+	  	  logger.showOutput(output);
+	    	logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+		return;
+	}	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.createURL(command, entityType, entityValue);
 	this.sendRequest('GET');
 
 }
@@ -109,12 +132,12 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 
 Grafana.prototype.export = function(command, entityType, entityValue) {
 
-	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+	if (entityType === 'dashboard' || entityType === 'newdash') {
 		var dashBody = {
 			dashboard: readDashboard(entityValue),
 			overwrite: true
 		}
-		if (entityType === 'new-dashboard') {
+		if (entityType === 'newdash') {
 			dashBody.dashboard.id = null;
 		}
 		successMessage = 'Dashboard '+ entityValue + ' export successful.';
@@ -135,13 +158,14 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	// Editing URL depending on entityType
 	if (entityType === 'org' || entityType === 'orgs') {
 		this.url += '/api/orgs';
-	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+	} else if (entityType === 'dashboard' || entityType === 'newdash' || entityType === 'dasharch') {
 		this.url += '/api/dashboards/db';
 	}
 
 	// Editing URL depending on command
 	if (command === 'import' || command === 'delete' ||
-	 	(command === 'show' && (entityType === 'dashboard' || entityType === 'org'))){
+	 		(command === 'show' && 
+	 			(entityType === 'dashboard' || entityType === 'dasharch' || entityType === 'org'))){
 		this.url += '/' + entityValue;
 	}
 
@@ -200,6 +224,30 @@ function readDashboard(slug) {
 		}
 	}));
 	return dashboard;
+}
+
+// Extract dashboard architecture and prints it in a user friendly style.
+function extractDashArch(body) {
+	var arch = {};
+
+	// Extracting row information
+	arch.title = body.dashboard.title;
+	arch.rowCount = _.size(body.dashboard.rows);
+	arch.rows = [];
+	_.forEach(body.dashboard.rows, function(row) {
+		arch.rows.push({
+  		title: row.title,
+			panelCount: _.size(row.panels),
+			panelTitles: _.join(_.map(row.panels,'title'), ', ')
+		});
+	});
+	if ('templating' in body.dashboard) {
+		arch.templateVariableCount = _.size(body.dashboard.templating.list);
+		arch.templateValiableNames = _.join(_.map(body.dashboard.templating.list, 'name'), ', ');
+	}
+	arch.timeAndTimezone = body.dashboard.time;
+	arch.timeAndTimezone.timezone = body.dashboard.timezone;
+	return arch;
 }
 
 module.exports = Grafana;

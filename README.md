@@ -51,9 +51,10 @@ $ wizzy version - shows wizzy version
 ```
 $ wizzy import dashboard DASHBOARD_SLUG - imports a Grafana dashboard and creates dashboard JSON file under dashboards directory
 $ wizzy export dashboard DASHBOARD_SLUG - exports an existing dashboard from JSON file from dashboards directory to Grafana and saves it
-$ wizzy export new-dashboard DASHBOARD_SLUG - exports a new dashboard from JSON file from dashboards directory to Grafana and saves it
-$ wizzy show dashboard DASHBOARD_SLUG - pretty print dashboard json from Grafana
+$ wizzy show dashboard DASHBOARD_SLUG - pretty prints dashboard json directly from Grafana
 $ wizzy delete dashboard DASHBOARD_SLUG - deletes a dashbaord in Grafana
+$ wizzy export newdash DASHBOARD_SLUG - exports a new dashboard from JSON file from dashboards directory to Grafana and saves it
+$ wizzy show dasharch DASHBOARD_SLUG - pretty prints dashboard architecture directly from Grafana
 
 ```
 
