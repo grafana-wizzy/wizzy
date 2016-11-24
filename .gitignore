@@ -1,4 +1,6 @@
-bin/
 node_modules/
+npm-debug.log
 conf/
 dashboards/
+.coveralls.yml
+coverage/

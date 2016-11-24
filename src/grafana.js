@@ -34,7 +34,7 @@ Grafana.prototype.create = function(command, entityType, entityValue) {
 	else {
 		showEntityError(entityType);
 	}
-	this.url += createURL(this.url, command, entityType, entityValue);
+	this.createURL(command, entityType, entityValue);
 	sendRequest(this, 'POST');
 	
 }
@@ -50,7 +50,7 @@ Grafana.prototype.delete = function(command, entityType, entityValue) {
 	} else {
 		showEntityError(entityType);
 	}
-	this.url += createURL(this.url, command, entityType, entityValue);
+	this.createURL(command, entityType, entityValue);
 	sendRequest(this, 'DELETE');
 
 }
@@ -69,7 +69,7 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 	} else {
 		showEntityError(entityType);
 	}
-	this.url += createURL(this.url, command, entityType, entityValue);
+	this.createURL(command, entityType, entityValue);
 	sendRequest(this, 'GET');
 
 }
@@ -82,7 +82,7 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 	} else {
 		showEntityError(entityType);
 	}
-	this.url += createURL(this.url, command, entityType, entityValue);
+	this.createURL(command, entityType, entityValue);
 	this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
@@ -119,8 +119,26 @@ Grafana.prototype.export = function(command, entityType, entityValue) {
 	} else {
 		showEntityError(entityType);
 	}
-	this.url += createURL(this.url, command, entityType, entityValue);
+	this.createURL(command, entityType, entityValue);
 	sendRequest(this, 'POST');
+
+}
+
+// Create url for calling Grafana API
+Grafana.prototype.createURL = function(command, entityType, entityValue) {
+
+	// Editing URL depending on entityType
+	if (entityType === 'org' || entityType === 'orgs') {
+		this.url += '/api/orgs';
+	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+		this.url += '/api/dashboards/db';
+	}
+
+	// Editing URL depending on command
+	if (command === 'import' || command === 'delete' ||
+	 	(command === 'show' && (entityType === 'dashboard' || entityType === 'org'))){
+		this.url += '/' + entityValue;
+	}
 
 }
 
@@ -161,26 +179,6 @@ function printResponse(error, response, body) {
   		logger.showOutput(output);
   		logger.showError(failureMessage);
   	}
-}
-
-// Create url for calling Grafana API
-function createURL(url, command, entityType, entityValue) {
-
-	var url = '';
-	// Editing URL depending on entityType
-	if (entityType === 'org' || entityType === 'orgs') {
-		url += '/api/orgs';
-	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
-		url += '/api/dashboards/db';
-	}
-
-	// Editing URL depending on command
-	if (command === 'import' || command === 'delete' ||
-	 	(command === 'show' && (entityType === 'dashboard' || entityType === 'org'))){
-		url += '/' + entityValue;
-	}
-	return url;
-
 }
 
 // Saves a dashboard json in a file.

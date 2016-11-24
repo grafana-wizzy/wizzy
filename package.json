@@ -4,8 +4,8 @@
   "description": "Lets you automate Grafana interaction",
   "main": "index.js",
   "scripts": {
-    "test": "node ./tests/index.js",
-    "deploy": "wizzy"
+    "test": "mocha",
+    "coveralls": "istanbul cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
@@ -29,5 +29,11 @@
     "nconf": "^0.8.4",
     "prettyjson": "^1.2.0",
     "request": "^2.79.0"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.15",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.2",
+    "mocha-lcov-reporter": "^1.2.0"
   }
 }
