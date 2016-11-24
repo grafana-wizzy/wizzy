@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 "use strict";
 
+// Initializing logger
+var Logger = require('./logger.js');
+var logger = new Logger();
+
 var fs = require('fs');
 var dashDir = 'dashboards';
 var nconf = require('nconf');
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json'; // Config file location
 nconf.argv().env().file({ file: confFile });
-var Logger = require('./logger.js');
+
 var Grafana = require('./grafana.js');
 var grafana;
-var logger = new Logger();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
 function Commands(program, version) {

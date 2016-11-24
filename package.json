@@ -24,6 +24,7 @@
     "wizzy": "src/index.js"
   },
   "dependencies": {
+    "colors": "^1.1.2",
     "commander": "^2.9.0",
     "fs": "0.0.1-security",
     "lodash": "^4.17.2",

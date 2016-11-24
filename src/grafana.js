@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 "use strict";
 
-var _ = require('lodash');
+// Initializing logger
 var Logger = require('./logger.js');
 var logger = new Logger();
+
+var _ = require('lodash');
 var fs = require('fs');
 var successMessage;
 var failureMessage;

@@ -1,22 +1,24 @@
 #!/usr/bin/env node
 "use strict";
 
+var colors = require('colors');
+
 function Logger() {}
 
 Logger.prototype.showResult = function(resultLine) {
-	console.log('\u2714 ' + resultLine);
+	console.log('\u2714 '.green + resultLine.green);
 }
 
 Logger.prototype.showError = function(errorLine) {
-	console.error('\u2718 ' + errorLine);
+	console.error('\u2718 '.red + errorLine.red);
 }
 
-Logger.prototype.showOutput = function(output, stringify) {
-	if (stringify) {
-		console.log('Output:\n' + JSON.stringify(output));
-	} else {
-		console.log('Output:\n' + output);
-	}
+Logger.prototype.showOutput = function(output) {
+	console.log('Output:\n'.yellow + output.yellow);
+}
+
+Logger.prototype.stringify = function(obj) {
+	return JSON.stringify(obj, null, 2);
 }
 
 module.exports = Logger;
