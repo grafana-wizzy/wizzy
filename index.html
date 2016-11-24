@@ -32,10 +32,10 @@
 <a id="wizzy--" class="anchor" href="#wizzy--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/utkarshcmu/wizzy">wizzy</a> <a href="https://circleci.com/gh/utkarshcmu/wizzy"><img src="https://circleci.com/gh/utkarshcmu/wizzy.svg?style=shield&amp;circle-token=:circle-token" alt="Circle CI"></a> <a href="https://coveralls.io/github/utkarshcmu/wizzy?branch=master"><img src="https://coveralls.io/repos/github/utkarshcmu/wizzy/badge.svg?branch=master&amp;bust=1" alt="Coverage Status"></a>
 </h1>
 
-<p><code>wizzy</code> is a user-friendly command line tool written in node.js to manage Grafana entities. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.</p>
+<p><code>wizzy</code> is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.</p>
 
 <h1>
-<a id="getting-started-with-wizzy" class="anchor" href="#getting-started-with-wizzy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started with wizzy</h1>
+<a id="getting-statrted-with-wizzy" class="anchor" href="#getting-statrted-with-wizzy" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting statrted with wizzy</h1>
 
 <ul>
 <li>Install nodejs by downloading it from nodejs.org. (<a href="https://nodejs.org/en/download/">https://nodejs.org/en/download/</a>). After installing nodejs, run following commands:</li>
@@ -45,13 +45,14 @@
 $ npm -v
 </code></pre>
 
-<p>Make sure node version is above 5.10.1.</p>
+<p>Note: Please make sure node version is above 5.10.1.</p>
 
 <ul>
 <li>Install wizzy using npm</li>
 </ul>
 
-<pre><code>$ npm install -g wizzy (Use sudo if needed)
+<pre><code>$ npm install -g wizzy
+    - Use sudo if needed or permission was denied
 $ wizzy version
 </code></pre>
 
@@ -62,9 +63,8 @@ $ wizzy version
 <pre><code>$ mkdir grafana-dash
 $ cd grafana-dash
 $ git init
+    - optional step to store dashboards in a github repo
 </code></pre>
-
-<p>Note: Add <code>conf</code> directory to .gitignore to avoid checking in the cli config</p>
 
 <ul>
 <li>Initialize wizzy</li>
@@ -74,14 +74,18 @@ $ git init
 </code></pre>
 
 <ul>
-<li>Configure wizzy for Grafana</li>
+<li>Set Grafana properties in wizzy's config</li>
 </ul>
 
-<pre><code>$ wizzy grafana url GRAFANA_URL - required setting
-$ wizzy grafana username user - depends on your access to Grafana, set if you have one
-$ wizzy grafana password password - depends on your access to Grafana, set if you have one
-$ wizzy grafana debug_api true - optional, false by default
+<pre><code>$ wizzy set grafana url GRAFANA_URL
+    - a required setting to connect to Grafana installation
+$ wizzy set grafana username USERNAME
+    - if anonymous access to Grafana is disabled.
+$ wizzy set grafana password PASSWORD
+    - if anonymous access to Grafana is disabled.
 </code></pre>
+
+<p>Note: Add <code>conf</code> directory to .gitignore to avoid checking your credentials into git repo.</p>
 
 <ul>
 <li>Test wizzy setup</li>
@@ -90,97 +94,152 @@ $ wizzy grafana debug_api true - optional, false by default
 <pre><code>$ wizzy status
 </code></pre>
 
+<p>You are ready to use wizzy. Read further or check examples.</p>
+
 <h1>
 <a id="available-commands" class="anchor" href="#available-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Available Commands</h1>
 
 <h2>
 <a id="help-commands" class="anchor" href="#help-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Help Commands</h2>
 
-<p>Help commands are built-in commands to help you debug wizzy's configuration. Also, they show which commands are valid help commands.</p>
+<p>Help commands lets you explore wizzy's info, health, configuration.</p>
 
-<pre><code>$ wizzy help - shows wizzy help
-$ wizzy conf - shows wizzy configuration
-$ wizzy version - shows wizzy version
+<pre><code>$ wizzy conf
+    - shows wizzy configuration
+$ wizzy init
+    - only to be used while setting up wizzy for the first time
+$ wizzy status
+$ wizzy help
+$ wizzy version
 </code></pre>
+
+<h2>
+<a id="set-grafana-properties" class="anchor" href="#set-grafana-properties" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Set Grafana properties</h2>
+
+<p>Grafana properties can be set in wizzy by running following commands, if you have not set already:</p>
+
+<pre><code>$ wizzy set grafana url GRAFANA_URL
+$ wizzy set grafana username USERNAME
+$ wizzy set grafana password PASSWORD
+$ wizzy set grafana debug_api true
+    - an optional setting to debug Grafana API calls, `false` by default
+</code></pre>
+
+<h2>
+<a id="command-set" class="anchor" href="#command-set" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Command Set</h2>
+
+<p>There can be multiple arguments, representing Grafana entities, associated with each of the following command sets. This is just a broader classification of the rich command set wizzy has.</p>
+
+<pre><code>$ wizzy set ....
+$ wizzy create ....
+$ wizzy show ....
+$ wizzy summarize ....
+$ wizzy use ....
+$ wizzy move ....
+$ wizzy copy ....
+$ wizzy delete ....
+$ wizzy import ....
+$ wizzy export ....
+</code></pre>
+
+<p>Note: Please read further to see example use cases and commands.</p>
 
 <h2>
 <a id="dashboard-commands" class="anchor" href="#dashboard-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Commands</h2>
 
 <h3>
-<a id="terminology" class="anchor" href="#terminology" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Terminology</h3>
+<a id="dashboard-terminology" class="anchor" href="#dashboard-terminology" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Terminology</h3>
 
 <ul>
 <li>
-<em>local dashboard</em> - a json file representing a dashboard located under dashboards directory.</li>
+<em>local dashboard</em> - a json dashboard file under dashboards directory on local disk</li>
 <li>
-<em>remote dashboard</em> - a dashbord currently live/stored in Grafana.</li>
+<em>remote dashboard</em> - a dashboard currently live in Grafana</li>
 </ul>
+
+<h3>
+<a id="dashboard-context" class="anchor" href="#dashboard-context" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Context</h3>
+
+<p>A user can set the dashboard context in wizzy by the <code>use</code> command so that the wizzy is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.</p>
+
+<pre><code>wizzy use dashboard DASHBOARD_SLUG
+</code></pre>
+
+<p>Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.</p>
 
 <h3>
 <a id="local-commands" class="anchor" href="#local-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Local Commands</h3>
 
-<p>These commands operates on json dashboard files under dashboards directory locally on disk.</p>
+<p>These commands operates on local json file based dashboards.</p>
 
-<pre><code>$ wizzy import dashboard DASHBOARD_SLUG - imports a remote dashboard and creates a local json file
-$ wizzy summarize dashboard DASHBOARD_SLUG - prints summarized version of a local dashboard
-$ wizzy edit dashboard set title NEW_TITLE - rename title of the local dashboard
+<pre><code>$ wizzy import dashboard DASHBOARD_SLUG
+    - copies a remote dashboard json and creates a local dashboard
+$ wizzy summarize dashboard DASHBOARD_SLUG
+    - prints summarized version of a local dashboard
 </code></pre>
 
 <h3>
 <a id="remote-commands" class="anchor" href="#remote-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Remote Commands</h3>
 
-<p>These commands operates directly on Grafana via API, so please use them carefully.</p>
+<p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. No need of setting Dashboard Context for these commands as they will interact with Grafana API directly.</p>
 
-<pre><code>$ wizzy show dashboard DASHBOARD_SLUG - prints a remote dashboard
-$ wizzy delete dashboard DASHBOARD_SLUG - deletes a remote dashboard
-$ wizzy export dashboard DASHBOARD_SLUG - exports a local dashboard to be saved as a remote dashboard and go live
-$ wizzy export newdash DASHBOARD_SLUG - exports a new local dashboard to be saved as a remote dashboard and go live
+<pre><code>$ wizzy show dashboard DASHBOARD_SLUG
+    - prints a remote dashboard from Grafana
+$ wizzy delete dashboard DASHBOARD_SLUG
+    - deletes a remote dashboard from Grafana
+$ wizzy export dashboard DASHBOARD_SLUG
+    - exports a local dashboard to be saved as a remote dashboard and go live
+$ wizzy export newdash DASHBOARD_SLUG
+    - exports a new local dashboard to be saved as a remote dashboard and go live
 </code></pre>
 
-<h2>
-<a id="setting-context-commands" class="anchor" href="#setting-context-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Setting Context Commands</h2>
+<h3>
+<a id="row-commands" class="anchor" href="#row-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Row Commands</h3>
 
-<p>A user can set the context of wizzy using the <code>use</code> command so that the row and panel commands can operate on the org,dashboard and row in context.</p>
+<p>These commands operate on local dashboards for moving dashboards components quickly. Please set Dashboard Context to use them.</p>
 
-<pre><code>wizzy use org ORG_ID
-wizzy use dashboard DASHBOARD_SLUG
-wizzy use row ROW_NUMBER
+<pre><code>$ wizzy move row ROW_NUMBER to ROW_NUMBER
+    - moves a row from one position to another on the same dashboard
+$ wizzy move row ROW_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER
+    - moves a row from one dashboard to another dashboard
+$ wizzy copy row ROW_NUMBER to ROW_NUMBER
+    - copies a row from one position to another on the same dashboard
+$ wizzy copy row ROW_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER
+    - copies a row from one dashboard to another dashboard
 </code></pre>
 
-<h2>
-<a id="row-commands" class="anchor" href="#row-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Row Commands</h2>
+<p>Note: ROW_NUMBER starts from 1.</p>
 
-<p>These commands operate on local dashboards for editing the dashboards quickly.</p>
+<h3>
+<a id="panel-commands" class="anchor" href="#panel-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Panel Commands</h3>
 
-<pre><code>$ wizzy edit row row_number set title NEW_TITLE - rename title of the local dashboard
-$ wizzy move row row_number to dashboard_2 - moves a row from one local dashboard to another
-$ wizzy copy row row_number to dashboard_2 - copies a row from one local dashboard to anoter
+<p>These commands operate on local dashboards for editing the dashboards quickly. Please set Dashboard Context to use them.</p>
+
+<pre><code>$ wizzy move panel PANEL_NUMBER to ROW_NUMBER.PANEL_NUMBER
+    - moves a panel from current row to another row on the same dashboard
+$ wizzy move panel PANEL_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER.PANEL_NUMBER
+    - moves a panel from current dashboard to another dashboard
+$ wizzy copy panel PANEL_NUMBER to ROW_NUMBER.PANEL_NUMBER
+    - copies a panel from current row to another row on the same dashboard
+$ wizzy copy panel PANEL_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER.PANEL_NUMBER
+    - copies a panel from current dashboard to another dashboard
 </code></pre>
 
-<p>Note: row_number starts from 1</p>
-
-<h2>
-<a id="panel-commands" class="anchor" href="#panel-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Panel Commands</h2>
-
-<p>These commands operate on local dashboards for editing the dashboards quickly.</p>
-
-<pre><code>$ wizzy move panel on dashboard_slug from row_title_1 to row_title_2 - moving a panel on the same dashboard from one row to another
-$ wizzy move panel from dashboard_slug_1.row_title_1 to dashboard_slug_2.row_title_2 - moving a panel from one dashboard to another
-$ wizzy copy panel on dashboard_slug from row_title_1 to row_title_2 - moving a panel on the same dashboard from one row to another
-$ wizzy copy panel from dashboard_slug_1.row_title_1 to dashboard_slug_2.row_title_2 - moving a panel from one dashboard to another
-</code></pre>
-
-<p>Note: panel_numner starts from 1 too.</p>
+<p>Note: PANEL_NUMBER starts from 1 too.</p>
 
 <h2>
 <a id="organization-commands" class="anchor" href="#organization-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Organization Commands</h2>
 
 <p>These commands operates directly on Grafana via API, so please use them carefully.</p>
 
-<pre><code>$ wizzy create org ORG_NAME - creates an org in Grafana
-$ wizzy show orgs - shows all orgs from Grafana
-$ wizzy show org ORG_ID - shows an org from Grafana
-$ wiizy delete org ORG_ID - deletes an org in Grafana
+<pre><code>$ wizzy create org ORG_NAME
+    - creates an org in Grafana
+$ wizzy show orgs
+    - shows all orgs from Grafana
+$ wizzy show org ORG_ID
+    - shows an org from Grafana
+$ wiizy delete org ORG_ID
+    - deletes an org in Grafana
 </code></pre>
 
 <h1>
