@@ -32,10 +32,11 @@ Grafana.prototype.create = function(command, entityType, entityValue) {
 		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
 	}
 	else {
-		showEntityError(entityType);
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
 	}
 	this.createURL(command, entityType, entityValue);
-	sendRequest(this, 'POST');
+	this.sendRequest('POST');
 	
 }
 
@@ -48,10 +49,11 @@ Grafana.prototype.delete = function(command, entityType, entityValue) {
 		successMessage = 'Deleted Grafana dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in deleting Grafana dashboard ' + entityValue + '.';
 	} else {
-		showEntityError(entityType);
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
 	}
 	this.createURL(command, entityType, entityValue);
-	sendRequest(this, 'DELETE');
+	this.sendRequest('DELETE');
 
 }
 
@@ -67,10 +69,11 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 		successMessage = 'Showed Grafana dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in showing Grafana dashboard ' + entityValue + '.';
 	} else {
-		showEntityError(entityType);
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
 	}
 	this.createURL(command, entityType, entityValue);
-	sendRequest(this, 'GET');
+	this.sendRequest('GET');
 
 }
 
@@ -80,7 +83,8 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 		successMessage = 'Dashboard '+ entityValue + ' import successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
 	} else {
-		showEntityError(entityType);
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
 	}
 	this.createURL(command, entityType, entityValue);
 	this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
@@ -117,10 +121,11 @@ Grafana.prototype.export = function(command, entityType, entityValue) {
 		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
 		this.body = dashBody;
 	} else {
-		showEntityError(entityType);
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
 	}
 	this.createURL(command, entityType, entityValue);
-	sendRequest(this, 'POST');
+	this.sendRequest('POST');
 
 }
 
@@ -142,21 +147,15 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 }
 
-// Shows error for unknown entity types to the user
-function showEntityError(entityType) {
-	logger.showError('Unsupported entity type ' + entityType);
-	process.exit();
-}
-
 // Sends an HTTP API request to Grafana
-function sendRequest(grafana, method) {
+Grafana.prototype.sendRequest = function(method) {
 	
 	if (method === 'POST') {
-		grafana.request.post({url: grafana.url, auth: grafana.auth, json: true, body: grafana.body}, printResponse); 
+		this.request.post({url: this.url, auth: this.auth, json: true, body: this.body}, printResponse); 
 	} else if (method === 'GET') {
-		grafana.request.get({url: grafana.url, auth: grafana.auth, json: true, method: method}, printResponse);
+		this.request.get({url: this.url, auth: this.auth, json: true, method: method}, printResponse);
 	} else if (method === 'DELETE') {
-		grafana.request.delete({url: grafana.url, auth: grafana.auth, json: true, method: method}, printResponse);
+		this.request.delete({url: this.url, auth: this.auth, json: true, method: method}, printResponse);
 	}
 	
 }

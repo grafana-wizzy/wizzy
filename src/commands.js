@@ -16,8 +16,7 @@ var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 
 function Commands(program, version) {
 	this.program = program;
-	this.version = version;
-	this.program.version(this.version);
+	this.program.version(version);
 }
 
 Commands.prototype.addCommand = function(program, command, func, syntax, description, example) {
