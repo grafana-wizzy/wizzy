@@ -1,26 +1,18 @@
 #!/usr/bin/env node
 "use strict";
 
-// Initializing logger
-var Logger = require('./logger.js');
-var logger = new Logger();
-
-// Setting up version and commands
-var program = require('commander');
-var version = '0.1.4';
-
 // Setting up directory structure
 var dashDir = 'dashboards';
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
 
+// Setting up cli version and commands
+var program = require('commander').version('0.1.4');
+
 var Commands = require('./commands.js');
-var commands = new Commands(program, version);
+var commands = new Commands(dashDir, confDir, confFile);
 
-// Setting up wizzy commands in this function
-commands.addCommand(program, 'conf', commands.conf, 'wizzy conf',
-	'shows wizzy configuration');
-
+// Basic commands
 commands.addCommand(program, 'help', commands.help, 'wizzy help',
 	'shows wizzy help');
 
@@ -30,8 +22,14 @@ commands.addCommand(program, 'init', commands.init, 'wizzy init',
 commands.addCommand(program, 'status', commands.status, 'wizzy status',
 	'tests Github and Grafana setup for wizzy and return status');
 
-//version comes with commander so no need to add it explicitly
+// Config commands
+commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
+	'shows wizzy configuration');
 
+commands.addCommand(program, 'set', commands.setConfig, 'wizzy set grafana CONFIG_NAME CONFIG_VALUE',
+	'sets config options for wizzy', 'wizzy grafana url http://localhost:3000');
+/*
+// Wizzy commands
 commands.addCommand(program, 'copy', commands.instruct, 'wizzy copy ENTITY ENTITY_NAME',
 	'copies an entity from one position to another', 'wizzy copy row 2 otherdash.3');
 
@@ -50,17 +48,15 @@ commands.addCommand(program, 'import', commands.instruct, 'wizzy import dashboar
 commands.addCommand(program, 'move', commands.instruct, 'wizzy move ENTITY ENTITY_NAME',
 	'moves an entity from one position to another', 'wizzy move row 2 otherdash.3');
 
-commands.addCommand(program, 'set', commands.set, 'wizzy set grafana CONFIG_NAME CONFIG_VALUE',
-	'sets config options for wizzy', 'wizzy grafana url http://localhost:3000');
-
 commands.addCommand(program, 'show', commands.instruct, 'wizzy show ENTITY <ENTITY_NAME>',
 	'shows an entity', 'wizzy show org 1, wizzy show orgs');
 
 commands.addCommand(program, 'summarize', commands.instruct, 'wizzy summarize ENTITY <ENTITY_NAME>',
 	'summarize a large entity in a short user-friendly manner', 'wizzy summarize dashboard dash-cpu');
 
-// For any other command wizzy will show help
-program.command('*').action(commands.help);
+*/
+// For any unsupported command wizzy will show help
+program.command('*').action(commands.instruct);
 
 // If there is no argument also, we will show help
 program.parse(process.argv);

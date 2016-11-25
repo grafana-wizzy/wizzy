@@ -6,30 +6,32 @@ var Logger = require('./logger.js');
 var logger = new Logger();
 
 var _ = require('lodash');
-var fs = require('fs');
+var request = require('request');
+var body = {};
+
 var successMessage;
 var failureMessage;
-var dashDir = 'dashboards';
 
-function Grafana(config) {
-	this.url = config.url;
-	this.auth = {
-		'user': config.username,
-		'pass': config.password
-	};
-	this.body = {};
-	this.request = require('request');
-	if (config.debug_api === true || config.debug_api === 'true') {
-		this.request.debug = true;
+var dashboards;
+
+var url;
+var auth = {};
+
+function Grafana(conf, dash) {
+	url = conf.url;
+	auth.username = conf.username;
+	auth.password = conf.password;
+	if (conf.debug_api === true || conf.debug_api === 'true') {
+		request.debug = true;
 	} else {
-		this.request.debug = false;
+		request.debug = false;
 	}
 }
 
 Grafana.prototype.create = function(command, entityType, entityValue) {
 
 	if (entityType === 'org') {
-		this.body['name'] = entityValue;
+		body['name'] = entityValue;
 		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
 		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
 	}
@@ -37,8 +39,8 @@ Grafana.prototype.create = function(command, entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.createURL(command, entityType, entityValue);
-	this.sendRequest('POST');
+	createURL(command, entityType, entityValue);
+	sendRequest('POST');
 	
 }
 
@@ -54,14 +56,14 @@ Grafana.prototype.delete = function(command, entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.createURL(command, entityType, entityValue);
-	this.sendRequest('DELETE');
+	createURL(command, entityType, entityValue);
+	sendRequest('DELETE');
 
 }
 
 Grafana.prototype.show = function(command, entityType, entityValue) {
 
-	this.createURL(command, entityType, entityValue);
+	createURL(command, entityType, entityValue);
 	if (entityType === 'orgs') {
 		successMessage = 'Showed orgs successfully.';
 		failureMessage = 'Error in showing orgs.';
@@ -74,7 +76,7 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 	} else if (entityType === 'dasharch') {
 		successMessage = 'Showed architecture for dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in showing architecture for dashboard ' + entityValue + '.';
-		this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += logger.stringify(extractDashArch(body));
@@ -97,13 +99,13 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.sendRequest('GET');
+	sendRequest('GET');
 
 }
 
 Grafana.prototype.summarize = function(command, entityType, entityValue) {
 
-	this.createURL(command, entityType, entityValue);
+	createURL(command, entityType, entityValue);
 	if (entityType === 'dashboard') {
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
 		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
@@ -127,8 +129,8 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.createURL(command, entityType, entityValue);
-	this.request.get({url: this.url, auth: this.auth, json: true}, function saveHandler(error, response, body) {
+	createURL(command, entityType, entityValue);
+	request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
   	  output += body;
@@ -165,39 +167,39 @@ Grafana.prototype.export = function(command, entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	this.createURL(command, entityType, entityValue);
-	this.sendRequest('POST');
+	createURL(command, entityType, entityValue);
+	sendRequest('POST');
 
 }
 
 // Create url for calling Grafana API
-Grafana.prototype.createURL = function(command, entityType, entityValue) {
+function createURL(command, entityType, entityValue) {
 
 	// Editing URL depending on entityType
 	if (entityType === 'org' || entityType === 'orgs') {
-		this.url += '/api/orgs';
+		url += '/api/orgs';
 	} else if (entityType === 'dashboard' || entityType === 'newdash' || entityType === 'dasharch') {
-		this.url += '/api/dashboards/db';
+		url += '/api/dashboards/db';
 	}
 
 	// Editing URL depending on command
 	if (command === 'import' || command === 'delete' ||
 	 		(command === 'show' && 
 	 			(entityType === 'dashboard' || entityType === 'dasharch' || entityType === 'org'))){
-		this.url += '/' + entityValue;
+		url += '/' + entityValue;
 	}
 
 }
 
 // Sends an HTTP API request to Grafana
-Grafana.prototype.sendRequest = function(method) {
+function sendRequest(method) {
 	
 	if (method === 'POST') {
-		this.request.post({url: this.url, auth: this.auth, json: true, body: this.body}, printResponse); 
+		request.post({url: url, auth: auth, json: true, body: body}, printResponse); 
 	} else if (method === 'GET') {
-		this.request.get({url: this.url, auth: this.auth, json: true, method: method}, printResponse);
+		request.get({url: url, auth: auth, json: true, method: method}, printResponse);
 	} else if (method === 'DELETE') {
-		this.request.delete({url: this.url, auth: this.auth, json: true, method: method}, printResponse);
+		request.delete({url: url, auth: auth, json: true, method: method}, printResponse);
 	}
 	
 }
@@ -206,8 +208,8 @@ Grafana.prototype.sendRequest = function(method) {
 function printResponse(error, response, body) {
 	var output = '';
 		if (!error && response.statusCode == 200) {
-  	  output += body;
-  	  logger.showOutput(body, true);
+  	  output += logger.stringify(body);
+  	  logger.showOutput(output);
     	logger.showResult(successMessage);
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;

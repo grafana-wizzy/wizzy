@@ -1,33 +1,26 @@
 #!/usr/bin/env node
 "use strict";
 
-// Initializing logger
-var Logger = require('./logger.js');
-var logger = new Logger();
-
-var fs = require('fs');
-var dashDir = 'dashboards';
-var nconf = require('nconf');
-var confDir = 'conf';
-var confFile = 'conf/wizzy.json'; // Config file location
-nconf.argv().env().file({ file: confFile });
-
+var Config = require('./config.js');
+var Dashboards = require('./dashboards.js');
 var Grafana = require('./grafana.js');
-var grafana;
+var Logger = require('./logger.js'); 
+var logger = new Logger('Commands');
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
+var version;
+var config;
+var dashboards;
+var grafana;
 
-function Commands(program, version, dashDir, confDir, confFile) {
-	this.program = program;
-	this.program.version(version);
-	this.dashDir = dashDir;
-	this.confDir = confDir;
-	this.confFile = confFile;
+function Commands(dashDir, confDir, confFile) {
+	config = new Config(confDir, confFile);
+	dashboards = new Dashboards(dashDir);
 }
 
 Commands.prototype.addCommand = function(program, command, func, syntax, description, example) {
 	
 	// Adding command to the cli tool
-	this.program.command(command).action(func);
+	program.command(command).action(func);
 
   // Adding command to help
   help += '\n  ' + syntax;
@@ -44,132 +37,71 @@ Commands.prototype.addCommand = function(program, command, func, syntax, descrip
 // Shows wizzy help
 Commands.prototype.help = function() {
 	help += '\n';
-	console.log(help);
+	logger.justShow(help);
 }
 
 // Initialize wizzy
-Commands.prototype.init = function() {
-	// Initialize the conf dir
-	if (!fs.existsSync(confDir)){
-    fs.mkdirSync(confDir);
-    logger.showResult('conf directory created.')
-  } else {
-  	logger.showResult('conf directory already exists.')
-  }
+Commands.prototype.init = function() { 
 
-  // Initialize conf file
-  if (!fs.existsSync(confFile)) {
-    saveConfig();
-    logger.showResult('conf file created.')
-	} else {
-		logger.showResult('conf file already exists.')
-	}
-
-	// Initializing dashboard dir
-	if (!fs.existsSync(dashDir)){
-    fs.mkdirSync(dashDir);
-    logger.showResult('dashboards directory created.')
-	} else {
-		logger.showResult('dashboards directory already exists.')
-	}
-
+	config.createIfNotExist();
+	dashboards.createIfNotExist();
 	logger.showResult('wizzy successfully initialized.')
+
+}
+
+// Shows wizzy config
+Commands.prototype.showConfig = function() {
+	config.showConfig('config');
 }
 
 // Shows wizzy status
 Commands.prototype.status = function() {
-	var setupProblem = false;
-	if (!fs.existsSync('.git')){
-		logger.showError('Github not setup in the current directory.');
-		setupProblem = true;
-	} else {
-		logger.showResult('Github repo detected.');
-	}
-	if (!nconf.get('config:grafana')) {
-		logger.showError('Grafana config not initialized.');
-		setupProblem = true;
-	} else {
-		logger.showResult('Grafana configuration found.')
-	}
-	if (!setupProblem) {
+
+	var setupProblem = dashboards.checkDirStatus('.git', true) && config.checkConfigStatus('config', true);
+
+	if (setupProblem) {
 		logger.showResult('wizzy setup complete.');
 	} else {
 		logger.showError('wizzy setup incomplete.');
 	}
 }
 
-// Creates an entity in wizzy or Grafana
-Commands.prototype.instruct = function() {
-	var command = process.argv[2];
-	var entityType = process.argv[3];
-	var entityValue = process.argv[4];
-	loadConfig();
-	switch(command) {
-		case 'import':
-			grafana.import(command, entityType, entityValue);
-			break;
-		case 'export':
-			grafana.export(command, entityType, entityValue);
-			break;
-		case 'create':
-			grafana.create(command, entityType, entityValue);
-			break;
-		case 'delete':
-			grafana.delete(command, entityType, entityValue);
-			break;
-		case 'show':
-			grafana.show(command, entityType, entityValue);
-		case 'summarize':
-			grafana.summarize(command, entityType, entityValue);
-	}
+// Set config properties
+Commands.prototype.setConfig = function(type, key, value) {
+	config.addProperty('config:'+type+':'+key, value);
 }
 
-// Resets Grafana URL
-Commands.prototype.set = function(configType, configValue) {	
+// Creates an entity in wizzy or Grafana
+Commands.prototype.instruct = function(command, entityType, entityValue) {
+	if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
 
-	if (configType === 'url') {
-		nconf.set('config:grafana:url', configValue);
-	} else if(configType === 'username') {
-		nconf.set('config:grafana:username', configValue);
-	} else if(configType === 'password') {
-		nconf.set('config:grafana:password', configValue);
-	} else if(configType === 'debug_api') {
-		nconf.set('config:grafana:debug_api', configValue);
-	} else {
-		logger.showError('Unknown Grafana setting.');
+		grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
+		switch(command) {
+			case 'import':
+				grafana.import(command, entityType, entityValue);
+				break;
+			case 'export':
+				grafana.export(command, entityType, entityValue);
+				break;
+			case 'create':
+				grafana.create(command, entityType, entityValue);
+				break;
+			case 'delete':
+				grafana.delete(command, entityType, entityValue);
+				break;
+			case 'show':
+				grafana.show(command, entityType, entityValue);
+				break;
+			case 'summarize':
+				grafana.summarize(command, entityType, entityValue);
+				break;
+			default:
+				logger.showError('Unsupported command called. Type `wizzy help` for available commands.');
+		}
+	}
+	else {
 		return;
 	}
-	saveConfig();
-	logger.showResult('Grafana ' + configType + ' updated successfully.');
-	//this.grafana = new Grafana(nconf.get('config:grafana'));
-}
-
-// Shows wizzy config
-Commands.prototype.conf = function() {
-	logger.showOutput(logger.stringify(nconf.get('config')));
-}
-
-// Loads config for running wizzy command
-function loadConfig() {
-	if (!nconf.get('config:grafana')) {
-		logger.showError('Grafana configuration not found. Command failed. Try running `wizzy grafana ...` commands.')
-		process.exit();
-	} else {
-		grafana = new Grafana(nconf.get('config:grafana'));
-	}
-}
-
-// Save wizzy config
-function saveConfig(){
-	nconf.save(function (err) {
-  	fs.readFile(confFile, function (err, data) {
-    	if (err != null) {
-    		logger.showError(err);
-    	} else {
-    		logger.showResult('wizzy configuration saved.')
-    	}
-  	});
-	});
 }
 
 module.exports = Commands;
