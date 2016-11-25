@@ -61,6 +61,18 @@ describe('Checking Logger outputs', function() {
 		});
 	});
 
+  describe('when showing output', function() {
+    it('should show in yellow color with Output in cyan.', function() {
+
+      logger.showOutput('Good morning in yellow with Output in cyan.');
+      
+      assert.isTrue(console.log.called, "log should have been called.");
+      assert.equal(console.log.callCount, 1);
+      assert.isTrue(console.log.calledOnce);
+      expect(console.log.getCall(0).args[0]).to.equal('Output:\n'.cyan + 'Good morning in yellow with Output in cyan.'.yellow);
+    });
+  });
+
 	describe('when showing log in debug mode', function() {
 		it('should show with logger name.', function() {
 
