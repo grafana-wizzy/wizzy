@@ -17,18 +17,17 @@ function Commands(dashDir, confDir, confFile) {
 	dashboards = new Dashboards(dashDir);
 }
 
-Commands.prototype.addCommand = function(program, command, func, syntax, description, example) {
+Commands.prototype.addCommand = function(program, command, func, syntax, description) {
 	
 	// Adding command to the cli tool
-	program.command(command).action(func);
+	if (program != null) {
+		program.command(command).action(func);
+	}
 
   // Adding command to help
   help += '\n  ' + syntax;
   if (description != null) {
 		help += '\n\t- ' + description;
-	}
-	if (example != null) {
-		help += '\n\t- Example: ' + example;
 	}
 	help += '\n';
 

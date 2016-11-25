@@ -3,8 +3,10 @@
 
 var colors = require('colors');
 
+var loggerName;
+
 function Logger(name) {
-	this.name = name;
+	loggerName = name;
 }
 
 Logger.prototype.showResult = function(resultLine) {
@@ -24,7 +26,7 @@ Logger.prototype.stringify = function(obj) {
 }
 
 Logger.prototype.debug = function(resultLine) {
-	console.log('\u2714 ' + this.name + ': ' + resultLine);
+	console.log('\u2714 ' + loggerName + ': ' + resultLine);
 }
 
 Logger.prototype.justShow = function(line) {
