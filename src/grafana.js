@@ -104,22 +104,6 @@ Grafana.prototype.show = function(command, entityType, entityValue) {
 
 }
 
-Grafana.prototype.summarize = function(command, entityType, entityValue) {
-
-	createURL(command, entityType, entityValue);
-	if (entityType === 'dashboard') {
-		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
-		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
-		dashboards.summarizeDashboard(entityValue);
-		logger.showResult(successMessage);
-		return;
-	}	else {
-		logger.showError('Unsupported entity type ' + entityType);
-		return;
-	}
-
-}
-
 Grafana.prototype.import = function(command, entityType, entityValue) {
 
 	if (entityType === 'dashboard') {

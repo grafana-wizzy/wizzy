@@ -9,7 +9,11 @@ var _ = require('lodash');
 var fs = require('fs');
 var nconf = require('nconf');
 
+var successMessage;
+var failureMessage;
+
 var dashDir;
+
 function Dashboards(dir) {
 	dashDir = dir;
 }
@@ -47,6 +51,11 @@ Dashboards.prototype.checkDashboardDirStatus = function() {
 	return this.checkDirStatus(dashDir, false);
 }
 
+// returns dashboards directory
+Dashboards.prototype.getDashboardsDirectory = function() {
+	return dashDir;
+}
+
 // Reads dashboard json from file.
 Dashboards.prototype.readDashboard = function(slug) {
 	var dashFile = dashDir + '/' + slug + '.json';
@@ -62,31 +71,102 @@ Dashboards.prototype.readDashboard = function(slug) {
 	return dashboard;
 }
 
-// Summarize a dashboard json
-Dashboards.prototype.summarizeDashboard = function(slug) {
+Dashboards.prototype.move = function(entityType, entityValue, to, destination) {
 
-	var dashboard = this.readDashboard(slug);
+	if (entityType == 'row' && destination) {
+		// move to a new row 
+	} else if (entityType == 'row' && destination) {
 
-	var arch = {};
-
-	// Extracting row information
-	arch.title = dashboard.title;
-	arch.rowCount = _.size(dashboard.rows);
-	arch.rows = [];
-	_.forEach(dashboard.rows, function(row) {
-		arch.rows.push({
-  		title: row.title,
-			panelCount: _.size(row.panels),
-			panelTitles: _.join(_.map(row.panels,'title'), ', ')
-		});
-	});
-	if ('templating' in dashboard) {
-		arch.templateVariableCount = _.size(dashboard.templating.list);
-		arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
 	}
-	arch.time = dashboard.time;
-	arch.time.timezone = dashboard.timezone;
-	logger.showOutput(logger.stringify(arch));
+}
+
+// Summarize a dashboard json
+Dashboards.prototype.executeLocalCommand = function(command, entityType, entityValue, destination, sourceDashboard) {
+
+switch(command) {
+
+	case 'move':
+	// implement move here
+	break;
+
+	case 'copy':
+		if (entityType === 'row') {
+			successMessage = 'Row successfully copied.';
+			failureMessage = 'Error in copying row.';
+			dashboard = this.readDashboard(sourceDashboard);
+			var rows = dashboard.rows;
+			var sourceRow = rows[parseInt(entityValue)-1];
+			var destinationArray = destination.split('.');
+			if (destinationArray.length === 1) {
+				rows.splice(parseInt(destination)-1, 0, sourceRow);
+				this.saveDashboard(sourceDashboard, dashboard);
+				logger.showResult(successMessage);
+			} else if (destinationArray.length === 2) {
+				var destinationDashboard = this.readDashboard(destinationArray[0]);
+				var destinationRows = destinationDashboard.rows;
+				destinationRows.splice(parseInt(destinationArray[1])-1, 0, sourceRow);
+				this.saveDashboard(destinationArray[0], destinationDashboard);
+				logger.showResult(successMessage);
+			} else {
+				logger.showError(failureMessage);
+			}
+		} else if entityType === 'panel' {
+			/*successMessage = 'Panel successfully copied.';
+			failureMessage = 'Error in copying panel.';
+			dashboard = this.readDashboard(sourceDashboard);
+			var rows = dashboard.rows;
+			var sourceRow = rows[parseInt(entityValue)-1];
+			var destinationArray = destination.split('.');
+			if (destinationArray.length === 1) {
+				rows.splice(parseInt(destination)-1, 0, sourceRow);
+				this.saveDashboard(sourceDashboard, dashboard);
+				logger.showResult(successMessage);
+			} else if (destinationArray.length === 2) {
+				var destinationDashboard = this.readDashboard(destinationArray[0]);
+				var destinationRows = destinationDashboard.rows;
+				destinationRows.splice(parseInt(destinationArray[1])-1, 0, sourceRow);
+				this.saveDashboard(destinationArray[0], destinationDashboard);
+				logger.showResult(successMessage);
+			}*/
+		}
+	break;
+
+	case 'summarize':
+		if (entityType === 'dashboard') {
+			successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
+			failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
+			
+			var dashboard = this.readDashboard(entityValue);
+			var arch = {};
+
+			// Extracting row information
+			arch.title = dashboard.title;
+			arch.rowCount = _.size(dashboard.rows);
+			arch.rows = [];
+			_.forEach(dashboard.rows, function(row) {
+				arch.rows.push({
+		  		title: row.title,
+					panelCount: _.size(row.panels),
+					panelTitles: _.join(_.map(row.panels,'title'), ', ')
+				});
+			});
+			if ('templating' in dashboard) {
+				arch.templateVariableCount = _.size(dashboard.templating.list);
+				arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
+			}
+			arch.time = dashboard.time;
+			arch.time.timezone = dashboard.timezone;
+			logger.showOutput(logger.stringify(arch));
+			logger.showResult(successMessage);
+		} else {
+			logger.showError('Unsupported entity type ' + entityType +'. Please try `wizzy help`.');
+		}
+	break;
+
+	default:
+		logger.showError('Unsupported entity type ' + entityType +'. Please try `wizzy help`.');
+	}
+
 }
 
 Dashboards.prototype.saveDashboard = function(slug, dashboard) {

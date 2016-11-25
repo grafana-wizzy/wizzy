@@ -71,10 +71,11 @@ Commands.prototype.setConfig = function(type, key, value) {
 }
 
 // Creates an entity in wizzy or Grafana
-Commands.prototype.instruct = function(command, entityType, entityValue) {
+Commands.prototype.instruct = function(command, entityType, entityValue, destination) {
+	
 	if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
-
 		grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
+
 		switch(command) {
 			case 'import':
 				grafana.import(command, entityType, entityValue);
@@ -92,14 +93,40 @@ Commands.prototype.instruct = function(command, entityType, entityValue) {
 				grafana.show(command, entityType, entityValue);
 				break;
 			case 'summarize':
-				grafana.summarize(command, entityType, entityValue);
+				if (typeof entityValue === 'object') {
+					if (checkContextDashboardConfig()) {
+						entityValue = config.getConfig('config:context:dashboard');
+					} else {
+						logger.showError('Either pass dashboard as an argument or set it in context.');
+					}
+				}
+				dashboards.executeLocalCommand(command, entityType, entityValue, destination);
+				break;
+			case 'move':
+				if (checkContextDashboardConfig()) {
+					dashboards.executeLocalCommand(command, entityType, entityValue, destination, config.getConfig('config:context:dashboard'));
+				}
+				break;
+			case 'copy':
+				if (checkContextDashboardConfig()) {
+					dashboards.executeLocalCommand(command, entityType, entityValue, destination, config.getConfig('config:context:dashboard'));
+				}
 				break;
 			default:
-				logger.showError('Unsupported command called. Type `wizzy help` for available commands.');
+				logger.showError('Unsupported remote command called. Type `wizzy help` for available commands.');
 		}
 	}
 	else {
 		return;
+	}
+}
+
+function checkContextDashboardConfig() {
+	if (config.checkConfigStatus('config:context:dashboard')) {
+		return true;
+	} else {
+		logger.showError('Please set context dashboard by using `wizzy set context dashboard DASHBOARD_NAME` command.')
+		return false;
 	}
 }
 

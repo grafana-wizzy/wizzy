@@ -29,31 +29,32 @@ commands.addCommand(program, 'conf', commands.showConfig, 'wizzy conf',
 commands.addCommand(program, 'set', commands.setConfig, 'wizzy set grafana CONFIG_NAME CONFIG_VALUE',
 	'sets a configuration property for wizzy');
 
+/*
 // Wizzy commands
-commands.addCommand(null, 'copy', commands.instruct, 'wizzy copy ENTITY ENTITY_NAME',
+commands.addCommand(program, 'copy', commands.instruct, 'wizzy copy ENTITY ENTITY_NAME',
 	'copies an entity from one position to another');
 
-commands.addCommand(null, 'create', commands.instruct, 'wizzy create ENTITY ENTITY_NAME',
+commands.addCommand(program, 'create', commands.instruct, 'wizzy create ENTITY ENTITY_NAME',
 	'creates a new entity', 'wizzy create org my-org');
 
-commands.addCommand(null, 'delete', commands.instruct, 'wizzy delete ENTITY ENTITY_NAME',
+commands.addCommand(program, 'delete', commands.instruct, 'wizzy delete ENTITY ENTITY_NAME',
 	'deletes an entity', 'wizzy delete org org_id');
 
-commands.addCommand(null, 'export', commands.instruct, 'wizzy export ENTITY ENTITY_NAME',
+commands.addCommand(program, 'export', commands.instruct, 'wizzy export ENTITY ENTITY_NAME',
 	'exports an entity from local repo to Grafana');
 
-commands.addCommand(null, 'import', commands.instruct, 'wizzy import ENTITY ENTITY_NAME',
+commands.addCommand(program, 'import', commands.instruct, 'wizzy import ENTITY ENTITY_NAME',
 	'imports an entity from Grafana to local repo');
 
-commands.addCommand(null, 'move', commands.instruct, 'wizzy move ENTITY ENTITY_NAME',
+commands.addCommand(program, 'move', commands.instruct, 'wizzy move ENTITY ENTITY_NAME',
 	'moves an entity from one position to another');
 
-commands.addCommand(null, 'show', commands.instruct, 'wizzy show ENTITY ENTITY_NAME',
+commands.addCommand(program, 'show', commands.instruct, 'wizzy show ENTITY ENTITY_NAME',
 	'shows an entity', 'wizzy show org 1, wizzy show orgs');
 
-commands.addCommand(null, 'summarize', commands.instruct, 'wizzy summarize ENTITY ENTITY_NAME',
+commands.addCommand(program, 'summarize', commands.instruct, 'wizzy summarize ENTITY ENTITY_NAME',
 	'summarize a large entity in a short user-friendly manner');
-
+*/
 
 // For any unsupported command wizzy will show help
 program.command('*').action(commands.instruct);
