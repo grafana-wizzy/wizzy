@@ -8,7 +8,7 @@ var logger;
 
 // Create a new Logger object for each test
 beforeEach(function() {
-  logger = new Logger();
+  logger = new Logger('Test');
 });
 
 afterEach(function() {

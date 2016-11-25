@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+/*#!/usr/bin/env node
 "use strict";
 
 var expect = require('chai').expect;
@@ -102,4 +102,4 @@ describe('Building Grafana API URL for commands', function() {
     });
   });
 
-});
+});*/
