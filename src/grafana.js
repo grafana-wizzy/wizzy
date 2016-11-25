@@ -7,7 +7,6 @@ var logger = new Logger();
 
 var _ = require('lodash');
 var request = require('request');
-var body = {};
 
 var successMessage;
 var failureMessage;
@@ -16,6 +15,7 @@ var dashboards;
 
 var url;
 var auth = {};
+var body = {};
 
 function Grafana(conf, dash) {
 	url = conf.url;
@@ -26,6 +26,7 @@ function Grafana(conf, dash) {
 	} else {
 		request.debug = false;
 	}
+	dashboards = dash;
 }
 
 Grafana.prototype.create = function(command, entityType, entityValue) {
@@ -109,8 +110,7 @@ Grafana.prototype.summarize = function(command, entityType, entityValue) {
 	if (entityType === 'dashboard') {
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
 		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
-		var summarizedOutput = logger.stringify(extractDashArch(readDashboard(entityValue)), null, 2);
-		logger.showOutput(summarizedOutput);
+		dashboards.summarizeDashboard(entityValue);
 		logger.showResult(successMessage);
 		return;
 	}	else {
@@ -134,7 +134,7 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
   	  output += body;
-			saveDashboard(entityValue, body.dashboard);
+			dashboards.saveDashboard(entityValue, body.dashboard);
     	logger.showResult(successMessage);
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
@@ -154,7 +154,7 @@ Grafana.prototype.export = function(command, entityType, entityValue) {
 
 	if (entityType === 'dashboard' || entityType === 'newdash') {
 		var dashBody = {
-			dashboard: readDashboard(entityValue),
+			dashboard: dashboards.readDashboard(entityValue),
 			overwrite: true
 		}
 		if (entityType === 'newdash') {
@@ -162,7 +162,7 @@ Grafana.prototype.export = function(command, entityType, entityValue) {
 		}
 		successMessage = 'Dashboard '+ entityValue + ' export successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
-		this.body = dashBody;
+		body = dashBody;
 	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
@@ -222,52 +222,6 @@ function printResponse(error, response, body) {
   		logger.showOutput(output);
   		logger.showError(failureMessage);
   	}
-}
-
-// Saves a dashboard json in a file.
-function saveDashboard(slug, dashboard) {
-	var dashFile = dashDir + '/' + slug + '.json';
-	fs.writeFileSync(dashFile, logger.stringify(dashboard, null, 2));
-	logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
-}
-
-// Reads dashboard json from file.
-function readDashboard(slug) {
-	var dashFile = dashDir + '/' + slug + '.json';
-	var dashboard = JSON.parse(fs.readFileSync(dashFile, 'utf8', function (error, data) {
-		if (!error) {
-			logger.showResult('Verified file ' + slug + ' as a valid JSON.');
-		}
-		else {
-			logger.showError(slug + '.json file is not a valid JSON.');
-			process.exit();
-		}
-	}));
-	return dashboard;
-}
-
-// Extract dashboard architecture and prints it in a user friendly style.
-function extractDashArch(dashboard) {
-	var arch = {};
-
-	// Extracting row information
-	arch.title = dashboard.title;
-	arch.rowCount = _.size(dashboard.rows);
-	arch.rows = [];
-	_.forEach(dashboard.rows, function(row) {
-		arch.rows.push({
-  		title: row.title,
-			panelCount: _.size(row.panels),
-			panelTitles: _.join(_.map(row.panels,'title'), ', ')
-		});
-	});
-	if ('templating' in dashboard) {
-		arch.templateVariableCount = _.size(dashboard.templating.list);
-		arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
-	}
-	arch.time = dashboard.time;
-	arch.time.timezone = dashboard.timezone;
-	return arch;
 }
 
 module.exports = Grafana;
