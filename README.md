@@ -119,7 +119,7 @@ $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
 $ wizzy export dashboard DASHBOARD_SLUG
 	- exports a local dashboard to be saved as a remote dashboard and go live
-$ wizzy export newdash DASHBOARD_SLUG
+$ wizzy export new-dashboard DASHBOARD_SLUG
 	- exports a new local dashboard to be saved as a remote dashboard and go live
 ```
 
