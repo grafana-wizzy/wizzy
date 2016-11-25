@@ -152,12 +152,12 @@ Grafana.prototype.import = function(command, entityType, entityValue) {
 
 Grafana.prototype.export = function(command, entityType, entityValue) {
 
-	if (entityType === 'dashboard' || entityType === 'newdash') {
+	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		var dashBody = {
 			dashboard: dashboards.readDashboard(entityValue),
 			overwrite: true
 		}
-		if (entityType === 'newdash') {
+		if (entityType === 'new-dashboard') {
 			dashBody.dashboard.id = null;
 		}
 		successMessage = 'Dashboard '+ entityValue + ' export successful.';
@@ -178,14 +178,14 @@ function createURL(command, entityType, entityValue) {
 	// Editing URL depending on entityType
 	if (entityType === 'org' || entityType === 'orgs') {
 		url += '/api/orgs';
-	} else if (entityType === 'dashboard' || entityType === 'newdash' || entityType === 'dasharch') {
+	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		url += '/api/dashboards/db';
 	}
 
 	// Editing URL depending on command
 	if (command === 'import' || command === 'delete' ||
 	 		(command === 'show' && 
-	 			(entityType === 'dashboard' || entityType === 'dasharch' || entityType === 'org'))){
+	 			(entityType === 'dashboard' || entityType === 'org'))){
 		url += '/' + entityValue;
 	}
 

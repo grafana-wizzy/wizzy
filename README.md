@@ -109,6 +109,7 @@ $ wizzy import dashboard DASHBOARD_SLUG
 $ wizzy summarize dashboard DASHBOARD_SLUG
 	- prints summarized version of a local dashboard
 ```
+Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard.
 
 ### Remote Commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. No need of setting Dashboard Context for these commands as they will interact with Grafana API directly.

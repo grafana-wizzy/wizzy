@@ -91,6 +91,8 @@ Dashboards.prototype.summarizeDashboard = function(slug) {
 
 Dashboards.prototype.saveDashboard = function(slug, dashboard) {
 	var dashFile = dashDir + '/' + slug + '.json';
+	// we delete version when we import the dashboard... as version is maintained by Grafana
+	delete dashboard.version;
 	fs.writeFileSync(dashFile, logger.stringify(dashboard, null, 2));
 	logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 }
