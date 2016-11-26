@@ -4,7 +4,7 @@
 
 # Understand the use case
 
-We want/need to edit and modify dashboards everyday and managing hundreds and thousands of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. `wizzy` brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.
+We want/need to edit and modify dashboards everyday and managing tens and hundreds of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. `wizzy` brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.
 
 # Flow
 
@@ -69,14 +69,14 @@ You are ready to use wizzy. Import your first dashboard now!
 - *remote dashboard* - a dashboard currently live in Grafana
 
 ## Dashboard Context
-A user can set the dashboard context in wizzy by the following command so that the wizzy is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
+A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
 ```
 wizzy set context dashboard DASHBOARD_SLUG
 ```
 Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
 
 ## Remote Commands
-These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. No need of setting Dashboard Context for these commands as they will interact with Grafana API directly.
+These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context is not supported by these commands currently as they will interact with Grafana API directly.
 ```
 $ wizzy show dashboard DASHBOARD_SLUG
 	- prints a remote dashboard from Grafana
@@ -91,7 +91,7 @@ $ wizzy delete dashboard DASHBOARD_SLUG
 ```
 
 ## Local Commands
-These commands operates on local json file based dashboards.
+These commands operates on local json file based dashboards and support Dashboard Context.
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
 	- prints summarized version of a local dashboard
