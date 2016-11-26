@@ -95,13 +95,13 @@ These commands operates on local json file based dashboards and support Dashboar
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
 	- prints summarized version of a local dashboard
-$ wizzy copy row ROW_NUMBER to ROW_NUMBER
+$ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- copies a row from one position to another on the same dashboard
-$ wizzy copy row ROW_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER
+$ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
 	- copies a row from one dashboard to another dashboard
-$ wizzy copy panel PANEL_NUMBER to ROW_NUMBER.PANEL_NUMBER
+$ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current row to another row on the same dashboard
-$ wizzy copy panel PANEL_NUMBER to DASHBOARD_2_SLUG.ROW_NUMBER.PANEL_NUMBER
+$ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current dashboard to another dashboard
 ```
 Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard. ROW_NUMBER and PANEL_NUMBER starts from 1.

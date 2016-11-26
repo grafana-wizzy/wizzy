@@ -111,23 +111,31 @@ switch(command) {
 				logger.showError(failureMessage);
 			}
 		} else if (entityType === 'panel') {
-			/*successMessage = 'Panel successfully copied.';
+			successMessage = 'Panel successfully copied.';
 			failureMessage = 'Error in copying panel.';
 			dashboard = this.readDashboard(sourceDashboard);
 			var rows = dashboard.rows;
 			var sourceRow = rows[parseInt(entityValue)-1];
 			var destinationArray = destination.split('.');
 			if (destinationArray.length === 1) {
-				rows.splice(parseInt(destination)-1, 0, sourceRow);
+				logger.showError('Unsupported destination.');
+			}
+			else if (destinationArray.length === 2) {
+				var sourceArray = entityValue.split('.');
+				var source_panel = rows[parseInt(sourceArray[0])-1].panels[parseInt(sourceArray[1])-1];
+				var destination_panels = rows[parseInt(destinationArray[0])-1].panels;
+				destination_panels.splice(parseInt(destinationArray[1])-1, 0, source_panel);
 				this.saveDashboard(sourceDashboard, dashboard);
 				logger.showResult(successMessage);
-			} else if (destinationArray.length === 2) {
+			} else if (destinationArray.length === 3) {
+				var sourceArray = entityValue.split('.');
+				var source_panel = rows[parseInt(sourceArray[0])-1].panels[parseInt(sourceArray[1])-1];
 				var destinationDashboard = this.readDashboard(destinationArray[0]);
-				var destinationRows = destinationDashboard.rows;
-				destinationRows.splice(parseInt(destinationArray[1])-1, 0, sourceRow);
+				var destination_panels = destinationDashboard.rows[parseInt(destinationArray[1])-1].panels;
+				destination_panels.splice(parseInt(destinationArray[2])-1, 0, source_panel);
 				this.saveDashboard(destinationArray[0], destinationDashboard);
 				logger.showResult(successMessage);
-			}*/
+			}
 		}
 	break;
 
