@@ -68,15 +68,8 @@ You are ready to use wizzy. Import your first dashboard now!
 - *local dashboard* - a json dashboard file under dashboards directory on local disk
 - *remote dashboard* - a dashboard currently live in Grafana
 
-## Dashboard Context
-A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
-```
-wizzy set context dashboard DASHBOARD_SLUG
-```
-Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
-
 ## Remote Commands
-These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context is not supported by these commands currently as they will interact with Grafana API directly.
+These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
 ```
 $ wizzy show dashboard DASHBOARD_SLUG
 	- prints a remote dashboard from Grafana
@@ -89,6 +82,12 @@ $ wizzy export new-dashboard DASHBOARD_SLUG
 $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
 ```
+## Dashboard Context
+A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
+```
+wizzy set context dashboard DASHBOARD_SLUG
+```
+Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
 
 ## Local Commands
 These commands operates on local json file based dashboards and support Dashboard Context.
