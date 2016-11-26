@@ -125,19 +125,9 @@ $ wizzy set grafana password PASSWORD
 </ul>
 
 <h2>
-<a id="dashboard-context" class="anchor" href="#dashboard-context" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Context</h2>
-
-<p>A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.</p>
-
-<pre><code>wizzy set context dashboard DASHBOARD_SLUG
-</code></pre>
-
-<p>Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.</p>
-
-<h2>
 <a id="remote-commands" class="anchor" href="#remote-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Remote Commands</h2>
 
-<p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context is not supported by these commands currently as they will interact with Grafana API directly.</p>
+<p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.</p>
 
 <pre><code>$ wizzy show dashboard DASHBOARD_SLUG
     - prints a remote dashboard from Grafana
@@ -150,6 +140,16 @@ $ wizzy export new-dashboard DASHBOARD_SLUG
 $ wizzy delete dashboard DASHBOARD_SLUG
     - deletes a remote dashboard from Grafana
 </code></pre>
+
+<h2>
+<a id="dashboard-context" class="anchor" href="#dashboard-context" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Context</h2>
+
+<p>A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.</p>
+
+<pre><code>wizzy set context dashboard DASHBOARD_SLUG
+</code></pre>
+
+<p>Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.</p>
 
 <h2>
 <a id="local-commands" class="anchor" href="#local-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Local Commands</h2>
