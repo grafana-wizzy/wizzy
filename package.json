@@ -1,6 +1,6 @@
 {
   "name": "wizzy",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Lets you automate Grafana interaction",
   "main": "index.js",
   "scripts": {
