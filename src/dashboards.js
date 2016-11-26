@@ -115,13 +115,13 @@ switch(command) {
 			failureMessage = 'Error in copying panel.';
 			dashboard = this.readDashboard(sourceDashboard);
 			var rows = dashboard.rows;
+			var sourceArray = entityValue.split('.');
 			var sourceRow = rows[parseInt(entityValue)-1];
 			var destinationArray = destination.split('.');
-			if (destinationArray.length === 1) {
-				logger.showError('Unsupported destination.');
+			if (destinationArray.length < 2 || sourceArray.length < 2) {
+				logger.showError('Unsupported source or destination.');
 			}
 			else if (destinationArray.length === 2) {
-				var sourceArray = entityValue.split('.');
 				var source_panel = rows[parseInt(sourceArray[0])-1].panels[parseInt(sourceArray[1])-1];
 				var destination_panels = rows[parseInt(destinationArray[0])-1].panels;
 				destination_panels.splice(parseInt(destinationArray[1])-1, 0, source_panel);
