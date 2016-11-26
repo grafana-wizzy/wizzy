@@ -110,7 +110,7 @@ switch(command) {
 			} else {
 				logger.showError(failureMessage);
 			}
-		} else if entityType === 'panel' {
+		} else if (entityType === 'panel') {
 			/*successMessage = 'Panel successfully copied.';
 			failureMessage = 'Error in copying panel.';
 			dashboard = this.readDashboard(sourceDashboard);
