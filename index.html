@@ -37,7 +37,7 @@
 <h1>
 <a id="understand-the-use-case" class="anchor" href="#understand-the-use-case" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Understand the use case</h1>
 
-<p>We want/need to edit and modify dashboards everyday and managing hundreds and thousands of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. <code>wizzy</code> brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.</p>
+<p>We want/need to edit and modify dashboards everyday and managing tens and hundreds of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. <code>wizzy</code> brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.</p>
 
 <h1>
 <a id="flow" class="anchor" href="#flow" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Flow</h1>
@@ -127,7 +127,7 @@ $ wizzy set grafana password PASSWORD
 <h2>
 <a id="dashboard-context" class="anchor" href="#dashboard-context" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Dashboard Context</h2>
 
-<p>A user can set the dashboard context in wizzy by the following command so that the wizzy is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.</p>
+<p>A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.</p>
 
 <pre><code>wizzy set context dashboard DASHBOARD_SLUG
 </code></pre>
@@ -137,7 +137,7 @@ $ wizzy set grafana password PASSWORD
 <h2>
 <a id="remote-commands" class="anchor" href="#remote-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Remote Commands</h2>
 
-<p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. No need of setting Dashboard Context for these commands as they will interact with Grafana API directly.</p>
+<p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context is not supported by these commands currently as they will interact with Grafana API directly.</p>
 
 <pre><code>$ wizzy show dashboard DASHBOARD_SLUG
     - prints a remote dashboard from Grafana
@@ -154,7 +154,7 @@ $ wizzy delete dashboard DASHBOARD_SLUG
 <h2>
 <a id="local-commands" class="anchor" href="#local-commands" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Local Commands</h2>
 
-<p>These commands operates on local json file based dashboards.</p>
+<p>These commands operates on local json file based dashboards and support Dashboard Context.</p>
 
 <pre><code>$ wizzy summarize dashboard DASHBOARD_SLUG
     - prints summarized version of a local dashboard
