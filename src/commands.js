@@ -14,47 +14,108 @@ var grafana;
 
 function Commands(dashDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
-	dashboards = new Dashboards(dashDir);
+	dashboards = new Dashboards(dashDir, config);
+	if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
+		grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
+	}
+	addCommandsToHelp();
 }
 
-Commands.prototype.addCommand = function(program, command, func, syntax, description) {
-	
-	// Adding command to the cli tool
-	if (program != null) {
-		program.command(command).action(func);
-	}
+// Creates an entity in wizzy or Grafana
+Commands.prototype.instructions = function(command) {
 
-  // Adding command to help
+		/* Key points before editing the cases:
+			1. case 'version' does not have to be defined as it comes from commander.js
+			2. process.argv[0] - reserverd for `node`
+			3. process.argv[1] - reserverd for `wizzy` or `index.js`
+			4. process.argv[2] - reserverd for variable `command`.
+		*/
+
+		switch(command) {
+			
+			case 'help':
+				showHelp();
+				break;
+			case 'init':
+				config.createIfNotExists();
+				dashboards.createIfNotExists();
+				logger.showResult('wizzy successfully initialized.')
+				break;
+			case 'status':
+				status();
+				break;
+			case 'conf':
+					config.showConfig('config');
+				break;
+			case 'set':
+					config.addProperty('config:'+process.argv[3]+':'+process.argv[4], process.argv[5]);
+				break;
+			case 'import':
+				grafana.import(command, process.argv[3], process.argv[4]);
+				break;
+			case 'export':
+				grafana.export(command, process.argv[3], process.argv[4]);
+				break;
+			case 'create':
+				grafana.create(command, process.argv[3], process.argv[4]);
+				break;
+			case 'delete':
+				grafana.delete(command, process.argv[3], process.argv[4]);
+				break;
+			case 'show':
+				grafana.show(command, process.argv[3], process.argv[4]);
+				break;
+			case 'summarize':
+				dashboards.summarize(process.argv[3], process.argv[4]);
+				break;
+			case 'move':
+				dashboards.moveOrCopy(command, process.argv[3], process.argv[4], process.argv[5]);
+				break;
+			case 'copy':
+				dashboards.moveOrCopy(command, process.argv[3], process.argv[4], process.argv[5]);
+				break;
+			default:
+				logger.showError('Unsupported command called.');
+				logger.justShow(help);
+		}
+}
+
+function addCommandsToHelp() {
+
+	addToHelp('wizzy help', 'shows available wizzy commands');
+	addToHelp('wizzy init', 'creates conf file with conf and dashboards directories.');
+	addToHelp('wizzy status', 'checks if any configuration property and if .git directory exists.');
+	addToHelp('wizzy conf', 'shows wizzy configuration properties.');
+	addToHelp('wizzy set CONFIG_NAME PROPERTY_NAME PROPERTY_VALUE', 'sets a configuration property for wizzy');
+	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another');
+	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity', 'wizzy create org my-org');
+	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity', 'wizzy delete org org_id');
+	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana');
+	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo');
+	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another');
+	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity', 'wizzy show org 1, wizzy show orgs');
+	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner');
+
+}
+
+function addToHelp(syntax, description) {
+
+	// Adding command to help
   help += '\n  ' + syntax;
   if (description != null) {
-		help += '\n\t- ' + description;
+		help += ' - ' + description;
 	}
-	help += '\n';
 
 }
 
 // Shows wizzy help
-Commands.prototype.help = function() {
+function showHelp() {
 	help += '\n';
 	logger.justShow(help);
 }
 
-// Initialize wizzy
-Commands.prototype.init = function() { 
-
-	config.createIfNotExist();
-	dashboards.createIfNotExist();
-	logger.showResult('wizzy successfully initialized.')
-
-}
-
-// Shows wizzy config
-Commands.prototype.showConfig = function() {
-	config.showConfig('config');
-}
-
 // Shows wizzy status
-Commands.prototype.status = function() {
+function status() {
 
 	var setupProblem = dashboards.checkDirStatus('.git', true) && config.checkConfigStatus('config', true);
 
@@ -62,71 +123,6 @@ Commands.prototype.status = function() {
 		logger.showResult('wizzy setup complete.');
 	} else {
 		logger.showError('wizzy setup incomplete.');
-	}
-}
-
-// Set config properties
-Commands.prototype.setConfig = function(type, key, value) {
-	config.addProperty('config:'+type+':'+key, value);
-}
-
-// Creates an entity in wizzy or Grafana
-Commands.prototype.instruct = function(command, entityType, entityValue, destination) {
-	
-	if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
-		grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
-
-		switch(command) {
-			case 'import':
-				grafana.import(command, entityType, entityValue);
-				break;
-			case 'export':
-				grafana.export(command, entityType, entityValue);
-				break;
-			case 'create':
-				grafana.create(command, entityType, entityValue);
-				break;
-			case 'delete':
-				grafana.delete(command, entityType, entityValue);
-				break;
-			case 'show':
-				grafana.show(command, entityType, entityValue);
-				break;
-			case 'summarize':
-				if (typeof entityValue === 'object') {
-					if (checkContextDashboardConfig()) {
-						entityValue = config.getConfig('config:context:dashboard');
-					} else {
-						logger.showError('Either pass dashboard as an argument or set it in context.');
-					}
-				}
-				dashboards.executeLocalCommand(command, entityType, entityValue, destination);
-				break;
-			case 'move':
-				if (checkContextDashboardConfig()) {
-					dashboards.executeLocalCommand(command, entityType, entityValue, destination, config.getConfig('config:context:dashboard'));
-				}
-				break;
-			case 'copy':
-				if (checkContextDashboardConfig()) {
-					dashboards.executeLocalCommand(command, entityType, entityValue, destination, config.getConfig('config:context:dashboard'));
-				}
-				break;
-			default:
-				logger.showError('Unsupported remote command called. Type `wizzy help` for available commands.');
-		}
-	}
-	else {
-		return;
-	}
-}
-
-function checkContextDashboardConfig() {
-	if (config.checkConfigStatus('config:context:dashboard')) {
-		return true;
-	} else {
-		logger.showError('Please set context dashboard by using `wizzy set context dashboard DASHBOARD_NAME` command.')
-		return false;
 	}
 }
 

@@ -26,10 +26,10 @@ function Config(dir, file) {
 	nconf.argv().env().file({ file: confFile });
 }
 
-Config.prototype.createIfNotExist = function() {
+Config.prototype.createIfNotExists = function() {
 
 	// Initialize the conf dir
-	if (!fs.existsSync(confDir)){
+	if (!checkIfFileExists(confDir)){
     fs.mkdirSync(confDir);
     logger.showResult('conf directory created.')
   } else {
@@ -37,7 +37,7 @@ Config.prototype.createIfNotExist = function() {
   }
 
   // Initialize conf file
-  if (!fs.existsSync(confFile)) {
+  if (!checkIfFileExists(confFile)) {
     saveConfig();
     logger.showResult('conf file created.')
 	} else {
@@ -48,6 +48,7 @@ Config.prototype.createIfNotExist = function() {
 
 Config.prototype.checkConfigStatus = function(prop, showWhenOk) {
 
+	checkConfigPrerequisites();
 	if (!nconf.get(prop)) {
 		logger.showError('Config not found.');
 		return false;
@@ -63,13 +64,13 @@ Config.prototype.checkConfigStatus = function(prop, showWhenOk) {
 // Adds a new wizzy config property
 Config.prototype.addProperty = function(key, value) {
 
+	checkConfigPrerequisites();
 	if (_.includes(configs, key)) {
 		nconf.set(key, value);
 		saveConfig();
 		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
 	} else {
 		logger.showError('Unknown configuration property.');
-		//displaySupportedProperties();
 	}
 
 }
@@ -77,29 +78,47 @@ Config.prototype.addProperty = function(key, value) {
 // Shows wizzy config
 Config.prototype.showConfig = function(config) {
 	
+	checkConfigPrerequisites();
 	logger.showOutput(logger.stringify(nconf.get(config)));
 
 }
 
-/*
-function displaySupportedProperties() {
-	
-	var output = 'Supported commands:';
-	_.forEach(configs, function(config){
-		output += '\n wizzy set ' + _.join(_.drop(config.split(':'), 1), ' ');
-	});
-	logger.showOutput(output);
-
-}*/
-
+// Shows wizzy config
 Config.prototype.getConfig = function(config) {
+	
+	checkConfigPrerequisites();
+	return(nconf.get(config));
 
-	return nconf.get(config);
+}
+
+// check if conf dir and conf file exists or not.
+function checkConfigPrerequisites() {
+
+	if (checkIfFileExists(confDir) && checkIfFileExists(confFile)) {
+		return;
+	} else {
+		logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
+		process.exit();
+	}
+
+}
+
+// check if a directory or a file exists or not
+function checkIfFileExists(file) {
+
+	if (fs.existsSync(file)) {
+		return true;
+	}
+	else {
+		return false;
+	}
 
 }
 
 // Save wizzy config
 function saveConfig() {
+
+	checkConfigPrerequisites();
 	nconf.save(function (err) {
   	fs.readFile(confFile, function (err, data) {
     	if (err != null) {
