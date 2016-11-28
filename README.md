@@ -2,7 +2,7 @@
 ================
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
-# Understand the use case
+# Understanding the use case
 
 We want/need to edit and modify dashboards everyday and managing tens and hundreds of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. `wizzy` brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.
 
@@ -141,4 +141,4 @@ $ wiizy delete org ORG_ID
 ```
 
 # Author
-Utkarsh Bhatnagar, @utkrashcmu, <utkarsh.cmu@gmail.com>
+Utkarsh Bhatnagar, @utkarshcmu, <utkarsh.cmu@gmail.com>
