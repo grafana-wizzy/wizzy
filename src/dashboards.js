@@ -109,7 +109,7 @@ Dashboards.prototype.moveOrCopy = function(command, entityType, entityValue, des
 				srcRows.splice(srcRowNumber-1, 1);
 				this.saveDashboard(srcDashboardSlug, srcDashboard);
 			}
-			destinationRows.splice(destRowNumber-1, 0, srcRow);
+			destRows.splice(destRowNumber-1, 0, srcRow);
 			this.saveDashboard(destDashboardSlug, destDashboard);
 			logger.showResult(successMessage);
 		} else {
