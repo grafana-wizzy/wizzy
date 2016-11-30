@@ -220,7 +220,7 @@ Dashboards.prototype.readDashboard = function(slug) {
 }
 
 Dashboards.prototype.saveDashboard = function(slug, dashboard) {
-	checkIfDashboardExists(slug);
+	//checkIfDashboardExists(slug);
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
 	fs.writeFileSync(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
