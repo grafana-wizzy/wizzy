@@ -46,14 +46,15 @@ Config.prototype.createIfNotExists = function() {
 
 }
 
-Config.prototype.checkConfigStatus = function(prop, showWhenOk) {
+Config.prototype.checkConfigStatus = function(prop, showOutput) {
 
-	checkConfigPrerequisites();
 	if (!nconf.get(prop)) {
-		logger.showError('Config not found.');
+		if (showOutput) {
+			logger.showError('Config not found.');
+		}
 		return false;
 	} else {
-		if(showWhenOk) {
+		if(showOutput) {
 			logger.showResult('Configuration found.')
 		}
 		return true;
@@ -64,7 +65,6 @@ Config.prototype.checkConfigStatus = function(prop, showWhenOk) {
 // Adds a new wizzy config property
 Config.prototype.addProperty = function(key, value) {
 
-	checkConfigPrerequisites();
 	if (_.includes(configs, key)) {
 		nconf.set(key, value);
 		saveConfig();
@@ -118,7 +118,6 @@ function checkIfFileExists(file) {
 // Save wizzy config
 function saveConfig() {
 
-	checkConfigPrerequisites();
 	nconf.save(function (err) {
   	fs.readFile(confFile, function (err, data) {
     	if (err != null) {

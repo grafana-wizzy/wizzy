@@ -15,9 +15,6 @@ var grafana;
 function Commands(dashDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
 	dashboards = new Dashboards(dashDir, config);
-	if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
-		grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
-	}
 	addCommandsToHelp();
 }
 
@@ -30,6 +27,10 @@ Commands.prototype.instructions = function(command) {
 			3. process.argv[1] - reserverd for `wizzy` or `index.js`
 			4. process.argv[2] - reserverd for variable `command`.
 		*/
+
+		if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
+			grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
+		}
 
 		switch(command) {
 			
