@@ -7,7 +7,6 @@ var Grafana = require('./grafana.js');
 var Logger = require('./logger.js'); 
 var logger = new Logger('Commands');
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
-var version;
 var config;
 var dashboards;
 var grafana;

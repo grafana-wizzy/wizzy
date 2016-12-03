@@ -75,6 +75,8 @@ $ wizzy list dashboards
 	- prints list of dashboards from Grafana in a tabular format
 $ wizzy show dashboard DASHBOARD_SLUG
 	- prints a remote dashboard from Grafana
+$ wizzy import dashboards
+	- copies all remote dashboards jsons and creates/replaces local dashboard jsons
 $ wizzy import dashboard DASHBOARD_SLUG
 	- copies a remote dashboard json and creates a local dashboard
 $ wizzy export dashboard DASHBOARD_SLUG
@@ -112,6 +114,10 @@ $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current row to another row on the same dashboard
 $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current dashboard to another dashboard
+$ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
+	- copies a template variable from current dashboard to another dashboard
+$ wizzy move temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
+	- moves a template variable from current dashboard to another dashboard
 ```
 Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard. ROW_NUMBER and PANEL_NUMBER starts from 1.
 

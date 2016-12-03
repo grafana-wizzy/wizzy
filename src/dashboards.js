@@ -58,109 +58,123 @@ Dashboards.prototype.getDashboardsDirectory = function() {
 	return dashDir;
 }
 
-// Summarize a dashboard json
+// moves or copies a dashboard entity
 Dashboards.prototype.moveOrCopy = function(command, entityType, entityValue, destination) {
 
-	var srcDashboardSlug;
-
-	if (checkContextDashboardConfig()) {
-		srcDashboardSlug = config.getConfig('config:context:dashboard');
-	} else {
-		logger.showError('Please set dashboard context using `wizzy set ...` command.');
-		return;
-	}
-
-	// commands - move or copy
-
-	// row source = row_number
-	// row dest = row_number or dash.row_number
-
-	// panel source = row_number.panel_number
-	// panel dest = row_number.panel_number or dash.row_number.panel_number
-
+	var srcDashboardSlug = checkOrGetContextDashboard();
 	var srcDashboard = this.readDashboard(srcDashboardSlug);
-	var srcRows = srcDashboard.rows;
 	var sourceArray = entityValue.split('.');
-	var srcRowNumber = parseInt(sourceArray[0]);
-	var srcRow = srcRows[srcRowNumber-1];
-
 	var destinationArray = destination.split('.');
 
-	if (entityType === 'row') {
-		successMessage = 'Row successfully copied.';
-		failureMessage = 'Error in copying row.';
-		// when destination is another row on the same dashboard
-		if (destinationArray.length === 1) {
-			var destRowNumber = parseInt(destinationArray[0]);
-			if (command === 'move') {
-				srcRows.splice(srcRowNumber-1, 1);
+	if (entityType === 'row' || entityType === 'panel') {
+
+		var srcRows = srcDashboard.rows;
+		var srcRowNumber = parseInt(sourceArray[0]);
+		var srcRow = srcRows[srcRowNumber-1];
+
+		// row operation
+		if (entityType === 'row') {
+			successMessage = 'Row successfully copied.';
+			failureMessage = 'Error in copying row.';
+			// when destination is another row on the same dashboard
+			if (destinationArray.length === 1) {
+				var destRowNumber = parseInt(destinationArray[0]);
+				if (command === 'move') {
+					srcRows.splice(srcRowNumber-1, 1);
+				}
+				srcRows.splice(destRowNumber-1, 0, srcRow);
+				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				logger.showResult(successMessage);
+			} 
+			// when destination is a row on another dashboard
+			else if (destinationArray.length === 2) {
+				destDashboardSlug = destinationArray[0];
+				var destDashboard = this.readDashboard(destDashboardSlug);
+				var destRows = destDashboard.rows;
+				var destRowNumber = parseInt(destinationArray[1]);
+				if (command === 'move') {
+					srcRows.splice(srcRowNumber-1, 1);
+					this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				}
+				destRows.splice(destRowNumber-1, 0, srcRow);
+				this.saveDashboard(destDashboardSlug, destDashboard, true);
+				logger.showResult(successMessage);
+			} else {
+				logger.showError(failureMessage);
 			}
-			srcRows.splice(destRowNumber-1, 0, srcRow);
-			this.saveDashboard(srcDashboardSlug, srcDashboard);
-			logger.showResult(successMessage);
-		} 
-		// when destination is a row on another dashboard
-		else if (destinationArray.length === 2) {
+		} // panel operation
+		else if (entityType === 'panel') {
+			successMessage = 'Panel successfully copied.';
+			failureMessage = 'Error in copying panel.';
+			if (destinationArray.length < 2 || sourceArray.length < 2) {
+				logger.showError('Unsupported source or destination.');
+				logger.showError(failureMessage);
+				return;
+			}
+			var srcPanels = srcRows[srcRowNumber-1].panels;
+			var srcPanelNumber = parseInt(sourceArray[1]);
+			var srcPanel = srcPanels[srcPanelNumber-1];
+
+			var destPanels;
+			if (destinationArray.length === 2) {
+				var destRowNumber = parseInt(destinationArray[0]);
+				var destPanels = srcRows[destRowNumber-1].panels;
+				var destPanelNumber = parseInt(destinationArray[1]);
+				if (command === 'move') {
+					srcPanels.splice(srcPanelNumber-1, 1);
+				}
+				destPanels.splice(destPanelNumber-1, 0, srcPanel);
+				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				logger.showResult(successMessage);
+			} else if (destinationArray.length === 3) {
+				var destDashboardSlug = destinationArray[0];
+				var destDashboard = this.readDashboard(destDashboardSlug);
+				var destRows = destDashboard.rows;
+				var destRowNumber = parseInt(destinationArray[1]);
+				var destPanels = destRows[destRowNumber-1].panels;
+				var destPanelNumber = parseInt(destinationArray[2]);
+				if (command === 'move') {
+					srcPanels.splice(srcPanelNumber-1, 1);
+					this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				}
+				destPanels.splice(destPanelNumber-1, 0, srcPanel);
+				this.saveDashboard(destDashboardSlug, destDashboard, true);
+				logger.showResult(successMessage);
+			} else {
+				logger.showError(failureMessage);
+			}
+		}
+	} // template variable operation
+	else if (entityType === 'temp-var') {
+		successMessage = 'Template variable successfully copied.';
+		failureMessage = 'Error in copying template variable.';
+		if (destinationArray.length === 2) {
+			var srcTempVarList = srcDashboard.templating.list;
+			var srcTempVarNumber = parseInt(sourceArray[0]);
+			var srcTempVar = srcTempVarList[srcTempVarNumber-1];
 			destDashboardSlug = destinationArray[0];
 			var destDashboard = this.readDashboard(destDashboardSlug);
-			var destRows = destDashboard.rows;
-			var destRowNumber = parseInt(destinationArray[1]);
+			var destTempVarList = destDashboard.templating.list;
+			var destTempVarNumber = parseInt(destinationArray[1]);
+			var desrTempVar = srcTempVarList[destTempVarNumber-1];
 			if (command === 'move') {
-				srcRows.splice(srcRowNumber-1, 1);
-				this.saveDashboard(srcDashboardSlug, srcDashboard);
+				srcTempVarList.splice(srcTempVarNumber-1, 1);
+				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
 			}
-			destRows.splice(destRowNumber-1, 0, srcRow);
-			this.saveDashboard(destDashboardSlug, destDashboard);
+			destTempVarList.splice(destTempVarNumber-1, 0, srcTempVar);
+			this.saveDashboard(destDashboardSlug, destDashboard, true);
 			logger.showResult(successMessage);
 		} else {
 			logger.showError(failureMessage);
+			logger.showError('Unknown destination ' + destination + '.');
 		}
-	} else if (entityType === 'panel') {
-		successMessage = 'Panel successfully copied.';
-		failureMessage = 'Error in copying panel.';
-		if (destinationArray.length < 2 || sourceArray.length < 2) {
-			logger.showError('Unsupported source or destination.');
-			logger.showError(failureMessage);
-			return;
-		}
-
-		var srcPanels = srcRows[srcRowNumber-1].panels;
-		var srcPanelNumber = parseInt(sourceArray[1]);
-		var srcPanel = srcPanels[srcPanelNumber-1];
-
-		var destPanels;
-		if (destinationArray.length === 2) {
-			var destRowNumber = parseInt(destinationArray[0]);
-			var destPanels = srcRows[destRowNumber-1].panels;
-			var destPanelNumber = parseInt(destinationArray[1]);
-			if (command === 'move') {
-				srcPanels.splice(srcPanelNumber-1, 1);
-			}
-			destPanels.splice(destPanelNumber-1, 0, srcPanel);
-			this.saveDashboard(srcDashboardSlug, srcDashboard);
-			logger.showResult(successMessage);
-		} else if (destinationArray.length === 3) {
-			var destDashboardSlug = destinationArray[0];
-			var destDashboard = this.readDashboard(destDashboardSlug);
-			var destRows = destDashboard.rows;
-			var destRowNumber = parseInt(destinationArray[1]);
-			var destPanels = destRows[destRowNumber-1].panels;
-			var destPanelNumber = parseInt(destinationArray[2]);
-			if (command === 'move') {
-				srcPanels.splice(srcPanelNumber-1, 1);
-				this.saveDashboard(srcDashboardSlug, srcDashboard);
-			}
-			destPanels.splice(destPanelNumber-1, 0, srcPanel);
-			this.saveDashboard(destDashboardSlug, destDashboard);
-			logger.showResult(successMessage);
-		} else {
-			logger.showError(failureMessage);
-		}
-	}	else {
+	}
+	else {
 		logger.showError('Unsupported command called. Use `wizzy help` to find available commands.');
 	}
 }
 
+// summarizes a dashboard
 Dashboards.prototype.summarize = function(entityType, entityValue) {
 
 	if (entityType != 'dashboard') {
@@ -219,22 +233,30 @@ Dashboards.prototype.readDashboard = function(slug) {
 	return dashboard;
 }
 
-Dashboards.prototype.saveDashboard = function(slug, dashboard) {
+// Saving a dashboard file on disk
+Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
 	//checkIfDashboardExists(slug);
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
 	fs.writeFileSync(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
-	logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
-}
-
-function checkContextDashboardConfig() {
-	if (config.checkConfigStatus('config:context:dashboard')) {
-		return true;
-	} else {
-		return false;
+	if (showResult) {
+		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 	}
 }
 
+// Checking context dashboard setting
+function checkOrGetContextDashboard() {
+
+	if (config.checkConfigStatus('config:context:dashboard')) {
+		return config.getConfig('config:context:dashboard');
+	} else {
+		logger.showError('Please set dashboard context using `wizzy set ...` command.');
+		process.exit();
+	}
+
+}
+
+// Check if a dashboard exists or not on local disk
 function checkIfDashboardExists(slug) {
 
 	if (fs.existsSync(getDashboardFile(slug))) {
@@ -247,10 +269,12 @@ function checkIfDashboardExists(slug) {
 
 }
 
+// Get dashboard file name from slug
 function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
 }
 
+// Print unsupported message command error
 function printUnsupportedDashboardCommands(desc, value) {
 	logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
 }
