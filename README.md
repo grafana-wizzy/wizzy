@@ -71,6 +71,8 @@ You are ready to use wizzy. Import your first dashboard now!
 ## Remote Commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
 ```
+$ wizzy list dashboards
+	- prints list of dashboards from Grafana in a tabular format
 $ wizzy show dashboard DASHBOARD_SLUG
 	- prints a remote dashboard from Grafana
 $ wizzy import dashboard DASHBOARD_SLUG

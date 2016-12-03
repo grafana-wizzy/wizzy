@@ -52,19 +52,22 @@ Commands.prototype.instructions = function(command) {
 					config.addProperty('config:'+process.argv[3]+':'+process.argv[4], process.argv[5]);
 				break;
 			case 'import':
-				grafana.import(command, process.argv[3], process.argv[4]);
+				grafana.import(process.argv[3], process.argv[4]);
 				break;
 			case 'export':
-				grafana.export(command, process.argv[3], process.argv[4]);
+				grafana.export(process.argv[3], process.argv[4]);
 				break;
 			case 'create':
-				grafana.create(command, process.argv[3], process.argv[4]);
+				grafana.create(process.argv[3], process.argv[4]);
 				break;
 			case 'delete':
-				grafana.delete(command, process.argv[3], process.argv[4]);
+				grafana.delete(process.argv[3], process.argv[4]);
 				break;
 			case 'show':
-				grafana.show(command, process.argv[3], process.argv[4]);
+				grafana.show(process.argv[3], process.argv[4]);
+				break;
+			case 'list':
+				grafana.list(process.argv[3]);
 				break;
 			case 'summarize':
 				dashboards.summarize(process.argv[3], process.argv[4]);
@@ -92,6 +95,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity', 'wizzy create org my-org');
 	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity', 'wizzy delete org org_id');
 	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana');
+	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana');
 	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo');
 	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity', 'wizzy show org 1, wizzy show orgs');
