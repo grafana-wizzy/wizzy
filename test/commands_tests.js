@@ -52,6 +52,7 @@ describe('Check Commands outputs', function() {
                  '  wizzy create ENTITY ENTITY_NAME - creates a new entity\n' +
                  '  wizzy delete ENTITY ENTITY_NAME - deletes an entity\n' +
                  '  wizzy export ENTITY ENTITY_NAME - exports an entity from local repo to Grafana\n' +
+                 '  wizzy list ENTITIES - lists entities in Grafana\n' +
                  '  wizzy import ENTITY ENTITY_NAME - imports an entity from Grafana to local repo\n' +
                  '  wizzy move ENTITY ENTITY_NAME - moves an entity from one position to another\n' +
                  '  wizzy show ENTITY ENTITY_NAME - shows an entity\n' +
