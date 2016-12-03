@@ -7,7 +7,7 @@ var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
 
 // Setting up cli version and commands
-var program = require('commander').version('0.2.4');
+var program = require('commander').version('0.2.5');
 
 var Commands = require('./commands.js');
 var commands = new Commands(dashDir, confDir, confFile);
