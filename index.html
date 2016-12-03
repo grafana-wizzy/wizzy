@@ -29,7 +29,7 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h1>
-<a id="wizzy--" class="anchor" href="#wizzy--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/utkarshcmu/wizzy">wizzy</a> <a href="https://circleci.com/gh/utkarshcmu/wizzy"><img src="https://circleci.com/gh/utkarshcmu/wizzy.svg?style=shield&amp;circle-token=:circle-token" alt="Circle CI"></a> <a href="https://coveralls.io/github/utkarshcmu/wizzy?branch=master"><img src="https://coveralls.io/repos/github/utkarshcmu/wizzy/badge.svg?branch=master&amp;bust=3" alt="Coverage Status"></a>
+<a id="wizzy--" class="anchor" href="#wizzy--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/utkarshcmu/wizzy">wizzy</a> <a href="http://badge.fury.io/js/wizzy"><img src="http://badge.fury.io/js/wizzy.svg" alt="NPM Version"></a> <a href="https://circleci.com/gh/utkarshcmu/wizzy"><img src="https://circleci.com/gh/utkarshcmu/wizzy.svg?style=shield&amp;circle-token=:circle-token" alt="Circle CI"></a>
 </h1>
 
 <p><code>wizzy</code> is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.</p>
@@ -129,7 +129,9 @@ $ wizzy set grafana password PASSWORD
 
 <p>These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.</p>
 
-<pre><code>$ wizzy show dashboard DASHBOARD_SLUG
+<pre><code>$ wizzy list dashboards
+    - prints list of dashboards from Grafana in a tabular format
+$ wizzy show dashboard DASHBOARD_SLUG
     - prints a remote dashboard from Grafana
 $ wizzy import dashboard DASHBOARD_SLUG
     - copies a remote dashboard json and creates a local dashboard
