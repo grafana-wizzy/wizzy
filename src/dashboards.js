@@ -181,12 +181,7 @@ Dashboards.prototype.summarize = function(entityType, entityValue) {
 		printUnsupportedDashboardCommands('entity type ' , entityType);
 	} else {
 		if (typeof entityValue != 'string') {
-			if (checkContextDashboardConfig()) {
-				entityValue = config.getConfig('config:context:dashboard');
-			} else {
-				logger.showError('Either pass dashboard as an argument or set it in dashboard context.');
-				return;
-			}
+			entityValue = config.getConfig('config:context:dashboard');
 		}
 	}
 
