@@ -14,7 +14,8 @@ beforeEach(function() {
   var dashDir = 'dashboards';
   var confDir = 'conf';
   var confFile = 'wizzy.conf';
-  commands = new Commands(dashDir, confDir, confFile);
+  var datasourcesDir = 'datasources'
+  commands = new Commands(dashDir, datasourcesDir, confDir, confFile);
 });
 
 afterEach(function() {

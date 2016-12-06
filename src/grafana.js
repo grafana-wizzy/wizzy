@@ -78,7 +78,13 @@ Grafana.prototype.show = function(entityType, entityValue) {
 	} else if (entityType === 'dashboard') {
 		successMessage = 'Showed dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in showing dashboard ' + entityValue + '.';
-	}	else {
+	}	else if (entityType === 'datasources') {
+		successMessage = 'Showed datasources successfully.';
+		failureMessage = 'Error in showing datasources.';
+	} else if (entityType === 'datasource') {
+		successMessage = 'Showed datasource ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing datasource' + entityValue + '.';
+	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
@@ -220,6 +226,10 @@ function createURL(command, entityType, entityValue) {
 		url += '/api/orgs';
 	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		url += '/api/dashboards/db';
+	} else if (entityType === 'datasources') {
+		url += '/api/datasources';
+	} else if (entityType === 'datasource') {
+		url += '/api/datasources/name/' + entityValue;
 	}
 
 	// Editing URL depending on command

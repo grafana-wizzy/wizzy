@@ -11,9 +11,9 @@ var config;
 var dashboards;
 var grafana;
 
-function Commands(dashDir, confDir, confFile) {
+function Commands(dashDir, datasourcesDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
-	dashboards = new Dashboards(dashDir, config);
+	dashboards = new Dashboards(dashDir, datasourcesDir, config);
 	addCommandsToHelp();
 }
 

@@ -14,8 +14,10 @@ var failureMessage;
 
 var config;
 var dashDir;
+var datasourcesDir;
 
-function Dashboards(dir, conf) {
+function Dashboards(dir, dsDir, conf) {
+	datasourcesDir = dsDir;
 	dashDir = dir;
 	config = conf;
 }
