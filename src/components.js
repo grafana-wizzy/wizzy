@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 "use strict";
 
-// Initializing logger
+var LocalFS = require('./localfs.js');
+var localfs = new LocalFS();
 var Logger = require('./logger.js');
-var logger = new Logger();
+var logger = new Logger('components');
 
 var _ = require('lodash');
-var fs = require('fs');
+
 var nconf = require('nconf');
 
 var successMessage;
@@ -14,10 +15,14 @@ var failureMessage;
 
 var config;
 var dashDir;
-var datasourcesDir;
+var datasrcDir;
+var orgsDir;
+var tempVarsDir;
 
-function Dashboards(dir, dsDir, conf) {
-	datasourcesDir = dsDir;
+function Dashboards(dir, dsDir, orgDir, tempVarDir, conf) {
+	datasrcDir = dsDir;
+	orgsDir = orgDir;
+	tempVarsDir
 	dashDir = dir;
 	config = conf;
 }
@@ -25,39 +30,11 @@ function Dashboards(dir, dsDir, conf) {
 // creates dashboards dir if not exist
 Dashboards.prototype.createIfNotExists = function() {
 
-	// Initializing dashboard dir
-	if (!fs.existsSync(dashDir)){
-    fs.mkdirSync(dashDir);
-    logger.showResult('dashboards directory created.')
-	} else {
-		logger.showResult('dashboards directory already exists.')
-	}
+	localfs.createIfNotExists(dashDir, 'dashboards directory');
+	localfs.createIfNotExists(datasrcDir, 'datasources directory');
+	localfs.createIfNotExists(orgsDir, 'orgs directory');
+	localfs.createIfNotExists(tempVarsDir, 'template-variables directory');
 
-}
-
-// checks any dir existence and shows the OK message when needed
-Dashboards.prototype.checkDirStatus = function(dir, showWhenOk) {
-
-	if (!fs.existsSync(dir)){
-		logger.showError(dir + ' directory does not exist.');
-		return false;
-	} else {
-		if(showWhenOk) {
-			logger.showResult(dir + ' directory detected.');
-		}
-		return true;
-	}
-
-}
-
-// checks dashboards dir status
-Dashboards.prototype.checkDashboardDirStatus = function() {
-	return this.checkDirStatus(dashDir, false);
-}
-
-// returns dashboards directory
-Dashboards.prototype.getDashboardsDirectory = function() {
-	return dashDir;
 }
 
 // moves or copies a dashboard entity

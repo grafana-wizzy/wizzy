@@ -70,6 +70,8 @@ You are ready to use wizzy. Import your first dashboard now!
 
 ## Remote Commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
+
+### Dashboard Commands
 ```
 $ wizzy list dashboards
 	- prints list of dashboards from Grafana in a tabular format
@@ -86,6 +88,35 @@ $ wizzy export new-dashboard DASHBOARD_SLUG
 $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
 ```
+
+### Organization Commands
+```
+$ wizzy import orgs
+	- imports all orgs in JSON format and stores under orgs directory
+$ wizzy create org ORG_NAME
+	- creates an org in Grafana
+$ wizzy show orgs
+	- shows all orgs from Grafana
+$ wizzy show org ORG_ID
+	- shows an org from Grafana
+$ wiizy delete org ORG_ID
+	- deletes an org in Grafana
+$ wizzy exports org ORG_ID
+	- exports an org from local JSON to replace the one in Grafana
+```
+
+### Datasource Commands
+```
+$ wizzy import datasources
+	- imports all datasources in JSON format and store under datasources directory
+$ wizzy show datasources
+	- shows you all the datasources in JSON
+$ wizzy show datasource DATASOURCE_NAME (Use single quotes if you have spaces in datasource name)
+	- shows you a datasource in JSON
+$ wizzy export datasource DATASOURCE_NAME
+	- exports local datasource JSON object to replace the one in Grafana
+```
+
 ## Dashboard Context
 A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
 ```
@@ -95,9 +126,15 @@ Note: Once context is set, wizzy will use this dashboard as default if no dashbo
 
 ## Local Commands
 These commands operates on local json file based dashboards and support Dashboard Context.
+
+### Dashboard Commands
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
 	- prints summarized version of a local dashboard
+```
+
+### Row Commands
+```
 $ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- copies a row from one position to another on the same dashboard
 $ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
@@ -105,7 +142,11 @@ $ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
 $ wizzy move row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- moves a row from one position to another on the same dashboard
 $ wizzy move row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
-	- moves a row from one dashboard to another dashboard	
+	- moves a row from one dashboard to another dashboard
+```
+
+### Panel Commands
+```
 $ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current row to another row on the same dashboard
 $ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER.PANEL_NUMBER
@@ -114,24 +155,20 @@ $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current row to another row on the same dashboard
 $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current dashboard to another dashboard
+```
+
+### Template Variables Commands
+```
 $ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- copies a template variable from current dashboard to another dashboard
 $ wizzy move temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- moves a template variable from current dashboard to another dashboard
+$ wizzy extract temp-var SOURCE_TEMP-VAR_NUMBER TEMP_VAR_NAME
+	- copies a template variable from current dashboard to a json file under temp-vars directory for resuse
+$ wizzy insert temp-var TEMP_VAR_NAME DASHBOARD_SLUG
+	- copies a template variable from JSON file to the specified dashboard otherwise to the context dashboard, if not specified
 ```
 Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard. ROW_NUMBER and PANEL_NUMBER starts from 1.
-
-# Help Commands
-Help commands lets you explore wizzy's info, health, configuration.
-```
-$ wizzy conf
-	- shows wizzy configuration
-$ wizzy init
-	- only to be used while setting up wizzy for the first time
-$ wizzy status
-$ wizzy help
-$ wizzy version
-```
 
 # Set Configuration commands
 Grafana properties can be set in wizzy by running following commands, if you have not set already:
@@ -143,17 +180,16 @@ $ wizzy set grafana debug_api true
 	- an optional setting to debug Grafana API calls, `false` by default
 $ wizzy set context dashboard DASHBOARD_SLUG
 ```
-# Organization Commands
-These commands operates directly on Grafana via API, so please use them carefully.
+# Help Commands
+Help commands lets you explore wizzy's info, health, configuration.
 ```
-$ wizzy create org ORG_NAME
-	- creates an org in Grafana
-$ wizzy show orgs
-	- shows all orgs from Grafana
-$ wizzy show org ORG_ID
-	- shows an org from Grafana
-$ wiizy delete org ORG_ID
-	- deletes an org in Grafana
+$ wizzy conf
+	- shows wizzy configuration
+$ wizzy init
+	- only to be used while setting up wizzy for the first time
+$ wizzy status
+$ wizzy help
+$ wizzy version
 ```
 
 # Author
