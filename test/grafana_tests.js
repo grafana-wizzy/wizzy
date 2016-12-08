@@ -97,6 +97,27 @@ describe('Check Grafana URLs', function() {
     });
   });
 
+  describe('create URL for importing all orgs', function() {
+    it('should return URL /api/orgs .', function() {
+      var url = grafana.createURL('import', 'orgs');
+      expect(url).to.equal('/api/orgs');
+    });
+  });
+
+  describe('create URL for importing an org', function() {
+    it('should return URL /api/orgs/:orgId .', function() {
+      var url = grafana.createURL('import', 'org', 12);
+      expect(url).to.equal('/api/orgs/12');
+    });
+  });
+
+  describe('create URL for exporting an org', function() {
+    it('should return URL /api/orgs/:orgId .', function() {
+      var url = grafana.createURL('export', 'org', 12);
+      expect(url).to.equal('/api/orgs/12');
+    });
+  });
+
   describe('create URL for showing datasources', function() {
     it('should return URL /api/datasources .', function() {
       var url = grafana.createURL('show', 'datasources');

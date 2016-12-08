@@ -93,6 +93,8 @@ $ wizzy delete dashboard DASHBOARD_SLUG
 ```
 $ wizzy import orgs
 	- imports all orgs in JSON format and stores under orgs directory
+$ wizzy import org ORG_ID
+	- imports an org with ORG_ID
 $ wizzy create org ORG_NAME
 	- creates an org in Grafana
 $ wizzy show orgs

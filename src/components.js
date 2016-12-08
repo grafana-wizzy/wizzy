@@ -209,9 +209,28 @@ Components.prototype.summarize = function(commands) {
 
 // Reads dashboard json from file.
 Components.prototype.readDashboard = function(slug) {
-	checkIfDashboardExists(slug);
-	var dashboard = JSON.parse(localfs.readFile(getDashboardFile(slug)));
-	return dashboard;
+
+	if (localfs.checkExists(getDashboardFile(slug))) {
+		return JSON.parse(localfs.readFile(getDashboardFile(slug)));
+	}
+	else {
+		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
+		process.exit();
+	}
+	
+}
+
+// Reads org json from file.
+Components.prototype.readOrg = function(id) {
+
+	if (localfs.checkExists(getOrgFile(id))) {
+		return JSON.parse(localfs.readFile(getOrgFile(id)));
+	}
+	else {
+		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
+		process.exit();
+	}
+
 }
 
 // Saving a dashboard file on disk
@@ -222,6 +241,16 @@ Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
 	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
 	if (showResult) {
 		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
+	}
+
+}
+
+// Saves an org file under orgs directory on disk
+Components.prototype.saveOrg = function(id, org, showResult) {
+
+	localfs.writeFile(getOrgFile(id), logger.stringify(org, null, 2));
+	if (showResult) {
+		logger.showResult('Org ' + id + ' saved successfully under orgs directory.');
 	}
 
 }
@@ -238,17 +267,8 @@ function checkOrGetContextDashboard() {
 
 }
 
-// Check if a dashboard exists or not on local disk
-function checkIfDashboardExists(slug) {
-
-	if (localfs.checkExists(getDashboardFile(slug))) {
-		return true;
-	}
-	else {
-		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
-		process.exit();
-	}
-
+function getOrgFile(id) {
+	return orgsDir + '/' + id +'.json';
 }
 
 // Get dashboard file name from slug
