@@ -239,27 +239,28 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	var url = '';
 
 	// Editing URL depending on entityType
-	if (entityType === 'org' || entityType === 'orgs') {
+	if (entityType === 'org') {
+		url += '/api/orgs'
+		if (command === 'show' || command === 'delete') {
+			 url += '/' + entityValue;
+		}
+	} else if (entityType === 'orgs') {
 		url += '/api/orgs';
-	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+	} else if (entityType === 'dashboard') {
 		url += '/api/dashboards/db';
+		if (command === 'import' || command === 'delete' || command === 'show') {
+			url += '/' + entityValue;
+		}
+	} else if (entityType === 'new-dashboard') {
+		url += '/api/dashboards/db';
+	} else if (entityType === 'dashboards') {
+		url += '/api/search';
 	} else if (entityType === 'datasources') {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {
 		url += '/api/datasources/name/' + entityValue;
 	}
-
-	// Editing URL depending on command
-	if (command === 'import' || command === 'delete' ||
-	 		(command === 'show' && 
-	 			(entityType === 'dashboard' || entityType === 'org'))){
-		url += '/' + entityValue;
-	}
-
-	if (command === 'list' && entityType === 'dashboards') {
-		url += '/api/search';
-	}
-
+	
 	return url;
 
 }

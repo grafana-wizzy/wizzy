@@ -1,4 +1,4 @@
-/*#!/usr/bin/env node
+#!/usr/bin/env node
 "use strict";
 
 var expect = require('chai').expect;
@@ -11,95 +11,104 @@ var config = {
 	password: 'password'
 }
 
+var components = {};
+
 var grafana;
 
 // Create a new Grafana object for each test
 beforeEach(function() {
-  grafana = new Grafana(config);
+  grafana = new Grafana(config, components);
 });
 
 afterEach(function() {
   grafana = null;
 })
 
-describe('Check Grafana Configuration', function() {
-	it('should return url, username and password properties.', function() {
-		expect(grafana.url).to.equal('http://localhost:3000');
-		expect(grafana.auth.user).to.equal('admin');
-		expect(grafana.auth.pass).to.equal('password');
-	});
+
+describe('Check Grafana URLs', function() {
+
+  describe('create URL for listing dashboards', function() {
+    it('should return URL /api/search .', function() {
+      var url = grafana.createURL('list', 'dashboards');
+      expect(url).to.equal('/api/search');
+    });
+  });
+
+  describe('create URL for showing a dashboard', function() {
+    it('should return URL /api/dashboards/db/:slug .', function() {
+      var url = grafana.createURL('show', 'dashboard', 'test-dash');
+      expect(url).to.equal('/api/dashboards/db/test-dash');
+    });
+  });
+
+  describe('create URL for importing a dashboard', function() {
+    it('should return URL /api/dashboards/db/:slug .', function() {
+      var url = grafana.createURL('import', 'dashboard', 'test-dash');
+      expect(url).to.equal('/api/dashboards/db/test-dash');
+    });
+  });
+
+  describe('create URL for exporting a dashboard', function() {
+    it('should return URL /api/dashboards/db .', function() {
+      var url = grafana.createURL('export', 'dashboard', 'test-dash');
+      expect(url).to.equal('/api/dashboards/db');
+    });
+  });
+
+  describe('create URL for exporting a new dashboard', function() {
+    it('should return URL /api/dashboards/db .', function() {
+      var url = grafana.createURL('export', 'new-dashboard', 'test-dash');
+      expect(url).to.equal('/api/dashboards/db');
+    });
+  });
+
+  describe('create URL for deleting a dashboard', function() {
+    it('should return URL /api/dashboards/db .', function() {
+      var url = grafana.createURL('delete', 'dashboard', 'test-dash');
+      expect(url).to.equal('/api/dashboards/db/test-dash');
+    });
+  });
+
+  describe('create URL for showing orgs', function() {
+    it('should return URL /api/orgs .', function() {
+      var url = grafana.createURL('show', 'orgs');
+      expect(url).to.equal('/api/orgs');
+    });
+  });
+
+  describe('create URL for showing an org', function() {
+    it('should return URL /api/orgs/:orgId .', function() {
+      var url = grafana.createURL('show', 'org', 12);
+      expect(url).to.equal('/api/orgs/12');
+    });
+  });
+
+  describe('create URL for creating an org', function() {
+    it('should return URL /api/orgs .', function() {
+      var url = grafana.createURL('create', 'org', 'test-org');
+      expect(url).to.equal('/api/orgs');
+    });
+  });
+
+  describe('create URL for deleting an org', function() {
+    it('should return URL /api/org .', function() {
+      var url = grafana.createURL('delete', 'org', 12);
+      expect(url).to.equal('/api/orgs/12');
+    });
+  });
+
+  describe('create URL for showing datasources', function() {
+    it('should return URL /api/datasources .', function() {
+      var url = grafana.createURL('show', 'datasources');
+      expect(url).to.equal('/api/datasources');
+    });
+  });
+
+  describe('create URL for showing a datasource', function() {
+    it('should return URL /api/datasources/name/:datasourceName .', function() {
+      var url = grafana.createURL('show', 'datasource', 'test-ds');
+      expect(url).to.equal('/api/datasources/name/test-ds');
+    });
+  });
+
 });
-
-describe('Building Grafana API URL for commands', function() {
-
-  describe('create org org_name command', function() {
-    it('should post org by org_name url', function() {
-    	grafana.createURL('create', 'org', 'test_org');
-      expect(grafana.url).to.equal('http://localhost:3000/api/orgs');
-    });
-  });
-
-  describe('show orgs command', function() {
-    it('should get orgs url', function() {
-    	grafana.createURL('show', 'orgs');
-      expect(grafana.url).to.equal('http://localhost:3000/api/orgs');
-    });
-  });
-
-  describe('show org org_id command', function() {
-    it('should get org by org_id url', function() {
-    	grafana.createURL('show', 'org', 1);
-      expect(grafana.url).to.equal('http://localhost:3000/api/orgs/1');
-    });
-  });
-
-  describe('delete org org_id command', function() {
-    it('should delete org by org_id url', function() {
-    	grafana.createURL('delete', 'org', 1);
-      expect(grafana.url).to.equal('http://localhost:3000/api/orgs/1');
-    });
-  });
-
-  describe('import dashboard dashboard_slug command', function() {
-    it('should create get dashboard by dashboard_slug url', function() {
-    	grafana.createURL('import', 'dashboard', 'test-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db/test-dashboard');
-    });
-  });
-
-  describe('export dashboard dashboard_slug command', function() {
-    it('should create post dashboard url', function() {
-    	grafana.createURL('export', 'dashboard', 'test-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db');
-    });
-  });
-
-  describe('show dashboard dashboard_slug command', function() {
-    it('should create get dashboard by dashboard_slug url', function() {
-    	grafana.createURL('show', 'dashboard', 'test-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db/test-dashboard');
-    });
-  });
-
-  describe('delete new-dashboard dashboard_slug command', function() {
-    it('should create delete dashboard by dashboard_slug url', function() {
-    	grafana.createURL('delete', 'dashboard', 'test-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db/test-dashboard');
-    });
-  });
-
-  describe('export newdash dashboard_slug command', function() {
-    it('should create post dashboard url', function() {
-      grafana.createURL('export', 'newdash', 'test-new-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db');
-    });
-  });
-
-  describe('show dasharch dashboard_slug command', function() {
-    it('should create get dashboard json by dashboard_slug', function() {
-      grafana.createURL('show', 'dasharch', 'test-dashboard');
-      expect(grafana.url).to.equal('http://localhost:3000/api/dashboards/db/test-dashboard');
-    });
-  });
-
-});*/

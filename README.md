@@ -99,9 +99,9 @@ $ wizzy show orgs
 	- shows all orgs from Grafana
 $ wizzy show org ORG_ID
 	- shows an org from Grafana
-$ wiizy delete org ORG_ID
+$ wizzy delete org ORG_ID
 	- deletes an org in Grafana
-$ wizzy exports org ORG_ID
+$ wizzy export org ORG_ID
 	- exports an org from local JSON to replace the one in Grafana
 ```
 
