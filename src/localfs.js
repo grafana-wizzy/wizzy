@@ -34,4 +34,23 @@ LocalFS.prototype.createIfNotExists = function(name, output) {
 	
 }
 
+LocalFS.prototype.readFile = function(name, showOnError) {
+
+	return fs.readFileSync(name, 'utf8', function (error, data) {
+		if (!error) {
+			logger.showResult('Read file ' + name + ' successfully.');
+		}
+		else {
+			logger.showError('Error in reading file ' + name);
+		}
+	});
+
+}
+
+LocalFS.prototype.writeFile = function(name, content) {
+
+	fs.writeFileSync(name, content);
+
+}
+
 module.exports = LocalFS;

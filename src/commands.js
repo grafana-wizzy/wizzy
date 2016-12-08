@@ -3,10 +3,12 @@
 
 var _ = require('lodash');
 var Config = require('./config.js');
-var Dashboards = require('./dashboards.js');
+var Components = require('./components.js');
 var Grafana = require('./grafana.js');
 var Logger = require('./logger.js'); 
 var logger = new Logger('Commands');
+var LocalFS = require('./localfs.js');
+var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 var config;
 var components;
@@ -27,11 +29,11 @@ Commands.prototype.instructions = function() {
 			3. process.argv[1] - reserverd for `wizzy` or `index.js`
 		*/
 
-		commamds = _.drop(process.argv, 2);
+		var commands = _.drop(process.argv, 2);
 
 		var command = commands[0];
 
-		if (config.checkConfigStatus('config:grafana', false) && components.checkDashboardDirStatus()) {
+		if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
 			grafana = new Grafana(config.getConfig('config:grafana'), components);
 		}
 
@@ -58,25 +60,25 @@ Commands.prototype.instructions = function() {
 					config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
 				break;
 			case 'import':
-				grafana.import(commands);
+				grafana.import(_.drop(commands));
 				break;
 			case 'export':
-				grafana.export(commands);
+				grafana.export(_.drop(commands));
 				break;
 			case 'create':
-				grafana.create(commands);
+				grafana.create(_.drop(commands));
 				break;
 			case 'delete':
-				grafana.delete(commands);
+				grafana.delete(_.drop(commands));
 				break;
 			case 'show':
-				grafana.show(commands);
+				grafana.show(_.drop(commands));
 				break;
 			case 'list':
-				grafana.list(commands);
+				grafana.list(_.drop(commands));
 				break;
 			case 'summarize':
-				components.summarize(commands);
+				components.summarize(_.drop(commands));
 				break;
 			case 'move':
 				components.moveOrCopy(commands);
@@ -128,7 +130,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = components.checkDirStatus('.git', true) && config.checkConfigStatus('config', true);
+	var setupProblem = localfs.checkExists('.git', '.git directory', true) && config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
 		logger.showResult('wizzy setup complete.');

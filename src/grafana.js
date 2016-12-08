@@ -31,7 +31,10 @@ function Grafana(conf, dash) {
 }
 
 // creates an org
-Grafana.prototype.create = function(entityType, entityValue) {
+Grafana.prototype.create = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'org') {
 		body['name'] = entityValue;
@@ -48,7 +51,10 @@ Grafana.prototype.create = function(entityType, entityValue) {
 }
 
 // deletes a dashboard or an org
-Grafana.prototype.delete = function(entityType, entityValue) {
+Grafana.prototype.delete = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'org') {
 		successMessage = 'Deleted Grafana org ' + entityValue + ' successfully.';
@@ -66,7 +72,10 @@ Grafana.prototype.delete = function(entityType, entityValue) {
 }
 
 // shows an org or orgs or a dashboard
-Grafana.prototype.show = function(entityType, entityValue) {
+Grafana.prototype.show = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	var url = grafana_url + createURL('show', entityType, entityValue);
 	if (entityType === 'orgs') {
@@ -93,7 +102,10 @@ Grafana.prototype.show = function(entityType, entityValue) {
 }
 
 // imports a dashboard or all dashboards from Grafana
-Grafana.prototype.import = function(entityType, entityValue) {
+Grafana.prototype.import = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	// imports a single dashboard
 	if (entityType === 'dashboard') {
@@ -154,7 +166,10 @@ Grafana.prototype.import = function(entityType, entityValue) {
 }
 
 // export a dashboard to Grafana
-Grafana.prototype.export = function(entityType, entityValue) {
+Grafana.prototype.export = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		var dashBody = {
@@ -177,7 +192,9 @@ Grafana.prototype.export = function(entityType, entityValue) {
 }
 
 // list all dashboards
-Grafana.prototype.list = function(entityType) {
+Grafana.prototype.list = function(commands) {
+
+	var entityType = commands[0];
 
 	if (entityType === 'dashboards') {
 		successMessage = 'Displayed dashboards list successfully.';

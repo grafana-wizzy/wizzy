@@ -19,16 +19,16 @@ var datasrcDir;
 var orgsDir;
 var tempVarsDir;
 
-function Dashboards(dir, dsDir, orgDir, tempVarDir, conf) {
+function Components(dir, dsDir, orgDir, tempVarDir, conf) {
 	datasrcDir = dsDir;
 	orgsDir = orgDir;
-	tempVarsDir
+	tempVarsDir = tempVarDir;
 	dashDir = dir;
 	config = conf;
 }
 
 // creates dashboards dir if not exist
-Dashboards.prototype.createIfNotExists = function() {
+Components.prototype.createIfNotExists = function() {
 
 	localfs.createIfNotExists(dashDir, 'dashboards directory');
 	localfs.createIfNotExists(datasrcDir, 'datasources directory');
@@ -37,8 +37,20 @@ Dashboards.prototype.createIfNotExists = function() {
 
 }
 
+Components.prototype.checkDirsStatus = function() {
+
+	return localfs.checkExists(dashDir) && localfs.checkExists(datasrcDir) &&
+		localfs.checkExists(orgsDir) && localfs.checkExists(tempVarsDir);
+
+}
+
 // moves or copies a dashboard entity
-Dashboards.prototype.moveOrCopy = function(command, entityType, entityValue, destination) {
+Components.prototype.moveOrCopy = function(commands) {
+
+	var command = commands[0];
+	var entityType = commands[1];
+	var entityValue = commands[2];
+	var destination = commands[3];
 
 	var srcDashboardSlug = checkOrGetContextDashboard();
 	var srcDashboard = this.readDashboard(srcDashboardSlug);
@@ -154,7 +166,10 @@ Dashboards.prototype.moveOrCopy = function(command, entityType, entityValue, des
 }
 
 // summarizes a dashboard
-Dashboards.prototype.summarize = function(entityType, entityValue) {
+Components.prototype.summarize = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType != 'dashboard') {
 		printUnsupportedDashboardCommands('entity type ' , entityType);
@@ -193,29 +208,22 @@ Dashboards.prototype.summarize = function(entityType, entityValue) {
 }
 
 // Reads dashboard json from file.
-Dashboards.prototype.readDashboard = function(slug) {
+Components.prototype.readDashboard = function(slug) {
 	checkIfDashboardExists(slug);
-	var dashboard = JSON.parse(fs.readFileSync(getDashboardFile(slug), 'utf8', function (error, data) {
-		if (!error) {
-			logger.showResult('Verified file ' + slug + ' as a valid JSON.');
-		}
-		else {
-			logger.showError(slug + '.json file is not a valid JSON.');
-			process.exit();
-		}
-	}));
+	var dashboard = JSON.parse(localfs.readFile(getDashboardFile(slug)));
 	return dashboard;
 }
 
 // Saving a dashboard file on disk
-Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
-	//checkIfDashboardExists(slug);
+Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
+
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
-	fs.writeFileSync(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
+	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
 	if (showResult) {
 		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 	}
+
 }
 
 // Checking context dashboard setting
@@ -233,7 +241,7 @@ function checkOrGetContextDashboard() {
 // Check if a dashboard exists or not on local disk
 function checkIfDashboardExists(slug) {
 
-	if (fs.existsSync(getDashboardFile(slug))) {
+	if (localfs.checkExists(getDashboardFile(slug))) {
 		return true;
 	}
 	else {
@@ -253,4 +261,4 @@ function printUnsupportedDashboardCommands(desc, value) {
 	logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
 }
 
-module.exports = Dashboards;
+module.exports = Components;

@@ -95,13 +95,8 @@ function checkConfigPrerequisites() {
 function saveConfig() {
 
 	nconf.save(function (err) {
-  	fs.readFile(confFile, function (err, data) {
-    	if (err != null) {
-    		logger.showError(err);
-    	} else {
-    		logger.showResult('wizzy configuration saved.')
-    	}
-  	});
+  	localfs.readFile(confFile, false );
+		logger.showResult('wizzy configuration saved.');
 	});
 }
 
