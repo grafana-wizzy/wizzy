@@ -6,7 +6,8 @@ var Logger = require('./logger.js');
 var logger = new Logger('Config');
 
 var _ = require('lodash');
-var fs = require('fs');
+var LocalFS = require('./localfs.js');
+var localfs = new LocalFS();
 var nconf = require('nconf');
 
 var configs = [
@@ -28,21 +29,8 @@ function Config(dir, file) {
 
 Config.prototype.createIfNotExists = function() {
 
-	// Initialize the conf dir
-	if (!checkIfFileExists(confDir)){
-    fs.mkdirSync(confDir);
-    logger.showResult('conf directory created.')
-  } else {
-  	logger.showResult('conf directory already exists.')
-  }
-
-  // Initialize conf file
-  if (!checkIfFileExists(confFile)) {
-    saveConfig();
-    logger.showResult('conf file created.')
-	} else {
-		logger.showResult('conf file already exists.')
-	}
+	localfs.createIfNotExists(confDir, 'conf directory');
+	localfs.createIfNotExists(confFile, 'conf file');
 
 }
 
@@ -94,23 +82,11 @@ Config.prototype.getConfig = function(config) {
 // check if conf dir and conf file exists or not.
 function checkConfigPrerequisites() {
 
-	if (checkIfFileExists(confDir) && checkIfFileExists(confFile)) {
+	if (localfs.checkExists(confDir) && localfs.checkExists(confFile)) {
 		return;
 	} else {
 		logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
 		process.exit();
-	}
-
-}
-
-// check if a directory or a file exists or not
-function checkIfFileExists(file) {
-
-	if (fs.existsSync(file)) {
-		return true;
-	}
-	else {
-		return false;
 	}
 
 }
