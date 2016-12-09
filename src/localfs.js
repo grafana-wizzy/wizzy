@@ -23,10 +23,14 @@ LocalFS.prototype.checkExists = function(name, output, showOnOk) {
 
 }
 
-LocalFS.prototype.createIfNotExists = function(name, output) {
+LocalFS.prototype.createIfNotExists = function(name, type, output) {
 
 	if (!fs.existsSync(name)){
-    fs.mkdirSync(name);
+		if (type === 'dir') {
+			fs.mkdirSync(name);
+		} else if (type === 'file') {
+			
+		}
     logger.showResult(output + ' created.');
 	} else {
 		logger.showResult(output + ' already exists.');

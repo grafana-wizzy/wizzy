@@ -295,16 +295,12 @@ Grafana.prototype.export = function(commands) {
 		successMessage = 'Org '+ entityValue + ' export successful.';
 		failureMessage = 'Org '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
-		console.log(url);
-		console.log(body);
 		sendRequest('PUT', url);
 	} else if (entityType === 'datasource') {
 		body = components.readDatasource(entityValue);
 		successMessage = 'Datasource '+ entityValue + ' export successful.';
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
-		console.log(url);
-		console.log(body);
 		sendRequest('PUT', url);
 	} else {
 		logger.showError('Unsupported entity type ' + entityType);

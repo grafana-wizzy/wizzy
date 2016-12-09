@@ -31,10 +31,10 @@ function Components(dir, dsDir, orgDir, tempVarDir, conf) {
 // creates dashboards dir if not exist
 Components.prototype.createIfNotExists = function() {
 
-	localfs.createIfNotExists(dashDir, 'dashboards directory');
-	localfs.createIfNotExists(datasrcDir, 'datasources directory');
-	localfs.createIfNotExists(orgsDir, 'orgs directory');
-	localfs.createIfNotExists(tempVarsDir, 'template-variables directory');
+	localfs.createIfNotExists(dashDir, 'dir', 'dashboards directory');
+	localfs.createIfNotExists(datasrcDir, 'dir', 'datasources directory');
+	localfs.createIfNotExists(orgsDir, 'dir', 'orgs directory');
+	localfs.createIfNotExists(tempVarsDir, 'dir', 'template-variables directory');
 
 }
 
@@ -319,7 +319,7 @@ Components.prototype.readOrg = function(id) {
 		return JSON.parse(localfs.readFile(getOrgFile(id)));
 	}
 	else {
-		logger.showError('Org file ' + getDashboardFile(id) + ' does not exist.');
+		logger.showError('Org file ' + getOrgFile(id) + ' does not exist.');
 		process.exit();
 	}
 

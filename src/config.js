@@ -29,8 +29,13 @@ function Config(dir, file) {
 
 Config.prototype.createIfNotExists = function() {
 
-	localfs.createIfNotExists(confDir, 'conf directory');
-	localfs.createIfNotExists(confFile, 'conf file');
+	localfs.createIfNotExists(confDir, 'dir', 'conf directory');
+	if(!localfs.checkExists(confFile)) {
+		saveConfig(false);
+		logger.showResult('conf file created.')
+	} else {
+		logger.showResult('conf file already exists.')
+	}
 
 }
 
@@ -55,7 +60,7 @@ Config.prototype.addProperty = function(key, value) {
 
 	if (_.includes(configs, key)) {
 		nconf.set(key, value);
-		saveConfig();
+		saveConfig(true);
 		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
 	} else {
 		logger.showError('Unknown configuration property.');
@@ -92,11 +97,13 @@ function checkConfigPrerequisites() {
 }
 
 // Save wizzy config
-function saveConfig() {
+function saveConfig(showResult) {
 
 	nconf.save(function (err) {
   	localfs.readFile(confFile, false );
-		logger.showResult('wizzy configuration saved.');
+  	if (showResult) {
+  		logger.showResult('wizzy configuration saved.');
+  	}
 	});
 }
 
