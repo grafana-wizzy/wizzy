@@ -86,6 +86,12 @@ Commands.prototype.instructions = function() {
 			case 'copy':
 				components.moveOrCopy(commands);
 				break;
+			case 'extract':
+				components.extract(_.drop(commands));
+				break;
+			case 'insert':
+				components.insert(_.drop(commands));
+				break;
 			default:
 				logger.showError('Unsupported command called.');
 				logger.justShow(help);

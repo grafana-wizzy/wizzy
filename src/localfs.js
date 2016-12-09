@@ -53,4 +53,10 @@ LocalFS.prototype.writeFile = function(name, content) {
 
 }
 
+LocalFS.prototype.readFilesFromDir = function(dirName) {
+
+	return fs.readdirSync(dirName);
+
+}
+
 module.exports = LocalFS;

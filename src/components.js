@@ -5,6 +5,7 @@ var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
 var Logger = require('./logger.js');
 var logger = new Logger('components');
+var Table = require('cli-table');
 
 var _ = require('lodash');
 
@@ -47,13 +48,15 @@ Components.prototype.checkDirsStatus = function() {
 // moves or copies a dashboard entity
 Components.prototype.moveOrCopy = function(commands) {
 
+	var self = this;
+
 	var command = commands[0];
 	var entityType = commands[1];
 	var entityValue = commands[2];
 	var destination = commands[3];
 
 	var srcDashboardSlug = checkOrGetContextDashboard();
-	var srcDashboard = this.readDashboard(srcDashboardSlug);
+	var srcDashboard = self.readDashboard(srcDashboardSlug);
 	var sourceArray = entityValue.split('.');
 	var destinationArray = destination.split('.');
 
@@ -74,21 +77,21 @@ Components.prototype.moveOrCopy = function(commands) {
 					srcRows.splice(srcRowNumber-1, 1);
 				}
 				srcRows.splice(destRowNumber-1, 0, srcRow);
-				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			} 
 			// when destination is a row on another dashboard
 			else if (destinationArray.length === 2) {
 				destDashboardSlug = destinationArray[0];
-				var destDashboard = this.readDashboard(destDashboardSlug);
+				var destDashboard = self.readDashboard(destDashboardSlug);
 				var destRows = destDashboard.rows;
 				var destRowNumber = parseInt(destinationArray[1]);
 				if (command === 'move') {
 					srcRows.splice(srcRowNumber-1, 1);
-					this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+					self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				}
 				destRows.splice(destRowNumber-1, 0, srcRow);
-				this.saveDashboard(destDashboardSlug, destDashboard, true);
+				self.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
 			} else {
 				logger.showError(failureMessage);
@@ -115,21 +118,21 @@ Components.prototype.moveOrCopy = function(commands) {
 					srcPanels.splice(srcPanelNumber-1, 1);
 				}
 				destPanels.splice(destPanelNumber-1, 0, srcPanel);
-				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			} else if (destinationArray.length === 3) {
 				var destDashboardSlug = destinationArray[0];
-				var destDashboard = this.readDashboard(destDashboardSlug);
+				var destDashboard = self.readDashboard(destDashboardSlug);
 				var destRows = destDashboard.rows;
 				var destRowNumber = parseInt(destinationArray[1]);
 				var destPanels = destRows[destRowNumber-1].panels;
 				var destPanelNumber = parseInt(destinationArray[2]);
 				if (command === 'move') {
 					srcPanels.splice(srcPanelNumber-1, 1);
-					this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+					self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				}
 				destPanels.splice(destPanelNumber-1, 0, srcPanel);
-				this.saveDashboard(destDashboardSlug, destDashboard, true);
+				self.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
 			} else {
 				logger.showError(failureMessage);
@@ -144,16 +147,16 @@ Components.prototype.moveOrCopy = function(commands) {
 			var srcTempVarNumber = parseInt(sourceArray[0]);
 			var srcTempVar = srcTempVarList[srcTempVarNumber-1];
 			destDashboardSlug = destinationArray[0];
-			var destDashboard = this.readDashboard(destDashboardSlug);
+			var destDashboard = self.readDashboard(destDashboardSlug);
 			var destTempVarList = destDashboard.templating.list;
 			var destTempVarNumber = parseInt(destinationArray[1]);
 			var desrTempVar = srcTempVarList[destTempVarNumber-1];
 			if (command === 'move') {
 				srcTempVarList.splice(srcTempVarNumber-1, 1);
-				this.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 			}
 			destTempVarList.splice(destTempVarNumber-1, 0, srcTempVar);
-			this.saveDashboard(destDashboardSlug, destDashboard, true);
+			self.saveDashboard(destDashboardSlug, destDashboard, true);
 			logger.showResult(successMessage);
 		} else {
 			logger.showError(failureMessage);
@@ -177,7 +180,6 @@ Components.prototype.summarize = function(commands) {
 		}
 
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
-		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
 
 		var dashboard = this.readDashboard(entityValue);
 		var arch = {};
@@ -202,13 +204,92 @@ Components.prototype.summarize = function(commands) {
 		logger.showOutput(logger.stringify(arch));
 	} else if (entityType === 'orgs') {
 
-		
+		successMessage = 'Showed orgs summary successfully.';
+
+		var table = new Table({
+    	head: ['Org Id', 'Org Name'],
+  		colWidths: [25, 25]
+		});
+
+		var orgFiles = localfs.readFilesFromDir(orgsDir);
+		_.each(orgFiles, function(orgFile) {
+			var org = this.readOrg(getFileName(orgFile));
+			table.push([org.id, org.name]);
+		});
+
+  	logger.showOutput(table.toString());
+  	logger.showResult('Total orgs: ' + orgFiles.length);
+
+	} else if (entityType === 'datasources') {
+
+		successMessage = 'Showed datasources summary successfully.';
+
+		var table = new Table({
+    	head: ['Datasource Id', 'Datasource Name', 'Datasource Type'],
+  		colWidths: [30, 30, 30]
+		});
+
+		var dsFiles = localfs.readFilesFromDir(datasrcDir);
+		_.each(dsFiles, function(dsFile) {
+			var ds = this.readDatasource(getFileName(dsFile));
+			table.push([ds.id, ds.name, ds.type]);
+		});
+
+  	logger.showOutput(table.toString());
+  	logger.showResult('Total datasources: ' + dsFiles.length);
 
 	} else {
-		logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
+		logger.showError('Unsupported command. Please try `wizzy help`.');
+		return;
 	}
 
 	logger.showResult(successMessage);
+
+}
+
+// Extracts entities from dashboard json
+Components.prototype.extract = function(commands) {
+
+	if (commands[0] === 'temp-var') {
+
+		successMessage = 'Template variable ' + commands[1] + ' extracted successfully.';
+
+		var srcDashboardSlug = checkOrGetContextDashboard();
+		var srcDashboard = this.readDashboard(srcDashboardSlug);
+		var srcTempVarList = srcDashboard.templating.list;
+		var srcTempVarNumber = parseInt(commands[1]);
+		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
+		
+		this.saveTemplateVars(commands[2], srcTempVar, true);
+
+	} else {
+		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
+		return;
+	}
+
+	logger.showResult(successMessage);
+
+}
+
+// Inserts entities from local json to dashboard json
+Components.prototype.insert = function(commands) {
+
+	if (commands[0] === 'temp-var') {
+
+		successMessage = 'Template variable ' + commands[1] + ' inserted successfully.';
+
+		var destDashboardSlug = commands[2]
+		var destDashboard = this.readDashboard(destDashboardSlug);
+		var destTempVarList = destDashboard.templating.list;
+		destTempVarList.push(this.readTemplateVariable(commands[1]));
+		this.saveDashboard(destDashboardSlug, destDashboard, true);
+
+	} else {
+		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
+		return;
+	}
+
+	logger.showResult(successMessage);	
 
 }
 
@@ -251,6 +332,19 @@ Components.prototype.readDatasource = function(id) {
 
 }
 
+// Reads template variable json from file.
+Components.prototype.readTemplateVariable = function(varName) {
+
+	if (localfs.checkExists(getTempVarFile(varName))) {
+		return JSON.parse(localfs.readFile(getTempVarFile(varName)));
+	}
+	else {
+		logger.showError('Template variable file ' + getTempVarFile(varName) + ' does not exist.');
+		process.exit();
+	}
+
+}
+
 // Saving a dashboard file on disk
 Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
 
@@ -283,6 +377,16 @@ Components.prototype.saveDatasource = function(id, datasource, showResult) {
 
 }
 
+// Save a template variable under template-variables directory on disk
+Components.prototype.saveTemplateVars = function(varName, content, showResult) {
+
+	localfs.writeFile(getTempVarFile(varName), logger.stringify(content, null, 2));
+	if (showResult) {
+		logger.showResult('Template variable ' + varName + ' saved successfully under template-vars directory.');
+	}
+
+}
+
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {
 
@@ -306,6 +410,15 @@ function getOrgFile(id) {
 // Get dashboard file name from slug
 function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
+}
+
+// Get temp-var file name from var name
+function getTempVarFile(varName) {
+	return tempVarsDir + '/' + varName + '.json';
+}
+
+function getFileName(fileNameWithExtension) {
+	return fileNameWithExtension.split('.')[0];
 }
 
 module.exports = Components;

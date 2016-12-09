@@ -4,4 +4,5 @@ conf/
 dashboards/
 orgs/
 datasources/
+template-vars/
 coverage/
