@@ -174,6 +174,8 @@ Components.prototype.summarize = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
+	var self = this;
+
 	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
 			entityValue = config.getConfig('config:context:dashboard');
@@ -181,7 +183,7 @@ Components.prototype.summarize = function(commands) {
 
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
 
-		var dashboard = this.readDashboard(entityValue);
+		var dashboard = self.readDashboard(entityValue);
 		var arch = {};
 
 		// Extracting row information
@@ -213,7 +215,7 @@ Components.prototype.summarize = function(commands) {
 
 		var orgFiles = localfs.readFilesFromDir(orgsDir);
 		_.each(orgFiles, function(orgFile) {
-			var org = this.readOrg(getFileName(orgFile));
+			var org = self.readOrg(getFileName(orgFile));
 			table.push([org.id, org.name]);
 		});
 
@@ -231,7 +233,7 @@ Components.prototype.summarize = function(commands) {
 
 		var dsFiles = localfs.readFilesFromDir(datasrcDir);
 		_.each(dsFiles, function(dsFile) {
-			var ds = this.readDatasource(getFileName(dsFile));
+			var ds = self.readDatasource(getFileName(dsFile));
 			table.push([ds.id, ds.name, ds.type]);
 		});
 
@@ -412,10 +414,13 @@ function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
 }
 
+<<<<<<< HEAD
 // Get temp-var file name from var name
 function getTempVarFile(varName) {
 	return tempVarsDir + '/' + varName + '.json';
 }
+=======
+>>>>>>> 3ba4ba8ed72d6308a37d8f2810fe734fb009daa2
 
 function getFileName(fileNameWithExtension) {
 	return fileNameWithExtension.split('.')[0];
