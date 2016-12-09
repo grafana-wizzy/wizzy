@@ -5,6 +5,7 @@ var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
 var Logger = require('./logger.js');
 var logger = new Logger('components');
+var Table = require('cli-table');
 
 var _ = require('lodash');
 
@@ -171,15 +172,16 @@ Components.prototype.summarize = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
+	var self = this;
+
 	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
 			entityValue = config.getConfig('config:context:dashboard');
 		}
 
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
-		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
 
-		var dashboard = this.readDashboard(entityValue);
+		var dashboard = self.readDashboard(entityValue);
 		var arch = {};
 
 		// Extracting row information
@@ -202,7 +204,39 @@ Components.prototype.summarize = function(commands) {
 		logger.showOutput(logger.stringify(arch));
 	} else if (entityType === 'orgs') {
 
-		
+		successMessage = 'Showed orgs summary successfully.';
+
+		var table = new Table({
+    	head: ['Org Id', 'Org Name'],
+  		colWidths: [25, 25]
+		});
+
+		var orgFiles = localfs.readFilesFromDir(orgsDir);
+		_.each(orgFiles, function(orgFile) {
+			var org = self.readOrg(getFileName(orgFile));
+			table.push([org.id, org.name]);
+		});
+
+  	logger.showOutput(table.toString());
+  	logger.showResult('Total orgs: ' + orgFiles.length);
+
+	} else if (entityType === 'datasources') {
+
+		successMessage = 'Showed datasources summary successfully.';
+
+		var table = new Table({
+    	head: ['Datasource Id', 'Datasource Name', 'Datasource Type'],
+  		colWidths: [30, 30, 30]
+		});
+
+		var dsFiles = localfs.readFilesFromDir(datasrcDir);
+		_.each(dsFiles, function(dsFile) {
+			var ds = self.readDatasource(getFileName(dsFile));
+			table.push([ds.id, ds.name, ds.type]);
+		});
+
+  	logger.showOutput(table.toString());
+  	logger.showResult('Total datasources: ' + dsFiles.length);
 
 	} else {
 		logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
@@ -306,6 +340,11 @@ function getOrgFile(id) {
 // Get dashboard file name from slug
 function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
+}
+
+
+function getFileName(fileNameWithExtension) {
+	return fileNameWithExtension.split('.')[0];
 }
 
 module.exports = Components;
