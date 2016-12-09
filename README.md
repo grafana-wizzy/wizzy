@@ -134,7 +134,19 @@ These commands operates on local json file based dashboards and support Dashboar
 ### Dashboard Commands
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
-	- prints summarized version of a local dashboard
+	- prints summary of a local dashboard
+```
+
+### Orgs Commands
+```
+$ wizzy summarize orgs
+	- prints summary of all local orgs
+```
+
+### Datasources Commands
+```
+$ wizzy summarize datasources
+	- prints summary of all local datasources
 ```
 
 ### Row Commands

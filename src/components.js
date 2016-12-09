@@ -171,38 +171,43 @@ Components.prototype.summarize = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
-	if (entityType != 'dashboard') {
-		printUnsupportedDashboardCommands('entity type ' , entityType);
-	} else {
+	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
 			entityValue = config.getConfig('config:context:dashboard');
 		}
-	}
 
-	successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
-	failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
+		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
+		failureMessage = 'Error in showing dashboard ' + entityValue + 'summary.';
 
-	var dashboard = this.readDashboard(entityValue);
-	var arch = {};
+		var dashboard = this.readDashboard(entityValue);
+		var arch = {};
 
-	// Extracting row information
-	arch.title = dashboard.title;
-	arch.rowCount = _.size(dashboard.rows);
-	arch.rows = [];
-	_.forEach(dashboard.rows, function(row) {
-		arch.rows.push({
-  		title: row.title,
-			panelCount: _.size(row.panels),
-			panelTitles: _.join(_.map(row.panels,'title'), ', ')
+		// Extracting row information
+		arch.title = dashboard.title;
+		arch.rowCount = _.size(dashboard.rows);
+		arch.rows = [];
+		_.forEach(dashboard.rows, function(row) {
+			arch.rows.push({
+	  		title: row.title,
+				panelCount: _.size(row.panels),
+				panelTitles: _.join(_.map(row.panels,'title'), ', ')
+			});
 		});
-	});
-	if ('templating' in dashboard) {
-		arch.templateVariableCount = _.size(dashboard.templating.list);
-		arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
+		if ('templating' in dashboard) {
+			arch.templateVariableCount = _.size(dashboard.templating.list);
+			arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
+		}
+		arch.time = dashboard.time;
+		arch.time.timezone = dashboard.timezone;
+		logger.showOutput(logger.stringify(arch));
+	} else if (entityType === 'orgs') {
+
+		
+
+	} else {
+		logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
 	}
-	arch.time = dashboard.time;
-	arch.time.timezone = dashboard.timezone;
-	logger.showOutput(logger.stringify(arch));
+
 	logger.showResult(successMessage);
 
 }
@@ -301,11 +306,6 @@ function getOrgFile(id) {
 // Get dashboard file name from slug
 function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
-}
-
-// Print unsupported message command error
-function printUnsupportedDashboardCommands(desc, value) {
-	logger.showError('Unsupported ' + desc + ' ' + value +'. Please try `wizzy help`.');
 }
 
 module.exports = Components;
