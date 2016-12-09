@@ -227,7 +227,20 @@ Components.prototype.readOrg = function(id) {
 		return JSON.parse(localfs.readFile(getOrgFile(id)));
 	}
 	else {
-		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
+		logger.showError('Org file ' + getDashboardFile(id) + ' does not exist.');
+		process.exit();
+	}
+
+}
+
+// Reads datasource json from file.
+Components.prototype.readDatasource = function(id) {
+
+	if (localfs.checkExists(getDatasourceFile(id))) {
+		return JSON.parse(localfs.readFile(getDatasourceFile(id)));
+	}
+	else {
+		logger.showError('Datasource file ' + getDatasourceFile(id) + ' does not exist.');
 		process.exit();
 	}
 
@@ -255,6 +268,16 @@ Components.prototype.saveOrg = function(id, org, showResult) {
 
 }
 
+// Saves a datasource file under datasources directory on disk
+Components.prototype.saveDatasource = function(id, datasource, showResult) {
+
+	localfs.writeFile(getDatasourceFile(id), logger.stringify(datasource, null, 2));
+	if (showResult) {
+		logger.showResult('Datasource ' + id + ' saved successfully under datasources directory.');
+	}
+
+}
+
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {
 
@@ -265,6 +288,10 @@ function checkOrGetContextDashboard() {
 		process.exit();
 	}
 
+}
+
+function getDatasourceFile(id) {
+	return datasrcDir + '/' + id + '.json';
 }
 
 function getOrgFile(id) {

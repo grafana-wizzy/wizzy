@@ -219,7 +219,53 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	}  else {
+	}  else if (entityType === 'datasource') {
+		successMessage = 'Datasource '+ entityValue + ' import successful.';
+		failureMessage = 'Datasource '+ entityValue + ' import failed.';
+		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+	  	  output += body;
+	  	  components.saveDatasource(entityValue, body, true);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else if (entityType === 'datasources') {
+		successMessage = 'Datasources import successful.';
+		failureMessage = 'Datasources import failed.';
+		var self = this;
+		var url = grafana_url + self.createURL('import', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				_.each(body, function(datasource){
+					components.saveDatasource(datasource.id, datasource);
+				});
+	  	  logger.showResult('Total datasources imported: ' + body.length);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
@@ -248,6 +294,14 @@ Grafana.prototype.export = function(commands) {
 		body = components.readOrg(entityValue);
 		successMessage = 'Org '+ entityValue + ' export successful.';
 		failureMessage = 'Org '+ entityValue + ' export failed.';
+		var url = grafana_url + this.createURL('export', entityType, entityValue);
+		console.log(url);
+		console.log(body);
+		sendRequest('PUT', url);
+	} else if (entityType === 'datasource') {
+		body = components.readDatasource(entityValue);
+		successMessage = 'Datasource '+ entityValue + ' export successful.';
+		failureMessage = 'Datasource '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
 		console.log(url);
 		console.log(body);
@@ -326,7 +380,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	} else if (entityType === 'datasources') {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {
-		url += '/api/datasources/name/' + entityValue;
+		url += '/api/datasources/' + entityValue;
 	}
 
 	return url;

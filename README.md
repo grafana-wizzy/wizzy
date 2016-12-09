@@ -111,11 +111,13 @@ $ wizzy export org ORG_ID
 ```
 $ wizzy import datasources
 	- imports all datasources in JSON format and store under datasources directory
+$ wizzy import datasource DATASOURCE_ID
+	- imports a datasource in JSON format and store under datasources directory
 $ wizzy show datasources
 	- shows you all the datasources in JSON
-$ wizzy show datasource DATASOURCE_NAME (Use single quotes if you have spaces in datasource name)
+$ wizzy show datasource DATASOURCE_ID
 	- shows you a datasource in JSON
-$ wizzy export datasource DATASOURCE_NAME
+$ wizzy export datasource DATASOURCE_ID
 	- exports local datasource JSON object to replace the one in Grafana
 ```
 

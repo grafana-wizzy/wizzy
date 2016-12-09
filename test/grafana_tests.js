@@ -27,7 +27,7 @@ afterEach(function() {
 
 describe('Check Grafana URLs', function() {
 
-  describe('create URL for listing dashboards', function() {
+  describe('create URL for listing all dashboards', function() {
     it('should return URL /api/search .', function() {
       var url = grafana.createURL('list', 'dashboards');
       expect(url).to.equal('/api/search');
@@ -69,7 +69,7 @@ describe('Check Grafana URLs', function() {
     });
   });
 
-  describe('create URL for showing orgs', function() {
+  describe('create URL for showing all orgs', function() {
     it('should return URL /api/orgs .', function() {
       var url = grafana.createURL('show', 'orgs');
       expect(url).to.equal('/api/orgs');
@@ -118,7 +118,7 @@ describe('Check Grafana URLs', function() {
     });
   });
 
-  describe('create URL for showing datasources', function() {
+  describe('create URL for showing all datasources', function() {
     it('should return URL /api/datasources .', function() {
       var url = grafana.createURL('show', 'datasources');
       expect(url).to.equal('/api/datasources');
@@ -126,9 +126,30 @@ describe('Check Grafana URLs', function() {
   });
 
   describe('create URL for showing a datasource', function() {
-    it('should return URL /api/datasources/name/:datasourceName .', function() {
-      var url = grafana.createURL('show', 'datasource', 'test-ds');
-      expect(url).to.equal('/api/datasources/name/test-ds');
+    it('should return URL /api/datasources/:datasourceId .', function() {
+      var url = grafana.createURL('show', 'datasource', 1);
+      expect(url).to.equal('/api/datasources/1');
+    });
+  });
+
+  describe('create URL for importing all datasources', function() {
+    it('should return URL /api/datasources .', function() {
+      var url = grafana.createURL('import', 'datasources');
+      expect(url).to.equal('/api/datasources');
+    });
+  });
+
+  describe('create URL for importing a datasource', function() {
+    it('should return URL /api/datasources/:datasourceId .', function() {
+      var url = grafana.createURL('import', 'datasource', 1);
+      expect(url).to.equal('/api/datasources/1');
+    });
+  });
+
+  describe('create URL for exporting a datasource', function() {
+    it('should return URL /api/datasources/:datasourceId .', function() {
+      var url = grafana.createURL('export', 'datasource', 1);
+      expect(url).to.equal('/api/datasources/1');
     });
   });
 
