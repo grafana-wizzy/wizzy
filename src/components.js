@@ -278,6 +278,10 @@ Components.prototype.insert = function(commands) {
 
 	if (commands[0] === 'temp-var') {
 
+		if (typeof commands[2] != 'string') {
+			commands[2] = config.getConfig('config:context:dashboard');
+		}
+
 		successMessage = 'Template variable ' + commands[1] + ' inserted successfully.';
 
 		var destDashboardSlug = commands[2]
@@ -414,13 +418,10 @@ function getDashboardFile(slug) {
 	return dashDir + '/' + slug + '.json';
 }
 
-<<<<<<< HEAD
 // Get temp-var file name from var name
 function getTempVarFile(varName) {
 	return tempVarsDir + '/' + varName + '.json';
 }
-=======
->>>>>>> 3ba4ba8ed72d6308a37d8f2810fe734fb009daa2
 
 function getFileName(fileNameWithExtension) {
 	return fileNameWithExtension.split('.')[0];
