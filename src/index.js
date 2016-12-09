@@ -2,15 +2,20 @@
 "use strict";
 
 // Setting up directory structure
-var dashDir = 'dashboards';
 var confDir = 'conf';
+var datasourceDir = 'datasources';
 var confFile = 'conf/wizzy.json';
 
+var dashDir = 'dashboards';
+var datasrcDir = 'datasources';
+var orgsDir = 'orgs';
+var tempVarsDir = 'template-vars';
+
 // Setting up cli version and commands
-var program = require('commander').version('0.3.0');
+var program = require('commander').version('0.4.0');
 
 var Commands = require('./commands.js');
-var commands = new Commands(dashDir, confDir, confFile);
+var commands = new Commands(dashDir, datasrcDir, orgsDir, tempVarsDir, confDir, confFile);
 
 // For any unsupported command wizzy will show help
 program.command('*').action(commands.instructions);

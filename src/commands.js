@@ -1,34 +1,40 @@
 #!/usr/bin/env node
 "use strict";
 
+var _ = require('lodash');
 var Config = require('./config.js');
-var Dashboards = require('./dashboards.js');
+var Components = require('./components.js');
 var Grafana = require('./grafana.js');
 var Logger = require('./logger.js'); 
 var logger = new Logger('Commands');
+var LocalFS = require('./localfs.js');
+var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 var config;
-var dashboards;
+var components;
 var grafana;
 
-function Commands(dashDir, confDir, confFile) {
+function Commands(dashDir, datasrcDir, orgsDir, tempVarDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
-	dashboards = new Dashboards(dashDir, config);
+	components = new Components(dashDir, datasrcDir, orgsDir, tempVarDir, config);
 	addCommandsToHelp();
 }
 
 // Creates an entity in wizzy or Grafana
-Commands.prototype.instructions = function(command) {
+Commands.prototype.instructions = function() {
 
 		/* Key points before editing the cases:
 			1. case 'version' does not have to be defined as it comes from commander.js
 			2. process.argv[0] - reserverd for `node`
 			3. process.argv[1] - reserverd for `wizzy` or `index.js`
-			4. process.argv[2] - reserverd for variable `command`.
 		*/
 
-		if (config.checkConfigStatus('config:grafana', false) && dashboards.checkDashboardDirStatus()) {
-			grafana = new Grafana(config.getConfig('config:grafana'), dashboards);
+		var commands = _.drop(process.argv, 2);
+
+		var command = commands[0];
+
+		if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
+			grafana = new Grafana(config.getConfig('config:grafana'), components);
 		}
 
 		switch(command) {
@@ -38,7 +44,7 @@ Commands.prototype.instructions = function(command) {
 				break;
 			case 'init':
 				config.createIfNotExists();
-				dashboards.createIfNotExists();
+				components.createIfNotExists();
 				logger.showResult('wizzy successfully initialized.')
 				break;
 			case 'status':
@@ -48,34 +54,43 @@ Commands.prototype.instructions = function(command) {
 					config.showConfig('config');
 				break;
 			case 'set':
-					config.addProperty('config:'+process.argv[3]+':'+process.argv[4], process.argv[5]);
+					/*
+						// TODO: Give an example how a property is added.
+					*/
+					config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
 				break;
 			case 'import':
-				grafana.import(process.argv[3], process.argv[4]);
+				grafana.import(_.drop(commands));
 				break;
 			case 'export':
-				grafana.export(process.argv[3], process.argv[4]);
+				grafana.export(_.drop(commands));
 				break;
 			case 'create':
-				grafana.create(process.argv[3], process.argv[4]);
+				grafana.create(_.drop(commands));
 				break;
 			case 'delete':
-				grafana.delete(process.argv[3], process.argv[4]);
+				grafana.delete(_.drop(commands));
 				break;
 			case 'show':
-				grafana.show(process.argv[3], process.argv[4]);
+				grafana.show(_.drop(commands));
 				break;
 			case 'list':
-				grafana.list(process.argv[3]);
+				grafana.list(_.drop(commands));
 				break;
 			case 'summarize':
-				dashboards.summarize(process.argv[3], process.argv[4]);
+				components.summarize(_.drop(commands));
 				break;
 			case 'move':
-				dashboards.moveOrCopy(command, process.argv[3], process.argv[4], process.argv[5]);
+				components.moveOrCopy(commands);
 				break;
 			case 'copy':
-				dashboards.moveOrCopy(command, process.argv[3], process.argv[4], process.argv[5]);
+				components.moveOrCopy(commands);
+				break;
+			case 'extract':
+				components.extract(_.drop(commands));
+				break;
+			case 'insert':
+				components.insert(_.drop(commands));
 				break;
 			default:
 				logger.showError('Unsupported command called.');
@@ -89,16 +104,18 @@ function addCommandsToHelp() {
 	addToHelp('wizzy init', 'creates conf file with conf and dashboards directories.');
 	addToHelp('wizzy status', 'checks if any configuration property and if .git directory exists.');
 	addToHelp('wizzy conf', 'shows wizzy configuration properties.');
-	addToHelp('wizzy set CONFIG_NAME PROPERTY_NAME PROPERTY_VALUE', 'sets a configuration property for wizzy');
-	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another');
-	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity', 'wizzy create org my-org');
-	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity', 'wizzy delete org org_id');
-	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana');
-	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana');
-	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo');
-	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another');
-	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity', 'wizzy show org 1, wizzy show orgs');
-	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner');
+	addToHelp('wizzy set CONFIG_NAME PROPERTY_NAME PROPERTY_VALUE', 'sets a configuration property for wizzy.');
+	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another.');
+	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
+	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
+	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
+	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana.');
+	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo.');
+	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another.');
+	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
+	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
+	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
+	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
 
 }
 
@@ -121,7 +138,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = dashboards.checkDirStatus('.git', true) && config.checkConfigStatus('config', true);
+	var setupProblem = localfs.checkExists('.git', '.git directory', true) && config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
 		logger.showResult('wizzy setup complete.');

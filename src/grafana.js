@@ -12,13 +12,13 @@ var Table = require('cli-table');
 var successMessage;
 var failureMessage;
 
-var dashboards;
+var components;
 
 var grafana_url;
 var auth = {};
 var body = {};
 
-function Grafana(conf, dash) {
+function Grafana(conf, comps) {
 	grafana_url = conf.url;
 	auth.username = conf.username;
 	auth.password = conf.password;
@@ -27,11 +27,14 @@ function Grafana(conf, dash) {
 	} else {
 		request.debug = false;
 	}
-	dashboards = dash;
+	components = comps;
 }
 
 // creates an org
-Grafana.prototype.create = function(entityType, entityValue) {
+Grafana.prototype.create = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'org') {
 		body['name'] = entityValue;
@@ -42,13 +45,16 @@ Grafana.prototype.create = function(entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + createURL('create', entityType, entityValue);
+	var url = grafana_url + this.createURL('create', entityType, entityValue);
 	sendRequest('POST', url);
 	
 }
 
 // deletes a dashboard or an org
-Grafana.prototype.delete = function(entityType, entityValue) {
+Grafana.prototype.delete = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'org') {
 		successMessage = 'Deleted Grafana org ' + entityValue + ' successfully.';
@@ -60,15 +66,18 @@ Grafana.prototype.delete = function(entityType, entityValue) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + createURL('delete', entityType, entityValue);
+	var url = grafana_url + this.createURL('delete', entityType, entityValue);
 	sendRequest('DELETE', url);
 
 }
 
 // shows an org or orgs or a dashboard
-Grafana.prototype.show = function(entityType, entityValue) {
+Grafana.prototype.show = function(commands) {
 
-	var url = grafana_url + createURL('show', entityType, entityValue);
+	var entityType = commands[0];
+	var entityValue = commands[1];
+
+	var url = grafana_url + this.createURL('show', entityType, entityValue);
 	if (entityType === 'orgs') {
 		successMessage = 'Showed orgs successfully.';
 		failureMessage = 'Error in showing orgs.';
@@ -78,7 +87,13 @@ Grafana.prototype.show = function(entityType, entityValue) {
 	} else if (entityType === 'dashboard') {
 		successMessage = 'Showed dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in showing dashboard ' + entityValue + '.';
-	}	else {
+	}	else if (entityType === 'datasources') {
+		successMessage = 'Showed datasources successfully.';
+		failureMessage = 'Error in showing datasources.';
+	} else if (entityType === 'datasource') {
+		successMessage = 'Showed datasource ' + entityValue + ' successfully.';
+		failureMessage = 'Error in showing datasource' + entityValue + '.';
+	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
@@ -87,18 +102,21 @@ Grafana.prototype.show = function(entityType, entityValue) {
 }
 
 // imports a dashboard or all dashboards from Grafana
-Grafana.prototype.import = function(entityType, entityValue) {
+Grafana.prototype.import = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	// imports a single dashboard
 	if (entityType === 'dashboard') {
 		successMessage = 'Dashboard '+ entityValue + ' import successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
-		var url = grafana_url + createURL('import', entityType, entityValue);
+		var url = grafana_url + this.createURL('import', entityType, entityValue);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
-				dashboards.saveDashboard(entityValue, body.dashboard, true);
+				components.saveDashboard(entityValue, body.dashboard, true);
 	    	logger.showResult(successMessage);
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
@@ -114,7 +132,10 @@ Grafana.prototype.import = function(entityType, entityValue) {
 		});
 	} // import all dashboards
 	else if (entityType === 'dashboards') {
-		var url = grafana_url + createURL('list', entityType);
+		successMessage = 'Dashboards imported successful.';
+		failureMessage = 'Dashboards import failed.';
+		var self = this;
+		var url = grafana_url + self.createURL('list', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var dashList = [];
 			if (!error && response.statusCode == 200) {
@@ -122,14 +143,15 @@ Grafana.prototype.import = function(entityType, entityValue) {
 					dashList.push(dashboard.uri.substring(3)); //removing db/
 				});
 	  	  _.each(dashList, function(dash){
-	  	  	url = grafana_url + createURL('import', 'dashboard', dash);
+	  	  	url = grafana_url + self.createURL('import', 'dashboard', dash);
 	  	  	request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 						if (!error && response.statusCode == 200) {
-							dashboards.saveDashboard(dash, body.dashboard, false);
+							components.saveDashboard(dash, body.dashboard, false);
 				  	}
 					});
 	  	  });
 	  	  logger.showResult('Total dashboards imported: ' + dashList.length);
+	  	  logger.showResult(successMessage);
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
@@ -138,6 +160,108 @@ Grafana.prototype.import = function(entityType, entityValue) {
 	  		else {
 	  			output += '\n' + error;
 	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else if (entityType === 'org') {
+		successMessage = 'Org '+ entityValue + ' import successful.';
+		failureMessage = 'Org '+ entityValue + ' import failed.';
+		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+	  	  output += body;
+	  	  components.saveOrg(entityValue, body, true);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else if (entityType === 'orgs') {
+		successMessage = 'Orgs import successful.';
+		failureMessage = 'Orgs import failed.';
+		var self = this;
+		var url = grafana_url + self.createURL('import', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var orgList = [];
+			if (!error && response.statusCode == 200) {
+				_.each(body, function(org){
+					orgList.push(org.id);
+				});
+				_.each(orgList, function(id) {
+					url = grafana_url + self.createURL('import', 'org', id);
+					request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+						if (!error && response.statusCode == 200) {
+							components.saveOrg(id, body, false);
+				  	}
+					});
+				});
+	  	  logger.showResult('Total orgs imported: ' + body.length);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	}  else if (entityType === 'datasource') {
+		successMessage = 'Datasource '+ entityValue + ' import successful.';
+		failureMessage = 'Datasource '+ entityValue + ' import failed.';
+		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+	  	  output += body;
+	  	  components.saveDatasource(entityValue, body, true);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else if (entityType === 'datasources') {
+		successMessage = 'Datasources import successful.';
+		failureMessage = 'Datasources import failed.';
+		var self = this;
+		var url = grafana_url + self.createURL('import', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			if (!error && response.statusCode == 200) {
+				_.each(body, function(datasource){
+					components.saveDatasource(datasource.id, datasource);
+				});
+	  	  logger.showResult('Total datasources imported: ' + body.length);
+	  	  logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
 	  		logger.showError(failureMessage);
 	  	}
 		});
@@ -148,11 +272,14 @@ Grafana.prototype.import = function(entityType, entityValue) {
 }
 
 // export a dashboard to Grafana
-Grafana.prototype.export = function(entityType, entityValue) {
+Grafana.prototype.export = function(commands) {
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
 
 	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		var dashBody = {
-			dashboard: dashboards.readDashboard(entityValue),
+			dashboard: components.readDashboard(entityValue),
 			overwrite: true
 		}
 		if (entityType === 'new-dashboard') {
@@ -161,17 +288,31 @@ Grafana.prototype.export = function(entityType, entityValue) {
 		successMessage = 'Dashboard '+ entityValue + ' export successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
 		body = dashBody;
+		var url = grafana_url + this.createURL('export', entityType, entityValue);
+		sendRequest('POST', url);
+	}  else if (entityType === 'org') {
+		body = components.readOrg(entityValue);
+		successMessage = 'Org '+ entityValue + ' export successful.';
+		failureMessage = 'Org '+ entityValue + ' export failed.';
+		var url = grafana_url + this.createURL('export', entityType, entityValue);
+		sendRequest('PUT', url);
+	} else if (entityType === 'datasource') {
+		body = components.readDatasource(entityValue);
+		successMessage = 'Datasource '+ entityValue + ' export successful.';
+		failureMessage = 'Datasource '+ entityValue + ' export failed.';
+		var url = grafana_url + this.createURL('export', entityType, entityValue);
+		sendRequest('PUT', url);
 	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + createURL('export', entityType, entityValue);
-	sendRequest('POST', url);
 
 }
 
 // list all dashboards
-Grafana.prototype.list = function(entityType) {
+Grafana.prototype.list = function(commands) {
+
+	var entityType = commands[0];
 
 	if (entityType === 'dashboards') {
 		successMessage = 'Displayed dashboards list successfully.';
@@ -180,7 +321,7 @@ Grafana.prototype.list = function(entityType) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + createURL('list', entityType);
+	var url = grafana_url + this.createURL('list', entityType);
 	request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
@@ -211,26 +352,31 @@ Grafana.prototype.list = function(entityType) {
 }
 
 // Create url for calling Grafana API
-function createURL(command, entityType, entityValue) {
+Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 	var url = '';
 
 	// Editing URL depending on entityType
-	if (entityType === 'org' || entityType === 'orgs') {
+	if (entityType === 'org') {
+		url += '/api/orgs'
+		if (command === 'show' || command === 'delete' || command === 'import' || command === 'export') {
+			 url += '/' + entityValue;
+		}
+	} else if (entityType === 'orgs') {
 		url += '/api/orgs';
-	} else if (entityType === 'dashboard' || entityType === 'new-dashboard') {
+	} else if (entityType === 'dashboard') {
 		url += '/api/dashboards/db';
-	}
-
-	// Editing URL depending on command
-	if (command === 'import' || command === 'delete' ||
-	 		(command === 'show' && 
-	 			(entityType === 'dashboard' || entityType === 'org'))){
-		url += '/' + entityValue;
-	}
-
-	if (command === 'list' && entityType === 'dashboards') {
+		if (command === 'import' || command === 'delete' || command === 'show') {
+			url += '/' + entityValue;
+		}
+	} else if (entityType === 'new-dashboard') {
+		url += '/api/dashboards/db';
+	} else if (entityType === 'dashboards') {
 		url += '/api/search';
+	} else if (entityType === 'datasources') {
+		url += '/api/datasources';
+	} else if (entityType === 'datasource') {
+		url += '/api/datasources/' + entityValue;
 	}
 
 	return url;
@@ -246,6 +392,8 @@ function sendRequest(method, url) {
 		request.get({url: url, auth: auth, json: true, method: method}, printResponse);
 	} else if (method === 'DELETE') {
 		request.delete({url: url, auth: auth, json: true, method: method}, printResponse);
+	} else if (method === 'PUT') {
+		request.put({url: url, auth: auth, json: true, body: body}, printResponse);
 	}
 	
 }

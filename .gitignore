@@ -2,4 +2,7 @@ node_modules/
 npm-debug.log
 conf/
 dashboards/
+orgs/
+datasources/
+template-vars/
 coverage/
