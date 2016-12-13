@@ -80,6 +80,9 @@ Commands.prototype.instructions = function() {
 			case 'summarize':
 				components.summarize(_.drop(commands));
 				break;
+			case 'changedatasource':
+                                components.changeDatasource(_.drop(commands));
+                                break;
 			case 'move':
 				components.moveOrCopy(commands);
 				break;
@@ -138,10 +141,14 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = localfs.checkExists('.git', '.git directory', true) && config.checkConfigStatus('config', true);
+	var setupProblem = config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
-		logger.showResult('wizzy setup complete.');
+		var setupGit = localfs.checkExists('.git', '.git directory', true);
+		if(setupGit)
+			logger.showResult('wizzy setup complete.');
+		else
+			logger.showResult('wizzy setup complete without Git.');
 	} else {
 		logger.showError('wizzy setup incomplete.');
 	}
