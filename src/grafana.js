@@ -333,10 +333,10 @@ Grafana.prototype.list = function(commands) {
 				table.push([dashboard.title, dashboard.uri.substring(3)]); //removing db/
 			});
 			output += table.toString();
-  	  logger.showOutput(output);
-  	  logger.showResult('Total dashboards: ' + body.length);
+  	  	logger.showOutput(output);
+  	  	logger.showResult('Total dashboards: ' + body.length);
     	logger.showResult(successMessage);
-  	} else {
+  	}else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
   			output += '\nNo error body from Grafana API.';	
