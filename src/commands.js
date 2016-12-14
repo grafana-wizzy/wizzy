@@ -129,7 +129,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
 	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
 	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
-	
+
 }
 
 function addToHelp(syntax, description) {
@@ -151,10 +151,14 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = localfs.checkExists('.git', '.git directory', true) && config.checkConfigStatus('config', true);
+	var setupProblem = config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
-		logger.showResult('wizzy setup complete.');
+		var setupGit = localfs.checkExists('.git', '.git directory', true);
+		if(setupGit)
+			logger.showResult('wizzy setup complete.');
+		else
+			logger.showResult('wizzy setup complete without Git.');
 	} else {
 		logger.showError('wizzy setup incomplete.');
 	}
