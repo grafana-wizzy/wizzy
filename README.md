@@ -214,7 +214,7 @@ wizzy can interact now with Grafana.net. It can list and download dashboards fro
 $ wizzy list gnet dashboards <FILTER>
 	- lists all the dashboards and if filter is present then filters out the dashboards according to it.
 	- for example: 'wizzy list gnet dashboards ds=graphite' lists all dashboards with datasource = graphite.
-$ wizzy download dashboard DASHBOARD_ID
+$ wizzy download gnet dashboard DASHBOARD_ID REVISION_ID
 	- Download a dashboard json from Grafana.net and stores under dashboards directory.
 ```
 
