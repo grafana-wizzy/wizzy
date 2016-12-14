@@ -8,15 +8,18 @@ var Grafana = require('./grafana.js');
 var Logger = require('./logger.js'); 
 var logger = new Logger('Commands');
 var LocalFS = require('./localfs.js');
+var GNet = require('./gnet.js');
 var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 var config;
 var components;
 var grafana;
+var gnet;
 
 function Commands(dashDir, datasrcDir, orgsDir, tempVarDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
 	components = new Components(dashDir, datasrcDir, orgsDir, tempVarDir, config);
+	gnet = new GNet(components);
 	addCommandsToHelp();
 }
 
@@ -75,7 +78,11 @@ Commands.prototype.instructions = function() {
 				grafana.show(_.drop(commands));
 				break;
 			case 'list':
-				grafana.list(_.drop(commands));
+				if (commands[1] === 'gnet') {
+					gnet.list(_.drop(commands,2));
+				} else {
+					grafana.list(_.drop(commands));
+				}
 				break;
 			case 'summarize':
 				components.summarize(_.drop(commands));
@@ -91,6 +98,11 @@ Commands.prototype.instructions = function() {
 				break;
 			case 'insert':
 				components.insert(_.drop(commands));
+				break;
+			case 'download':
+				if (commands[1] === 'gnet') {
+					gnet.download(_.drop(commands, 2));
+				}
 				break;
 			default:
 				logger.showError('Unsupported command called.');
@@ -109,14 +121,15 @@ function addCommandsToHelp() {
 	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
 	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
 	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
-	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana.');
+	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana or Grafana.net.');
 	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo.');
 	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
 	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
 	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
-
+	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
+	
 }
 
 function addToHelp(syntax, description) {
