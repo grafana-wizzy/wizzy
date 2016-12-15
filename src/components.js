@@ -46,7 +46,7 @@ Components.prototype.checkDirsStatus = function() {
 }
 
 // moves or copies a dashboard entity
-Components.prototype.moveOrCopy = function(commands) {
+Components.prototype.moveCopyOrRemove = function(commands) {
 
 	var self = this;
 
@@ -58,7 +58,22 @@ Components.prototype.moveOrCopy = function(commands) {
 	var srcDashboardSlug = checkOrGetContextDashboard();
 	var srcDashboard = self.readDashboard(srcDashboardSlug);
 	var sourceArray = entityValue.split('.');
-	var destinationArray = destination.split('.');
+	
+	var destinationArray = [];
+	if (destination != undefined) {
+		destinationArray = destination.split('.');
+	}
+
+	if (command === 'move') {
+		successMessage = 'Successfully moved ' + entityType + '.';
+		failureMessage = 'Error in moving ' + entityType + '.';
+	} else if (command === 'copy') {
+		successMessage = 'Successfully copied ' + entityType + '.';
+		failureMessage = 'Error in copying ' + entityType + '.';
+	} else if (command === 'remove') {
+		successMessage = 'Successfully removed ' + entityType + '.';
+		failureMessage = 'Error in removing ' + entityType + '.';
+	}
 
 	if (entityType === 'row' || entityType === 'panel') {
 
@@ -68,10 +83,16 @@ Components.prototype.moveOrCopy = function(commands) {
 
 		// row operation
 		if (entityType === 'row') {
-			successMessage = 'Row successfully copied.';
-			failureMessage = 'Error in copying row.';
+
+			// when only remove row command is triggered
+			if (destinationArray.length === 0 && command === 'remove') {
+				srcRows.splice(srcRowNumber-1, 1);
+				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				logger.showResult(successMessage);
+			}
+
 			// when destination is another row on the same dashboard
-			if (destinationArray.length === 1) {
+			else if (destinationArray.length === 1 ) {
 				var destRowNumber = parseInt(destinationArray[0]);
 				if (command === 'move') {
 					srcRows.splice(srcRowNumber-1, 1);
@@ -79,7 +100,8 @@ Components.prototype.moveOrCopy = function(commands) {
 				srcRows.splice(destRowNumber-1, 0, srcRow);
 				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
-			} 
+			}
+
 			// when destination is a row on another dashboard
 			else if (destinationArray.length === 2) {
 				destDashboardSlug = destinationArray[0];
@@ -93,24 +115,37 @@ Components.prototype.moveOrCopy = function(commands) {
 				destRows.splice(destRowNumber-1, 0, srcRow);
 				self.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
-			} else {
+			} 
+
+			// something else happened
+			else {
 				logger.showError(failureMessage);
 			}
-		} // panel operation
+		}
+
+		// panel operation
 		else if (entityType === 'panel') {
-			successMessage = 'Panel successfully copied.';
-			failureMessage = 'Error in copying panel.';
-			if (destinationArray.length < 2 || sourceArray.length < 2) {
-				logger.showError('Unsupported source or destination.');
-				logger.showError(failureMessage);
-				return;
-			}
+
 			var srcPanels = srcRows[srcRowNumber-1].panels;
 			var srcPanelNumber = parseInt(sourceArray[1]);
 			var srcPanel = srcPanels[srcPanelNumber-1];
 
 			var destPanels;
-			if (destinationArray.length === 2) {
+
+			// when only remove panel command is triggered
+			if (destinationArray.length === 0 && command === 'remove') {
+				srcPanels.splice(srcPanelNumber-1, 1);
+				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				logger.showResult(successMessage);
+			}
+			
+			// when destination is just a single number which makes no sense in panels
+			else if (destinationArray.length === 1) {
+				logger.showError('Unsupported destination ' + destinationArray + '.');
+			}
+
+			// when destination is another panel on the same dashboard 
+			else if (destinationArray.length === 2) {
 				var destRowNumber = parseInt(destinationArray[0]);
 				var destPanels = srcRows[destRowNumber-1].panels;
 				var destPanelNumber = parseInt(destinationArray[1]);
@@ -138,14 +173,31 @@ Components.prototype.moveOrCopy = function(commands) {
 				logger.showError(failureMessage);
 			}
 		}
-	} // template variable operation
+	}
+
+	// template variable operation
 	else if (entityType === 'temp-var') {
-		successMessage = 'Template variable successfully copied.';
-		failureMessage = 'Error in copying template variable.';
-		if (destinationArray.length === 2) {
-			var srcTempVarList = srcDashboard.templating.list;
-			var srcTempVarNumber = parseInt(sourceArray[0]);
-			var srcTempVar = srcTempVarList[srcTempVarNumber-1];
+
+		var srcTempVarList = srcDashboard.templating.list;
+		var srcTempVarNumber = parseInt(sourceArray[0]);
+		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
+
+		// remove operation
+		if (destinationArray.length === 0 && command === 'remove') {
+			srcTempVarList.splice(srcTempVarNumber-1, 1);
+			self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+			logger.showResult(successMessage);
+		}
+
+		// invalid destinaton
+		else if (destinationArray.length === 1 ) {
+			logger.showError(failureMessage);
+			logger.showError('Unknown destination ' + destinationArray + '.');
+		}
+
+		// valid destination
+		else if (destinationArray.length === 2) {
+			
 			destDashboardSlug = destinationArray[0];
 			var destDashboard = self.readDashboard(destDashboardSlug);
 			var destTempVarList = destDashboard.templating.list;

@@ -91,10 +91,13 @@ Commands.prototype.instructions = function() {
         components.change(_.drop(commands));
         break;
 			case 'move':
-				components.moveOrCopy(commands);
+				components.moveCopyOrRemove(commands);
 				break;
 			case 'copy':
-				components.moveOrCopy(commands);
+				components.moveCopyOrRemove(commands);
+				break;
+			case 'remove':
+				components.moveCopyOrRemove(commands);
 				break;
 			case 'extract':
 				components.extract(_.drop(commands));
@@ -131,6 +134,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo.');
 	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
 	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another.');
+	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
 

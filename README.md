@@ -162,6 +162,8 @@ $ wizzy move row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- moves a row from one position to another on the same dashboard
 $ wizzy move row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
 	- moves a row from one dashboard to another dashboard
+$ wizzy remove row SOURCE_ROW_NUMBER
+	- removes a row from the current dashboard
 ```
 
 ### Panel Commands
@@ -174,6 +176,9 @@ $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current row to another row on the same dashboard
 $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER.PANEL_NUMBER
 	- moves a panel from current dashboard to another dashboard
+$ wizzy remove panel SOURCE_ROW.PANEL_NUMBER
+	- removes a panel from current dashboard
+
 ```
 
 ### Template Variables Commands
@@ -182,6 +187,8 @@ $ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR
 	- copies a template variable from current dashboard to another dashboard
 $ wizzy move temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- moves a template variable from current dashboard to another dashboard
+$ wizzy remove temp-var SOURCE_TEMP-VAR_NUMBER
+	- removes a template variable from current dashboard
 $ wizzy extract temp-var SOURCE_TEMP-VAR_NUMBER TEMP_VAR_NAME
 	- copies a template variable from current dashboard to a json file under temp-vars directory for resuse
 $ wizzy insert temp-var TEMP_VAR_NAME DASHBOARD_SLUG
