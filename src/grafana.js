@@ -311,19 +311,20 @@ Grafana.prototype.export = function(commands) {
 		_.forEach(items,function(item){
 			var url_check = grafana_url + self.createURL('show', 'dashboard', item.slice(0, -5))
 			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
-				successMessage = 'Dashboard '+ item.slice(0, -5) + ' export successful.';
-				failureMessage = 'Dashboard '+ item.slice(0, -5) + ' export failed.';
-				var url = grafana_url + self.createURL('export', 'dashboard', item.slice(0, -5));
 				var dashBody = {
 						dashboard: components.readDashboard(item.slice(0, -5)),
 						overwrite: true
 				}
 				body = dashBody;
+				successMessage = 'Dashboard export successful.';
+				failureMessage = 'Dashboard export failed.';
 				if (!error_check && response_check.statusCode == 200) {
+					var url = grafana_url + self.createURL('export', 'dashboard', item.slice(0, -5));
 					sendRequest('POST', url);
 	  			}
 	  			else{
 	  				dashBody.dashboard.id = null;
+	  				var url = grafana_url + self.createURL('export', 'new-dashboard', item.slice(0, -5));
 					sendRequest('POST', url);
 	  			}
 			});
