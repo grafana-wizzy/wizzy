@@ -87,6 +87,9 @@ Commands.prototype.instructions = function() {
 			case 'summarize':
 				components.summarize(_.drop(commands));
 				break;
+			case 'changedatasource':
+                components.changeDatasource(_.drop(commands));
+                break;
 			case 'move':
 				components.moveOrCopy(commands);
 				break;
@@ -128,8 +131,8 @@ function addCommandsToHelp() {
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
 	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
 	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
+	addToHelp('wizzy change ENTITY OLD_DATASOURCE NEW_DATASOURCE', 'Updates a dashboard entity in a dashboard.');
 	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
-
 }
 
 function addToHelp(syntax, description) {
@@ -152,16 +155,15 @@ function showHelp() {
 function status() {
 
 	var setupProblem = config.checkConfigStatus('config', true);
-
+	var setupGit = localfs.checkExists('.git', '.git directory', true);
 	if (setupProblem) {
-		var setupGit = localfs.checkExists('.git', '.git directory', true);
-		if(setupGit)
-			logger.showResult('wizzy setup complete.');
-		else
-			logger.showResult('wizzy setup complete without Git.');
-	} else {
-		logger.showError('wizzy setup incomplete.');
-	}
+ 		if(setupGit)
+ 			logger.showResult('wizzy setup complete.');
+ 		else
+ 			logger.showResult('wizzy setup complete without Git.');
+ 	}else {
+  		logger.showError('wizzy setup incomplete.');
+  	}
 }
 
 module.exports = Commands;
