@@ -12,7 +12,7 @@ var orgsDir = 'orgs';
 var tempVarsDir = 'template-vars';
 
 // Setting up cli version and commands
-var program = require('commander').version('0.4.0');
+var program = require('commander').version('0.4.2');
 
 var Commands = require('./commands.js');
 var commands = new Commands(dashDir, datasrcDir, orgsDir, tempVarsDir, confDir, confFile);
