@@ -87,14 +87,17 @@ Commands.prototype.instructions = function() {
 			case 'summarize':
 				components.summarize(_.drop(commands));
 				break;
-			case 'changedatasource':
-                components.changeDatasource(_.drop(commands));
-                break;
+			case 'change':
+        components.change(_.drop(commands));
+        break;
 			case 'move':
-				components.moveOrCopy(commands);
+				components.moveCopyOrRemove(commands);
 				break;
 			case 'copy':
-				components.moveOrCopy(commands);
+				components.moveCopyOrRemove(commands);
+				break;
+			case 'remove':
+				components.moveCopyOrRemove(commands);
 				break;
 			case 'extract':
 				components.extract(_.drop(commands));
@@ -120,19 +123,21 @@ function addCommandsToHelp() {
 	addToHelp('wizzy status', 'checks if any configuration property and if .git directory exists.');
 	addToHelp('wizzy conf', 'shows wizzy configuration properties.');
 	addToHelp('wizzy set CONFIG_NAME PROPERTY_NAME PROPERTY_VALUE', 'sets a configuration property for wizzy.');
+	addToHelp('wizzy change ENTITY OLD_ENTITY NEW_ENTITY', 'Updates an old entity with a new one on the context dashboard.');
 	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another.');
 	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
 	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
+	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
 	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
+	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
 	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana or Grafana.net.');
 	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo.');
+	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
 	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another.');
+	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
-	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
-	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
-	addToHelp('wizzy change ENTITY OLD_DATASOURCE NEW_DATASOURCE', 'Updates a dashboard entity in a dashboard.');
-	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
+
 }
 
 function addToHelp(syntax, description) {
@@ -155,15 +160,17 @@ function showHelp() {
 function status() {
 
 	var setupProblem = config.checkConfigStatus('config', true);
-	var setupGit = localfs.checkExists('.git', '.git directory', true);
+
 	if (setupProblem) {
- 		if(setupGit)
- 			logger.showResult('wizzy setup complete.');
- 		else
- 			logger.showResult('wizzy setup complete without Git.');
- 	}else {
-  		logger.showError('wizzy setup incomplete.');
-  	}
+		var setupGit = localfs.checkExists('.git', '.git directory', true);
+		if(setupGit)
+			logger.showResult('wizzy setup complete.');
+		else
+			logger.showResult('wizzy setup complete without Git.');
+	} else {
+		logger.showError('wizzy setup incomplete.');
+	}
+
 }
 
 module.exports = Commands;
