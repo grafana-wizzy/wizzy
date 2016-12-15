@@ -191,10 +191,15 @@ Components.prototype.summarize = function(commands) {
 		arch.rowCount = _.size(dashboard.rows);
 		arch.rows = [];
 		_.forEach(dashboard.rows, function(row) {
+
+			var panelInfo = _.map(row.panels, function(panel) {
+				return panel.title + '(' + panel.datasource + ')';
+			});
+
 			arch.rows.push({
 	  		title: row.title,
 				panelCount: _.size(row.panels),
-				panelTitles: _.join(_.map(row.panels,'title'), ', ')
+				panels: _.join(panelInfo, ', ')
 			});
 		});
 		if ('templating' in dashboard) {
@@ -250,45 +255,49 @@ Components.prototype.summarize = function(commands) {
 }
 
 Components.prototype.change = function(commands) {
- 	var entityType = commands[0];
- 	var oldDatasource = commands[1];
- 	var newDatasource = commands[2];
- 
+ 	var component = commands[0];
+ 	var entityType = commands[1];
+ 	var oldDatasource = commands[2];
+ 	var newDatasource = commands[3];
+
+ 	if (commands.length != 4) {
+ 		logger.showError('Incorrect arguments, please read the usage.')
+ 		return;
+ 	}
+
 	var self = this;
  	successMessage = 'Datasource changed successfully';
  
- 	if (entityType === 'datasource') {
+ 	if (component === 'panels' && entityType === 'datasource') {
  		var entityValue = config.getConfig('config:context:dashboard');
  		if (typeof oldDatasource != 'string') {
- 			oldDatasource = 'null';
+ 			logger.showError('Old datasource value not supported or incorrect.')
+ 			return;
  		}
- 		if (typeof newDatasource != 'string' || newDatasource == 'default') {
- 			newDatasource = 'null';
+ 		if (typeof newDatasource != 'string') {
+ 			logger.showError('New datasource value not supported or incorrect.')
+ 			return;
  		}
  		var dashboard = self.readDashboard(entityValue);
  		var arch = {};
- 
  		// Extracting row information
  		arch.title = dashboard.title;
  		arch.rowCount = _.size(dashboard.rows);
  		arch.rows = [];
  		_.forEach(dashboard.rows, function(row) {
  			_.forEach(row.panels,function(panel){
- 				if(panel.datasource == oldDatasource){
- 					panel.datasource = newDatasource
- 				}
- 				else if(panel.datasource == null && oldDatasource =='default'){
+ 				if(panel.datasource === oldDatasource){
  					panel.datasource = newDatasource
  				}
  			});
  		});
+ 		logger.showResult(successMessage);
  		this.saveDashboard(entityValue, dashboard, true);
  	}
  	else {
  		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
- 		return;
  	}
- 	logger.showResult(successMessage);
+
  }
 
  
