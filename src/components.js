@@ -249,6 +249,49 @@ Components.prototype.summarize = function(commands) {
 
 }
 
+Components.prototype.change = function(commands) {
+ 	var entityType = commands[0];
+ 	var oldDatasource = commands[1];
+ 	var newDatasource = commands[2];
+ 
+	var self = this;
+ 	successMessage = 'Datasource changed successfully';
+ 
+ 	if (entityType === 'datasource') {
+ 		var entityValue = config.getConfig('config:context:dashboard');
+ 		if (typeof oldDatasource != 'string') {
+ 			oldDatasource = 'null';
+ 		}
+ 		if (typeof newDatasource != 'string' || newDatasource == 'default') {
+ 			newDatasource = 'null';
+ 		}
+ 		var dashboard = self.readDashboard(entityValue);
+ 		var arch = {};
+ 
+ 		// Extracting row information
+ 		arch.title = dashboard.title;
+ 		arch.rowCount = _.size(dashboard.rows);
+ 		arch.rows = [];
+ 		_.forEach(dashboard.rows, function(row) {
+ 			_.forEach(row.panels,function(panel){
+ 				if(panel.datasource == oldDatasource){
+ 					panel.datasource = newDatasource
+ 				}
+ 				else if(panel.datasource == null && oldDatasource =='default'){
+ 					panel.datasource = newDatasource
+ 				}
+ 			});
+ 		});
+ 		this.saveDashboard(entityValue, dashboard, true);
+ 	}
+ 	else {
+ 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
+ 		return;
+ 	}
+ 	logger.showResult(successMessage);
+ }
+
+ 
 // Extracts entities from dashboard json
 Components.prototype.extract = function(commands) {
 
