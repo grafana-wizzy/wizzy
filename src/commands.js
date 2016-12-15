@@ -88,8 +88,8 @@ Commands.prototype.instructions = function() {
 				components.summarize(_.drop(commands));
 				break;
 			case 'change':
-        components.change(_.drop(commands));
-        break;
+        		components.change(_.drop(commands));
+        		break;
 			case 'move':
 				components.moveCopyOrRemove(commands);
 				break;

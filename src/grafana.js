@@ -4,6 +4,8 @@
 // Initializing logger
 var Logger = require('./logger.js');
 var logger = new Logger();
+var LocalFS = require('./localfs.js');
+var localfs = new LocalFS();
 
 var _ = require('lodash');
 var request = require('request');
@@ -17,6 +19,7 @@ var components;
 var grafana_url;
 var auth = {};
 var body = {};
+
 
 function Grafana(conf, comps) {
 	grafana_url = conf.url;
@@ -302,7 +305,31 @@ Grafana.prototype.export = function(commands) {
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
 		sendRequest('PUT', url);
-	} else {
+	}else if (entityType === 'dashboards'){
+		var items = localfs.readFilesFromDir('./dashboards');
+		var self = this;
+		_.forEach(items,function(item){
+			var url_check = grafana_url + self.createURL('show', 'dashboard', item.slice(0, -5))
+			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+				successMessage = 'Dashboard '+ item.slice(0, -5) + ' export successful.';
+				failureMessage = 'Dashboard '+ item.slice(0, -5) + ' export failed.';
+				var url = grafana_url + self.createURL('export', 'dashboard', item.slice(0, -5));
+				var dashBody = {
+						dashboard: components.readDashboard(item.slice(0, -5)),
+						overwrite: true
+				}
+				body = dashBody;
+				if (!error_check && response_check.statusCode == 200) {
+					sendRequest('POST', url);
+	  			}
+	  			else{
+	  				dashBody.dashboard.id = null;
+					sendRequest('POST', url);
+	  			}
+			});
+		});
+	} 
+	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
