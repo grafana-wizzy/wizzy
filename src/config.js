@@ -15,7 +15,13 @@ var configs = [
 	'config:grafana:username',
 	'config:grafana:password',
 	'config:grafana:debug_api',
-	'config:context:dashboard'
+	'config:context:dashboard',
+	'config:clip:render_height',
+	'config:clip:render_width',
+	'config:clip:render_timeout',
+	'config:clip:canvas_height',
+	'config:clip:canvas_width',
+	'config:clip:delay'
 ]
 
 var confDir;
