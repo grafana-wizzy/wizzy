@@ -87,6 +87,10 @@ $ wizzy export new-dashboard DASHBOARD_SLUG
 	- exports a new local dashboard to be saved as a remote dashboard and go live
 $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
+$ wizzy clip dashboard DASHBOARD_SLUG
+	- makes a clip (gif) of dashboard's last 24 hours of data
+	- Note: Pleas set all 6 clip configuration properties otherwise this command will not work
+	- See at the bottom of the page to set clip configuration properties
 ```
 
 ### Organization Commands
@@ -205,6 +209,11 @@ $ wizzy set grafana password PASSWORD
 $ wizzy set grafana debug_api true
 	- an optional setting to debug Grafana API calls, `false` by default
 $ wizzy set context dashboard DASHBOARD_SLUG
+$ wizzy set clip render_height 600
+$ wizzy set clip render_width 600
+$ wizzy set clip render_timeout 10
+$ wizzy set clip canvas_width 800
+$ wizzy set clip canvas_height 600
 ```
 # Help Commands
 Help commands lets you explore wizzy's info, health, configuration.
