@@ -214,6 +214,8 @@ $ wizzy set clip render_width 600
 $ wizzy set clip render_timeout 10
 $ wizzy set clip canvas_width 800
 $ wizzy set clip canvas_height 600
+$ wizzy set clip delay 500
+	- sets delay between each snapshot, lower delay means short video
 ```
 # Help Commands
 Help commands lets you explore wizzy's info, health, configuration.
