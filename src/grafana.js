@@ -6,15 +6,21 @@ var Logger = require('./logger.js');
 var logger = new Logger();
 var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
+var syncReq = require('sync-request');
 
 var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
 
+var GIFEncoder = require('gifencoder');
+var encoder;
+var pngFileStream = require('png-file-stream');
+
 var successMessage;
 var failureMessage;
 
 var components;
+var config;
 
 var grafana_url;
 var auth = {};
@@ -22,15 +28,16 @@ var body = {};
 
 
 function Grafana(conf, comps) {
-	grafana_url = conf.url;
-	auth.username = conf.username;
-	auth.password = conf.password;
-	if (conf.debug_api === true || conf.debug_api === 'true') {
+	grafana_url = conf.grafana.url;
+	auth.username = conf.grafana.username;
+	auth.password = conf.grafana.password;
+	if (conf.grafana.debug_api === true || conf.grafana.debug_api === 'true') {
 		request.debug = true;
 	} else {
 		request.debug = false;
 	}
 	components = comps;
+	config = conf;
 }
 
 // creates an org
@@ -379,6 +386,70 @@ Grafana.prototype.list = function(commands) {
 
 }
 
+// Creates a 5 second clip of a dashboard for last 24 hours
+Grafana.prototype.clip = function(commands) {
+
+	if (!config.clip) {
+		logger.showError('Clip configs not set. Please set all 6 clip config properties stated in README.');
+		return;
+	}
+
+	var entityType = commands[0];
+	var entityValue = commands[1];
+
+	if (entityType === 'dashboard') {
+
+		localfs.createIfNotExists('temp', 'dir', false);
+
+		var url = grafana_url + this.createURL('clip', entityType, entityValue) + 
+			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
+			config.clip.render_timeout;
+
+		var urlParts = url.split('://');
+		url = urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+
+		var now = (new Date).getTime();
+
+		// Taking 24 screenshots
+		logger.justShow('Taking 24 snapshots.');
+
+		var i = 0;
+		while(i < 24) {
+			var from = now - ((i + 1) * 60 * 60000);
+			var to = now - (i * 60 * 60000);
+			var completeUrl = url + '&from=' + from + '&to=' + to;
+			var response = syncReq('GET', completeUrl);
+			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png'
+			localfs.writeFile(filename, response.getBody());
+			i++;
+			logger.showResult('Took snapshot ' + i + '.');
+		}
+
+		logger.showResult('Snapshots rendering completed.');
+		logger.justShow('Waiting 5 seconds before generating clip.');
+
+		setTimeout(this.createGif(entityValue), 5000);
+
+	} else {
+		logger.showError('Unsupported entity type ' + entityType + '.');
+	}
+}
+
+Grafana.prototype.createGif = function(dashboard) {
+
+	localfs.createIfNotExists('clips', 'dir', false);
+
+	encoder = new GIFEncoder(config.clip.canvas_width, config.clip.canvas_height);
+
+	pngFileStream('temp/*.png')
+		.pipe(encoder.createWriteStream({ repeat: -1, delay: parseInt(config.clip.delay), quality: 40 }))
+ 		.pipe(localfs.writeStream('clips/' + dashboard + '.gif'));
+
+ 	logger.showResult('Successfully created ' + dashboard + ' clip under clips directory.');
+ 	logger.justShow('You may delete temp directory.');
+
+}
+
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
@@ -393,7 +464,11 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	} else if (entityType === 'orgs') {
 		url += '/api/orgs';
 	} else if (entityType === 'dashboard') {
-		url += '/api/dashboards/db';
+		if (command === 'clip') {
+			url += '/render/dashboard/db/' + entityValue;
+		} else {
+			url += '/api/dashboards/db';
+		}
 		if (command === 'import' || command === 'delete' || command === 'show') {
 			url += '/' + entityValue;
 		}

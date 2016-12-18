@@ -6,9 +6,11 @@ var expect = require('chai').expect;
 var Grafana = require('../src/grafana.js');
 
 var config = {
-	url: 'http://localhost:3000',
-	username: 'admin',
-	password: 'password'
+  grafana: {
+    url: 'http://localhost:3000',
+    username: 'admin',
+    password: 'password'
+  }
 }
 
 var components = {};

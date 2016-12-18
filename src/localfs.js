@@ -23,7 +23,7 @@ LocalFS.prototype.checkExists = function(name, output, showOnOk) {
 
 }
 
-LocalFS.prototype.createIfNotExists = function(name, type, output) {
+LocalFS.prototype.createIfNotExists = function(name, type, showResult) {
 
 	if (!fs.existsSync(name)){
 		if (type === 'dir') {
@@ -31,9 +31,13 @@ LocalFS.prototype.createIfNotExists = function(name, type, output) {
 		} else if (type === 'file') {
 			
 		}
-    logger.showResult(output + ' created.');
+		if (showResult) {
+			logger.showResult(name + ' created.');	
+		}
 	} else {
-		logger.showResult(output + ' already exists.');
+		if (showResult) {
+			logger.showResult(name + ' already exists.');
+		}
 	}
 	
 }
@@ -61,6 +65,24 @@ LocalFS.prototype.readFilesFromDir = function(dirName) {
 
 	return fs.readdirSync(dirName);
 
+}
+
+LocalFS.prototype.createDir = function(name, output) {
+	fs.mkdirSync(name);
+	if (output) {
+		logger.showResult(output + ' created.');
+	}
+}
+
+LocalFS.prototype.deleteDir = function(name, output) {
+	fs.rmdir(name);
+	if (output) {
+		logger.showResult(output + ' deleted.');
+	}
+}
+
+LocalFS.prototype.writeStream = function(name) {
+	return fs.createWriteStream(name);
 }
 
 module.exports = LocalFS;
