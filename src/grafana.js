@@ -312,6 +312,33 @@ Grafana.prototype.export = function(commands) {
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
 		sendRequest('PUT', url);
+	} else if (entityType === 'datasources'){
+		var items = localfs.readFilesFromDir('./datasources');
+		var self = this;
+		successMessage = 'Datasource export successful.';
+		failureMessage = 'Datasource export failed.';
+
+		var url = grafana_url + self.createURL('export', 'datasources', null)
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+			var ids = {}
+			_.forEach(body_check, function(datasource){
+				ids[datasource.name] = datasource.id;
+			});
+
+			_.forEach(items,function(item){
+				var name = item.slice(0, -5);
+				body = components.readDatasource(name);
+				if (body.name in ids) {
+					body.id = ids[body.name];
+					var url = grafana_url + self.createURL('export', 'datasource', body.id);
+					sendRequest('PUT', url);
+				} else {
+  				body.id = null;
+  				var url = grafana_url + self.createURL('export', 'datasources', null);
+					sendRequest('POST', url);
+	  		}
+			});
+		});
 	}else if (entityType === 'dashboards'){
 		var items = localfs.readFilesFromDir('./dashboards');
 		var self = this;
