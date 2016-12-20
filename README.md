@@ -5,6 +5,8 @@
 * [Understanding the use case](#understanding-the-use-case)
 * [Flow](#flow)
 * [Getting started with wizzy](#getting-started-with-wizzy)
+  * [Installation](#installation)
+  * [Initialization](#initialization)
 * [Terminology](#terminology)
 * [Commands](#commands)
   * [Remote commands](#remote-commands)
@@ -40,6 +42,8 @@ We want/need to edit and modify dashboards everyday and managing tens and hundre
 4. The user also can push it to a Git repo once he is done making changes to track what changed on a dashboard.
 
 # Getting started with wizzy
+
+## Installation
 - Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
 ```
 $ docker pull utkarshcmu/wizzy
@@ -66,6 +70,7 @@ $ npm install
 $ npm link
 ```
 
+## Initialization
 - Check wizzy version
 ```
 $ wizzy version
