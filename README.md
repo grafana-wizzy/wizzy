@@ -2,7 +2,7 @@
 ================
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
-* [Understandint the use case?](#understanding-the-use-case)
+* [Understanding the use case?](#understanding-the-use-case)
 * [Flow](#flow)
 * [Getting started with wizzy](#getting-started-with-wizzy)
 * [Dashboard commands](#dashboard-commands)
@@ -11,6 +11,8 @@
     * [Dashboard commands](#dashboard-commands)
     * [Organization commands](#organization-commands)
     * [Datasource commands](#datasource-commands)    
+  * [Datasource context](#datasource-context)
+  * [Local commands](#local-commands)
 
 # Understanding the use case
 
@@ -137,17 +139,17 @@ $ wizzy export datasource DATASOURCE_NAME
 	- exports local datasource JSON object to replace the one in Grafana
 ```
 
-## Dashboard Context
+## Dashboard context
 A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
 ```
 wizzy set context dashboard DASHBOARD_SLUG
 ```
 Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
 
-## Local Commands
+## Local commands
 These commands operates on local json file based dashboards and support Dashboard Context.
 
-### Dashboard Commands
+### Dashboard commands
 These commands impacts the dashboard wide changes
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
@@ -156,19 +158,19 @@ $ wizzy change panels datasource OLD_DATASOURCE NEW_DATASOURCE
 	- changes OLD_DATASOURCE to NEW_DATASOURCE for all panels on a dashboard
 ```
 
-### Orgs Commands
+### Orgs commands
 ```
 $ wizzy summarize orgs
 	- prints summary of all local orgs
 ```
 
-### Datasources Commands
+### Datasources commands
 ```
 $ wizzy summarize datasources
 	- prints summary of all local datasources
 ```
 
-### Row Commands
+### Row commands
 ```
 $ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- copies a row from one position to another on the same dashboard
