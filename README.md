@@ -13,6 +13,15 @@
     * [Datasource commands](#datasource-commands)    
   * [Dashboard context](#dashboard-context)
   * [Local commands](#local-commands)
+    * [Dashboard commands](#dashboard-commands-1)
+    * [Organization commands](#organization-commands-1)
+    * [Datasource commands](#datasource-commands-1)
+    * [Row commands](#row-commands)
+    * [Panel commands](#panel-commands)
+    * [Template variable commands](#template-variable-commands)
+  * [Configuration commands](#configuration-commands)
+  * [Help commands](#help-commands)
+  * [Grafana.net commands](#grafananet-commands)
 
 # Understanding the use case
 
@@ -159,7 +168,7 @@ $ wizzy change panels datasource OLD_DATASOURCE NEW_DATASOURCE
 	- changes OLD_DATASOURCE to NEW_DATASOURCE for all panels on a dashboard
 ```
 
-### Orgs commands
+### Organization commands
 ```
 $ wizzy summarize orgs
 	- prints summary of all local orgs
@@ -185,7 +194,7 @@ $ wizzy remove row SOURCE_ROW_NUMBER
 	- removes a row from the current dashboard
 ```
 
-### Panel Commands
+### Panel commands
 ```
 $ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current row to another row on the same dashboard
@@ -200,7 +209,7 @@ $ wizzy remove panel SOURCE_ROW.PANEL_NUMBER
 
 ```
 
-### Template Variables Commands
+### Template variables commands
 ```
 $ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- copies a template variable from current dashboard to another dashboard
@@ -215,7 +224,7 @@ $ wizzy insert temp-var TEMP_VAR_NAME DASHBOARD_SLUG
 ```
 Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard. ROW_NUMBER and PANEL_NUMBER starts from 1.
 
-# Set Configuration commands
+## Configuration commands
 Grafana properties can be set in wizzy by running following commands, if you have not set already:
 ```
 $ wizzy set grafana url GRAFANA_URL
@@ -232,7 +241,7 @@ $ wizzy set clip canvas_height 600
 $ wizzy set clip delay 500
 	- sets delay between each snapshot, lower delay means short video
 ```
-# Help Commands
+## Help commands
 Help commands lets you explore wizzy's info, health, configuration.
 ```
 $ wizzy conf
@@ -244,7 +253,7 @@ $ wizzy help
 $ wizzy version
 ```
 
-# Grafana.net commands
+## Grafana.net commands
 wizzy can interact now with Grafana.net. It can list and download dashboards from Grafana.net.
 ```
 $ wizzy list gnet dashboards <FILTER>
