@@ -55,17 +55,17 @@ Note: Please make sure node version is above 5.10.1.
 ## Installation
 There are 3 different ways you can install wizzy:
 
-1 Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
+1 - Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
 ```
 $ docker pull utkarshcmu/wizzy
 	- pulls latest docker image
 ```
-2. Using npm (Stable release):
+2 - Using npm (Stable release):
 ```
 $ npm install -g wizzy
 	- Use sudo if needed or permission was denied
 ```
-3. Using Github (from source):
+3 - Using Github (from source):
 ```
 $ git clone https://github.com/utkarshcmu/wizzy.git
 $ cd wizzy
