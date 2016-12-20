@@ -40,6 +40,10 @@ We want/need to edit and modify dashboards everyday and managing tens and hundre
 4. The user also can push it to a Git repo once he is done making changes to track what changed on a dashboard.
 
 # Getting started with wizzy
+- Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
+```
+$ docker pull utkarshcmu/wizzy
+```
 
 - Install nodejs by downloading it from nodejs.org. (https://nodejs.org/en/download/). After installing nodejs, run following commands:
 ```
