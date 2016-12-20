@@ -353,8 +353,8 @@ Grafana.prototype.export = function(commands) {
 
 	// exporting all local datasources to Grafana
 	else if (entityType === 'datasources'){
-		successMessage = 'Datasources export successful.';
-		failureMessage = 'Datasources export failed.';
+		successMessage = 'Datasource export successful.';
+		failureMessage = 'Datasource export failed.';
 		var self = this;
 
 		var dsNames = components.readEntityNamesFromDir('datasources');
@@ -377,14 +377,14 @@ Grafana.prototype.export = function(commands) {
 				if (body.name in ids) {
 					body.id = ids[body.name];
 					url = grafana_url + self.createURL('export', 'datasource', body.id);
-					url = addAuth(url);
+					//url = addAuth(url);
 					method = 'PUT';
 				}
 				// otherwise we create the datasource
 				else {
   				delete body.id;
   				url = grafana_url + self.createURL('export', 'datasources', null);
-  				url = addAuth(url);
+  				//url = addAuth(url);
 					method = 'POST';
 	  		}
 	  		/* Use sync-request to avoid table lockdown
@@ -396,10 +396,6 @@ Grafana.prototype.export = function(commands) {
 	  		sendRequest(method, url); // causing table lockdown.
 			});
 		});
-		logger.showResult((dsNames.length - failed) + ' datasources exported successfully.');
-		if (failed > 0) {
-			logger.showResult(failed + ' datasources export failed.');
-		}
 	}
 
 	// exporting all local dashbaords to Grafana
