@@ -2,6 +2,16 @@
 ================
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
+* [Understandint the use case?](#understanding-the-use-case)
+* [Flow](#flow)
+* [Getting started with wizzy](#getting-started-with-wizzy)
+* [Dashboard commands](#dashboard-commands)
+  * [Dashboard terminology](#dashboard-terminology)
+  * [Remote commands](#remote-commands)
+    * [Dashboard commands](#dashboard-commands)
+    * [Organization commands](#organization-commands)
+    * [Datasource commands](#datasource-commands)    
+
 # Understanding the use case
 
 We want/need to edit and modify dashboards everyday and managing tens and hundreds of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. `wizzy` brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.
@@ -62,16 +72,16 @@ $ wizzy status
 
 You are ready to use wizzy. Import your first dashboard now!
 
-# Dashboard Commands
+# Dashboard commands
 
-## Dashboard Terminology
+## Dashboard terminology
 - *local dashboard* - a json dashboard file under dashboards directory on local disk
 - *remote dashboard* - a dashboard currently live in Grafana
 
-## Remote Commands
+## Remote commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
 
-### Dashboard Commands
+### Dashboard commands
 ```
 $ wizzy list dashboards
 	- prints list of dashboards from Grafana in a tabular format
@@ -93,7 +103,7 @@ $ wizzy clip dashboard DASHBOARD_SLUG
 	- See at the bottom of the page to set clip configuration properties
 ```
 
-### Organization Commands
+### Organization commands
 ```
 $ wizzy import orgs
 	- imports all orgs in JSON format and stores under orgs directory
@@ -111,7 +121,7 @@ $ wizzy export org ORG_ID
 	- exports an org from local JSON to replace the one in Grafana
 ```
 
-### Datasource Commands
+### Datasource commands
 ```
 $ wizzy show datasources
 	- shows you all the datasources in JSON
