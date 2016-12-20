@@ -117,7 +117,7 @@ Grafana.prototype.import = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
-	// imports a single dashboard
+	// imports a dashboard from Grafana
 	if (entityType === 'dashboard') {
 		successMessage = 'Dashboard '+ entityValue + ' import successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
@@ -140,7 +140,9 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} // import all dashboards
+	}
+
+	// import all dashboards from Grafana
 	else if (entityType === 'dashboards') {
 		successMessage = 'Dashboards imported successful.';
 		failureMessage = 'Dashboards import failed.';
@@ -174,7 +176,10 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} else if (entityType === 'org') {
+	}
+
+	// imports an org from Grafana
+	else if (entityType === 'org') {
 		successMessage = 'Org '+ entityValue + ' import successful.';
 		failureMessage = 'Org '+ entityValue + ' import failed.';
 		var url = grafana_url + this.createURL('import', entityType, entityValue);
@@ -196,7 +201,10 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} else if (entityType === 'orgs') {
+	}
+
+	// imports all orgs from Grafana
+	else if (entityType === 'orgs') {
 		successMessage = 'Orgs import successful.';
 		failureMessage = 'Orgs import failed.';
 		var self = this;
@@ -229,7 +237,10 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	}  else if (entityType === 'datasource') {
+	}
+
+	// import a datasource from Grafana
+	else if (entityType === 'datasource') {
 		successMessage = 'Datasource '+ entityValue + ' import successful.';
 		failureMessage = 'Datasource '+ entityValue + ' import failed.';
 		var url = grafana_url + this.createURL('import', entityType, entityValue);
@@ -237,6 +248,7 @@ Grafana.prototype.import = function(commands) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
+	  	  delete body.id;
 	  	  components.saveDatasource(entityValue, body, true);
 	  	  logger.showResult(successMessage);
 	  	} else {
@@ -251,7 +263,10 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} else if (entityType === 'datasources') {
+	}
+
+	// import all datasources from Grafana
+	else if (entityType === 'datasources') {
 		successMessage = 'Datasources import successful.';
 		failureMessage = 'Datasources import failed.';
 		var self = this;
@@ -259,7 +274,8 @@ Grafana.prototype.import = function(commands) {
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			if (!error && response.statusCode == 200) {
 				_.each(body, function(datasource){
-					components.saveDatasource(datasource.id, datasource);
+					delete datasource.id;
+					components.saveDatasource(datasource.name, datasource);
 				});
 	  	  logger.showResult('Total datasources imported: ' + body.length);
 	  	  logger.showResult(successMessage);
@@ -287,6 +303,7 @@ Grafana.prototype.export = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
+	// exporting a dashboard to Grafana
 	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
 		var dashBody = {
 			dashboard: components.readDashboard(entityValue),
@@ -300,46 +317,93 @@ Grafana.prototype.export = function(commands) {
 		body = dashBody;
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
 		sendRequest('POST', url);
-	}  else if (entityType === 'org') {
+	}
+
+	// exporting a local org to Grafana
+	else if (entityType === 'org') {
 		body = components.readOrg(entityValue);
 		successMessage = 'Org '+ entityValue + ' export successful.';
 		failureMessage = 'Org '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
 		sendRequest('PUT', url);
-	} else if (entityType === 'datasource') {
+	}
+
+	// exporting a single local datasource to Grafana
+	else if (entityType === 'datasource') {
 		body = components.readDatasource(entityValue);
+		var self =  this;
 		successMessage = 'Datasource '+ entityValue + ' export successful.';
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
-		var url = grafana_url + this.createURL('export', entityType, entityValue);
-		sendRequest('PUT', url);
-	} else if (entityType === 'datasources'){
-		var items = localfs.readFilesFromDir('./datasources');
-		var self = this;
-		successMessage = 'Datasource export successful.';
-		failureMessage = 'Datasource export failed.';
+		var checkDsUrl = grafana_url + this.createURL('show', entityType, entityValue);
+		request.get({url: checkDsUrl, auth:auth, json:true}, function checkHandler(error_check, response_check, body_check) {
+			if (response_check.statusCode === 404) {
+				logger.justShow('Datasource does not exists in Grafana.');
+				logger.justShow('Trying to create a new datasource.');
+				delete body.id;
+				var url = grafana_url + self.createURL('export', 'datasources', null);
+				sendRequest('POST', url);
+			} else if (response_check.statusCode === 200) {
+				var url = grafana_url + self.createURL('export', entityType, body_check.id);
+				sendRequest('POST', url);
+			} else {
+				logger.showError('Unknown response from Grafana.');
+			}
+		});
+	}
 
+	// exporting all local datasources to Grafana
+	else if (entityType === 'datasources'){
+		successMessage = 'Datasources export successful.';
+		failureMessage = 'Datasources export failed.';
+		var self = this;
+
+		var dsNames = components.readEntityNamesFromDir('datasources');
 		var url = grafana_url + self.createURL('export', 'datasources', null)
+		var failed = 0;
+
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+			// Getting existing list of datasources and making a mapping of names to ids
 			var ids = {}
-			_.forEach(body_check, function(datasource){
+			_.forEach(body_check, function(datasource) {
 				ids[datasource.name] = datasource.id;
 			});
 
-			_.forEach(items,function(item){
-				var name = item.slice(0, -5);
-				body = components.readDatasource(name);
+			// Here we try exporting (either updating or creating) a datasource
+			_.forEach(dsNames, function(ds) {
+				var url;
+				var method;
+				body = components.readDatasource(ds);
+				// if local dashboard exists in Grafana we update
 				if (body.name in ids) {
 					body.id = ids[body.name];
-					var url = grafana_url + self.createURL('export', 'datasource', body.id);
-					sendRequest('PUT', url);
-				} else {
-  				body.id = null;
-  				var url = grafana_url + self.createURL('export', 'datasources', null);
-					sendRequest('POST', url);
+					url = grafana_url + self.createURL('export', 'datasource', body.id);
+					url = addAuth(url);
+					method = 'PUT';
+				}
+				// otherwise we create the datasource
+				else {
+  				delete body.id;
+  				url = grafana_url + self.createURL('export', 'datasources', null);
+  				url = addAuth(url);
+					method = 'POST';
 	  		}
+	  		/* Use sync-request to avoid table lockdown
+	  		var response = syncReq(method, url, {json: body});
+	  		if (response.statusCode != 200) {
+	  			logger.showError('Datasource ' + ds + 'export failed.');
+	  			failed++;
+	  		}*/
+	  		sendRequest(method, url); // causing table lockdown.
 			});
 		});
-	}else if (entityType === 'dashboards'){
+		logger.showResult((dsNames.length - failed) + ' datasources exported successfully.');
+		if (failed > 0) {
+			logger.showResult(failed + ' datasources export failed.');
+		}
+	}
+
+	// exporting all local dashbaords to Grafana
+	else if (entityType === 'dashboards'){
 		var items = localfs.readFilesFromDir('./dashboards');
 		var self = this;
 		_.forEach(items,function(item){
@@ -432,8 +496,7 @@ Grafana.prototype.clip = function(commands) {
 			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 			config.clip.render_timeout;
 
-		var urlParts = url.split('://');
-		url = urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+		url = addAuth(url);
 
 		var now = (new Date).getTime();
 
@@ -506,7 +569,11 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	} else if (entityType === 'datasources') {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {
-		url += '/api/datasources/' + entityValue;
+		if (command === 'show' || command === 'import') {
+			url += '/api/datasources/name/' + entityValue;	
+		} else if (command === 'export') {
+			url += '/api/datasources/' + entityValue;	
+		}
 	}
 
 	return url;
@@ -515,7 +582,6 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 // Sends an HTTP API request to Grafana
 function sendRequest(method, url) {
-	
 	if (method === 'POST') {
 		request.post({url: url, auth: auth, json: true, body: body}, printResponse); 
 	} else if (method === 'GET') {
@@ -546,6 +612,13 @@ function printResponse(error, response, body) {
   		logger.showOutput(output);
   		logger.showError(failureMessage);
   	}
+}
+
+// add auth to sync request
+function addAuth(url) {
+	var urlParts = url.split('://');
+	url = urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+	return url;
 }
 
 module.exports = Grafana;
