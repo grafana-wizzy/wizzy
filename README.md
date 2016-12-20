@@ -5,6 +5,7 @@
 * [Understanding the use case](#understanding-the-use-case)
 * [Flow](#flow)
 * [Getting started with wizzy](#getting-started-with-wizzy)
+  * [Prerequisites](#prerequisites)
   * [Installation](#installation)
   * [Initialization](#initialization)
 * [Terminology](#terminology)
@@ -43,26 +44,28 @@ We want/need to edit and modify dashboards everyday and managing tens and hundre
 
 # Getting started with wizzy
 
-## Installation
-- Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
-```
-$ docker pull utkarshcmu/wizzy
-```
-
-- Install nodejs by downloading it from nodejs.org. (https://nodejs.org/en/download/). After installing nodejs, run following commands:
+## Prerequisites
+Install nodejs by downloading it from nodejs.org. (https://nodejs.org/en/download/). After installing nodejs, run following commands:
 ```
 $ node -v
 $ npm -v
 ```
 Note: Please make sure node version is above 5.10.1.
 
-- (Stable release) Install wizzy using npm
+## Installation
+There are 3 different ways you can install wizzy:
+
+1 Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
+```
+$ docker pull utkarshcmu/wizzy
+	- pulls latest docker image
+```
+2. Using npm (Stable release):
 ```
 $ npm install -g wizzy
 	- Use sudo if needed or permission was denied
 ```
-
-- (From Github source) Install wizzy from source
+3. Using Github (from source):
 ```
 $ git clone https://github.com/utkarshcmu/wizzy.git
 $ cd wizzy
