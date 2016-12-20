@@ -22,6 +22,8 @@
   * [Configuration commands](#configuration-commands)
   * [Help commands](#help-commands)
   * [Grafana.net commands](#grafananet-commands)
+* [Project Initiator](#project-initiator)
+* [Contributors](https://github.com/utkarshcmu/wizzy/graphs/contributors)
 
 # Understanding the use case
 
@@ -275,5 +277,5 @@ $ wizzy download gnet dashboard DASHBOARD_ID REVISION_ID
 	- Download a dashboard json from Grafana.net and stores under dashboards directory.
 ```
 
-# Author
+# Project initiator
 Utkarsh Bhatnagar, @utkarshcmu, <utkarsh.cmu@gmail.com>
