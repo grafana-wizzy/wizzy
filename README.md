@@ -2,7 +2,7 @@
 ================
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
-* [Understanding the use case?](#understanding-the-use-case)
+* [Understanding the use case](#understanding-the-use-case)
 * [Flow](#flow)
 * [Getting started with wizzy](#getting-started-with-wizzy)
 * [Terminology](#terminology)
@@ -46,10 +46,22 @@ $ npm -v
 ```
 Note: Please make sure node version is above 5.10.1.
 
-- Install wizzy using npm
+- (Stable release) Install wizzy using npm
 ```
 $ npm install -g wizzy
 	- Use sudo if needed or permission was denied
+```
+
+- (From Github source) Install wizzy from source
+```
+$ git clone https://github.com/utkarshcmu/wizzy.git
+$ cd wizzy
+$ npm install
+$ npm link
+```
+
+- Check wizzy version
+```
 $ wizzy version
 ```
 
