@@ -272,6 +272,7 @@ Grafana.prototype.import = function(commands) {
 		var self = this;
 		var url = grafana_url + self.createURL('import', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
 			if (!error && response.statusCode == 200) {
 				_.each(body, function(datasource){
 					delete datasource.id;
