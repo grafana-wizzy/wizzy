@@ -186,7 +186,7 @@ $ wizzy summarize orgs
 	- prints summary of all local orgs
 ```
 
-### Datasources commands
+### Datasource commands
 ```
 $ wizzy summarize datasources
 	- prints summary of all local datasources
@@ -221,7 +221,7 @@ $ wizzy remove panel SOURCE_ROW.PANEL_NUMBER
 
 ```
 
-### Template variables commands
+### Template variable commands
 ```
 $ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- copies a template variable from current dashboard to another dashboard
