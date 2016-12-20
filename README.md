@@ -5,8 +5,8 @@
 * [Understanding the use case?](#understanding-the-use-case)
 * [Flow](#flow)
 * [Getting started with wizzy](#getting-started-with-wizzy)
-* [Dashboard commands](#dashboard-commands)
-  * [Dashboard terminology](#dashboard-terminology)
+* [Terminology](#terminology)
+* [Commands](#commands)
   * [Remote commands](#remote-commands)
     * [Dashboard commands](#dashboard-commands)
     * [Organization commands](#organization-commands)
@@ -74,11 +74,12 @@ $ wizzy status
 
 You are ready to use wizzy. Import your first dashboard now!
 
-# Dashboard commands
-
-## Dashboard terminology
+# Terminology
 - *local dashboard* - a json dashboard file under dashboards directory on local disk
 - *remote dashboard* - a dashboard currently live in Grafana
+
+# Commands
+Broadly there are two types of commands in wizzy. Remote commands, which interacts with external sources like Grafana, S3, etc, and local commands, which operate on local json entities like dashboards, datasources, etc.
 
 ## Remote commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
