@@ -11,7 +11,7 @@
     * [Dashboard commands](#dashboard-commands)
     * [Organization commands](#organization-commands)
     * [Datasource commands](#datasource-commands)    
-  * [Datasource context](#datasource-context)
+  * [Dashboard context](#dashboard-context)
   * [Local commands](#local-commands)
 
 # Understanding the use case
