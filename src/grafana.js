@@ -429,7 +429,7 @@ Grafana.prototype.export = function(commands) {
 				else {
   				delete body.id;
   				url = grafana_url + self.createURL('export', 'datasources', null);
-  				url = addAuth(url);
+				url = addAuth(url);
 					method = 'POST';
 	  		}
 	  		// Use sync-request to avoid table lockdown
@@ -527,9 +527,7 @@ Grafana.prototype.clip = function(commands) {
 			config.clip.render_timeout;
 
 
-		if (auth) {
-			url = addAuth(url);
-		}
+		url = addAuth(url);
 
 		var now = (new Date).getTime();
 
@@ -555,9 +553,7 @@ Grafana.prototype.clip = function(commands) {
 	} else if (entityType === 'dashboards' && commands[1] === 'by' && commands[2] === 'tag') {
 		var tag = commands[3];
 		var url = grafana_url + self.createURL('search', entityType, null) + '?tag=' + tag;
-		if (auth) {
-			url = addAuth(url);
-		}
+		url = addAuth(url);
 		var searchResponse = syncReq('GET', url);
 		var responseBody = JSON.parse(searchResponse.getBody('utf8'));
 		if (searchResponse.statusCode == 200 && responseBody.length > 0) {
@@ -567,9 +563,7 @@ Grafana.prototype.clip = function(commands) {
 				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) + 
 					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 					config.clip.render_timeout;
-				if (auth) {
-					dashUrl = addAuth(dashUrl);
-				}
+				dashUrl = addAuth(dashUrl);
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
 				if (response.statusCode === 200) {
@@ -680,6 +674,9 @@ function printResponse(error, response, body) {
 
 // add auth to sync request
 function addAuth(url) {
+	// If the user didn't provide auth info, simply return the URL
+	if (!auth)
+		return url;
 	var urlParts = url.split('://');
 	url = urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
 	return url;
