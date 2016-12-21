@@ -398,13 +398,13 @@ Grafana.prototype.export = function(commands) {
 
 	// exporting all local datasources to Grafana
 	else if (entityType === 'datasources'){
-		successMessage = 'Datasource export successful.';
-		failureMessage = 'Datasource export failed.';
+
 		var self = this;
 
 		var dsNames = components.readEntityNamesFromDir('datasources');
 		var url = grafana_url + self.createURL('export', 'datasources', null)
 		var failed = 0;
+		var success = 0;
 
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
 			// Getting existing list of datasources and making a mapping of names to ids
@@ -422,24 +422,35 @@ Grafana.prototype.export = function(commands) {
 				if (body.name in ids) {
 					body.id = ids[body.name];
 					url = grafana_url + self.createURL('export', 'datasource', body.id);
-					//url = addAuth(url);
+					url = addAuth(url);
 					method = 'PUT';
 				}
 				// otherwise we create the datasource
 				else {
   				delete body.id;
   				url = grafana_url + self.createURL('export', 'datasources', null);
-  				//url = addAuth(url);
+  				url = addAuth(url);
 					method = 'POST';
 	  		}
-	  		/* Use sync-request to avoid table lockdown
+	  		// Use sync-request to avoid table lockdown
 	  		var response = syncReq(method, url, {json: body});
 	  		if (response.statusCode != 200) {
-	  			logger.showError('Datasource ' + ds + 'export failed.');
+	  			logger.showError('Datasource ' + ds + ' export failed.');
 	  			failed++;
-	  		}*/
-	  		sendRequest(method, url); // causing table lockdown.
+	  		} else {
+	  			logger.showOutput(response.getBody('utf8'));
+	  			logger.showResult('Datasource ' + ds + ' exported successfully.');
+	  			success++;
+	  		}
+	  		//sendRequest(method, url); // causing table lockdown.
 			});
+
+			if (failed > 0) {
+				logger.showError(failed + ' datasources export failed.');
+			}
+			if (success > 0) {
+				logger.showResult(success + ' datasources exported successfully.');
+			}
 		});
 	}
 
@@ -492,24 +503,26 @@ Grafana.prototype.list = function(commands) {
 
 }
 
-// Creates a 5 second clip of a dashboard for last 24 hours
+// Creates a 8 second clip of a dashboard for last 24 hours
 Grafana.prototype.clip = function(commands) {
 
-	if (!config.clip) {
+	if (!config.clip && config.clip.length < 6) {
 		logger.showError('Clip configs not set. Please set all 6 clip config properties stated in README.');
 		return;
 	}
 
+	var self = this;
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
+	localfs.createIfNotExists('temp', 'dir', false);
+
 	if (entityType === 'dashboard') {
 
-		localfs.createIfNotExists('temp', 'dir', false);
-
-		var url = grafana_url + this.createURL('clip', entityType, entityValue) + 
+		var url = grafana_url + self.createURL('clip', entityType, entityValue) + 
 			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 			config.clip.render_timeout;
+
 
 		if (auth) {
 			url = addAuth(url);
@@ -534,15 +547,43 @@ Grafana.prototype.clip = function(commands) {
 
 		logger.showResult('Snapshots rendering completed.');
 		logger.justShow('Waiting 5 seconds before generating clip.');
+		setTimeout(self.createGif(entityValue), 5000);
 
-		setTimeout(this.createGif(entityValue), 5000);
-
+	} else if (entityType === 'dashboards' && commands[1] === 'by' && commands[2] === 'tag') {
+		var tag = commands[3];
+		var url = grafana_url + self.createURL('search', entityType, null) + '?tag=' + tag;
+		if (auth) {
+			url = addAuth(url);
+		}
+		var searchResponse = syncReq('GET', url);
+		var responseBody = JSON.parse(searchResponse.getBody('utf8'));
+		if (searchResponse.statusCode == 200 && responseBody.length > 0) {
+			logger.showOutput('Taking dashboard snapshots.');
+			var dashboards = _.each(responseBody, function (dashboard) {
+				var dashName = dashboard.uri.substring(3);
+				var dashUrl = grafana_url + self.createURL('clip', 'dashbaord', dashName) + 
+					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
+					config.clip.render_timeout;
+				if (auth) {
+					dashUrl = addAuth(dashUrl);
+				}
+				var response = syncReq('GET', dashUrl);
+				var filename = 'temp/' + dashName + '.png';
+				localfs.writeFile(filename, response.getBody());
+				logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
+			});
+		} else {
+			logger.showError('No content available to make clip.');
+		}
+		logger.showResult('Snapshots rendering completed.');
+		logger.justShow('Waiting 5 seconds before generating clip.');
+		setTimeout(self.createGif(tag), 5000);
 	} else {
-		logger.showError('Unsupported entity type ' + entityType + '.');
+		logger.showError('Unsupported set of commands ' + commands + '.');
 	}
 }
 
-Grafana.prototype.createGif = function(dashboard) {
+Grafana.prototype.createGif = function(clipName) {
 
 	localfs.createIfNotExists('clips', 'dir', false);
 
@@ -550,10 +591,11 @@ Grafana.prototype.createGif = function(dashboard) {
 
 	pngFileStream('temp/*.png')
 		.pipe(encoder.createWriteStream({ repeat: -1, delay: parseInt(config.clip.delay), quality: 40 }))
- 		.pipe(localfs.writeStream('clips/' + dashboard + '.gif'));
+ 		.pipe(localfs.writeStream('clips/' + clipName + '.gif'));
 
- 	logger.showResult('Successfully created ' + dashboard + ' clip under clips directory.');
- 	logger.justShow('Please delete temp directory.');
+ 	logger.showResult('Successfully created ' + clipName + ' clip under clips directory.');
+ 	logger.justShow('Please delete temp directory');
+ 	//localfs.deleteDirRecursive('temp');
 
 }
 
@@ -579,8 +621,6 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 		if (command === 'import' || command === 'delete' || command === 'show') {
 			url += '/' + entityValue;
 		}
-	} else if (entityType === 'new-dashboard') {
-		url += '/api/dashboards/db';
 	} else if (entityType === 'dashboards') {
 		url += '/api/search';
 	} else if (entityType === 'datasources') {

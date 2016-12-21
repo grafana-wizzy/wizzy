@@ -5,7 +5,6 @@
 var confDir = 'conf';
 var datasourceDir = 'datasources';
 var confFile = 'conf/wizzy.json';
-
 var dashDir = 'dashboards';
 var datasrcDir = 'datasources';
 var orgsDir = 'orgs';

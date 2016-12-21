@@ -2,6 +2,7 @@
 "use strict";
 
 var fs = require('fs');
+var _ = require('lodash');
 var Logger = require('./logger.js');
 var logger = new Logger('localfs');
 
@@ -79,6 +80,16 @@ LocalFS.prototype.deleteDir = function(name, output) {
 	if (output) {
 		logger.showResult(output + ' deleted.');
 	}
+}
+
+LocalFS.prototype.deleteDirRecursive = function(name, output) {
+	var self = this;
+	var files = self.readFilesFromDir(name);
+	_.each(files, function(file) {
+		console.log(name + '/' + file);
+		fs.unlinkSync(name + '/' + file);
+	});
+	self.deleteDir(name);
 }
 
 LocalFS.prototype.writeStream = function(name) {
