@@ -308,12 +308,12 @@ Grafana.prototype.export = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
-	successMessage = 'Dashboard '+ entityValue + ' export successful.';
-	failureMessage = 'Dashboard '+ entityValue + ' export failed.';
-
 	var self = this;
 	// exporting a dashboard to Grafana
 	if (entityType === 'dashboard') {
+
+		successMessage = 'Dashboard '+ entityValue + ' export successful.';
+		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
 
 		var url_check = grafana_url + self.createURL('show', 'dashboard', entityValue);
 		request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
@@ -337,27 +337,29 @@ Grafana.prototype.export = function(commands) {
   // exporting all local dashbaords to Grafana
 	else if (entityType === 'dashboards') {
 
-		var dashboards = components.readEntityNamesFromDir('dashbaords');
-		var self = this;
+		var dashboards = components.readEntityNamesFromDir('dashboards');
+
 		_.forEach(dashboards,function(dashboard){
+			
 			var url_check = grafana_url + self.createURL('show', 'dashboard', dashboard);
 			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+				
 				var dashBody = {
 						dashboard: components.readDashboard(dashboard),
 						overwrite: true
 				}
+				
+				if (response_check.statusCode === 404) {
+					dashBody.dashboard.id = null;
+				} else {
+					dashBody.dashboard.id = body_check.dashboard.id;
+				}
+
 				body = dashBody;
-				successMessage = 'Dashboard ' + dashboard + ' export successful.';
-				failureMessage = 'Dashboard ' + dashboard + ' export failed.';
-				if (!error_check && response_check.statusCode == 200) {
-					var url = grafana_url + self.createURL('export', 'dashboard', dashboard);
-					sendRequest('POST', url);
-	  		}
-	  		else{
-	  			delete dashBody.dashboard.id;
-	  			var url = grafana_url + self.createURL('export', 'new-dashboard', dashboard);
-					sendRequest('POST', url);
-	  		}
+				var url = grafana_url + self.createURL('export', 'dashboard', dashboard);
+				sendRequest('POST', url);
+				successMessage = 'Dashboard '+ dashboard + ' export successful.';
+				failureMessage = 'Dashboard '+ dashboard + ' export failed.';
 			});
 		});
 	}

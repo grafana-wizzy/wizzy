@@ -131,8 +131,6 @@ $ wizzy import dashboard DASHBOARD_SLUG
 	- copies a remote dashboard json and creates a local dashboard
 $ wizzy export dashboard DASHBOARD_SLUG
 	- exports a local dashboard to be saved as a remote dashboard and go live
-$ wizzy export new-dashboard DASHBOARD_SLUG
-	- exports a new local dashboard to be saved as a remote dashboard and go live
 $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
 $ wizzy clip dashboard DASHBOARD_SLUG
