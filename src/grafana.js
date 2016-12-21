@@ -303,20 +303,58 @@ Grafana.prototype.export = function(commands) {
 	var entityType = commands[0];
 	var entityValue = commands[1];
 
+	successMessage = 'Dashboard '+ entityValue + ' export successful.';
+	failureMessage = 'Dashboard '+ entityValue + ' export failed.';
+
+	var self = this;
 	// exporting a dashboard to Grafana
-	if (entityType === 'dashboard' || entityType === 'new-dashboard') {
-		var dashBody = {
-			dashboard: components.readDashboard(entityValue),
-			overwrite: true
-		}
-		if (entityType === 'new-dashboard') {
-			dashBody.dashboard.id = null;
-		}
-		successMessage = 'Dashboard '+ entityValue + ' export successful.';
-		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
-		body = dashBody;
-		var url = grafana_url + this.createURL('export', entityType, entityValue);
-		sendRequest('POST', url);
+	if (entityType === 'dashboard') {
+
+		var url_check = grafana_url + self.createURL('show', 'dashboard', entityValue);
+		request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+			// this means that dashboard does not exist so will create a new one
+			var dashBody = {
+				dashboard: components.readDashboard(entityValue),
+				overwrite: true
+			}
+			if (response_check.statusCode === 404) {
+				dashBody.dashboard.id = null;
+			} else {
+				dashBody.dashboard.id = body_check.dashboard.id;
+			}
+			body = dashBody;
+			var url = grafana_url + self.createURL('export', entityType, null);
+			sendRequest('POST', url);
+		});
+
+	}
+
+  // exporting all local dashbaords to Grafana
+	else if (entityType === 'dashboards') {
+
+		var dashboards = components.readEntityNamesFromDir('dashbaords');
+		var self = this;
+		_.forEach(dashboards,function(dashboard){
+			var url_check = grafana_url + self.createURL('show', 'dashboard', dashboard);
+			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
+				var dashBody = {
+						dashboard: components.readDashboard(dashboard),
+						overwrite: true
+				}
+				body = dashBody;
+				successMessage = 'Dashboard ' + dashboard + ' export successful.';
+				failureMessage = 'Dashboard ' + dashboard + ' export failed.';
+				if (!error_check && response_check.statusCode == 200) {
+					var url = grafana_url + self.createURL('export', 'dashboard', dashboard);
+					sendRequest('POST', url);
+	  		}
+	  		else{
+	  			delete dashBody.dashboard.id;
+	  			var url = grafana_url + self.createURL('export', 'new-dashboard', dashboard);
+					sendRequest('POST', url);
+	  		}
+			});
+		});
 	}
 
 	// exporting a local org to Grafana
@@ -398,32 +436,6 @@ Grafana.prototype.export = function(commands) {
 		});
 	}
 
-	// exporting all local dashbaords to Grafana
-	else if (entityType === 'dashboards'){
-		var items = localfs.readFilesFromDir('./dashboards');
-		var self = this;
-		_.forEach(items,function(item){
-			var url_check = grafana_url + self.createURL('show', 'dashboard', item.slice(0, -5))
-			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
-				var dashBody = {
-						dashboard: components.readDashboard(item.slice(0, -5)),
-						overwrite: true
-				}
-				body = dashBody;
-				successMessage = 'Dashboard export successful.';
-				failureMessage = 'Dashboard export failed.';
-				if (!error_check && response_check.statusCode == 200) {
-					var url = grafana_url + self.createURL('export', 'dashboard', item.slice(0, -5));
-					sendRequest('POST', url);
-	  			}
-	  			else{
-	  				dashBody.dashboard.id = null;
-	  				var url = grafana_url + self.createURL('export', 'new-dashboard', item.slice(0, -5));
-					sendRequest('POST', url);
-	  			}
-			});
-		});
-	} 
 	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
@@ -532,7 +544,7 @@ Grafana.prototype.createGif = function(dashboard) {
  		.pipe(localfs.writeStream('clips/' + dashboard + '.gif'));
 
  	logger.showResult('Successfully created ' + dashboard + ' clip under clips directory.');
- 	logger.justShow('You may delete temp directory.');
+ 	logger.justShow('Please delete temp directory.');
 
 }
 
