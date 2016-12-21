@@ -564,7 +564,7 @@ Grafana.prototype.clip = function(commands) {
 			logger.showOutput('Taking dashboard snapshots.');
 			var dashboards = _.each(responseBody, function (dashboard) {
 				var dashName = dashboard.uri.substring(3);
-				var dashUrl = grafana_url + self.createURL('clip', 'dashbaord', dashName) + 
+				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) + 
 					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 					config.clip.render_timeout;
 				if (auth) {
@@ -572,8 +572,12 @@ Grafana.prototype.clip = function(commands) {
 				}
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
-				localfs.writeFile(filename, response.getBody());
-				logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
+				if (response.statusCode === 200) {
+					localfs.writeFile(filename, response.getBody());
+					logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
+				} else {
+					logger.showError('Snapshot of ' + dashName + ' dashbaord failed. Please increase timeout.');
+				}
 			});
 		} else {
 			logger.showError('No content available to make clip.');
