@@ -435,6 +435,7 @@ Grafana.prototype.export = function(commands) {
 	  		// Use sync-request to avoid table lockdown
 	  		var response = syncReq(method, url, {json: body});
 	  		if (response.statusCode != 200) {
+	  			logger.showOutput(response.getBody('utf8'));
 	  			logger.showError('Datasource ' + ds + ' export failed.');
 	  			failed++;
 	  		} else {
@@ -444,12 +445,14 @@ Grafana.prototype.export = function(commands) {
 	  		}
 	  		//sendRequest(method, url); // causing table lockdown.
 			});
-
-			if (failed > 0) {
-				logger.showError(failed + ' datasources export failed.');
-			}
 			if (success > 0) {
 				logger.showResult(success + ' datasources exported successfully.');
+			}
+			if (failed > 0) {
+				logger.showError(failed + ' datasources export failed.');
+				process.exit(1);
+			} else {
+				process.exit(0);
 			}
 		});
 	}
