@@ -154,6 +154,8 @@ function addCommandsToHelp() {
 	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
+	addToHelp('wizzy upload s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
+	addToHelp('wizzy download s3 ENTITY ENTITY_NAME', 'download entities from S3.');
 
 }
 
