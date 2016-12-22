@@ -13,7 +13,8 @@
   * [Remote commands](#remote-commands)
     * [Dashboard commands](#dashboard-commands)
     * [Organization commands](#organization-commands)
-    * [Datasource commands](#datasource-commands)    
+    * [Datasource commands](#datasource-commands)
+    * [S3 commands](#s3-commands)
   * [Dashboard context](#dashboard-context)
   * [Local commands](#local-commands)
     * [Dashboard commands](#dashboard-commands-1)
@@ -171,6 +172,18 @@ $ wizzy show datasource DATASOURCE_NAME
 	- shows you a datasource in JSON
 $ wizzy export datasource DATASOURCE_NAME
 	- exports local datasource JSON object to replace the one in Grafana
+```
+
+### S3 commands
+```
+$ wizzy upload dashboards
+  - uploads all dashboards to S3
+$ wizzy download dashboards
+  - downloads all dashboards from S3 to local
+$ wizzy upload dashboard DASHBOARD_SLUG
+  - uploads a single dashboard to S3
+$ wizzy download dashboard DASHBOARD_SLUG
+  - downloads a single dashboard from S3
 ```
 
 ## Dashboard context
