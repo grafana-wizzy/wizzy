@@ -24,48 +24,45 @@ function S3(conf, comps) {
 	AWS.config.secretAccessKey = conf.secret_key;
 	AWS.config.region = conf.region;
 	params.Bucket = conf.bucket_name
-	if(conf.path)
-		params.Key = conf.path
 	s3.headObject(params, function(err, data) {
   		if (err){
-  			s3.createBucket(params, function(err_cb, data) {
-		  		if (!err){
+  			s3.createBucket(params, function(err_cb, data_cb) {
+		  		if (!err_cb){
 		  			  if(conf.path){ 
 						s3.putObject({
 			        	  	Bucket: conf.bucket_name,
 			        		Key: conf.path,
-			    			}, function (err,res) {
-			    				if(err){
-									logger.showError(failureMessage);
+			    			}, function (err_cb_key,res_cb_key) {
+			    				if(err_cb_key){
+									logger.showError('dnajsasjlasj');
 									logger.showError('Cannot create directory '+conf.path+' in s3 bucket '+params.Bucket+'.');
 			    				}
 	         	  			});				
-					  }
-		  		}
-		  	});
-  		}          
+					  	}
+					  	var directories = new Set();
+					  	directories.add('dashboards');
+					  	for(let dir of directories){
+						  	var key = ''
+							if(conf.path){
+								key = conf.path+"/"+dir
+							}
+							else {
+								key = dir
+							}
+							s3.putObject({
+								Bucket: conf.bucket_name,
+					    		Key: key,
+								}, function (err,data) {
+									if (err){
+										logger.showError(failureMessage);
+										logger.showError('Cannot create directory '+dir+'.');
+							  		}
+						  		});	
+						 }
+				}         
+			});	
+		}
 	});
-
-	var directories = new Set();
-	directories.add('dashboards');
-	for(let dir of directories){
-		var key = ''
-		if(conf.path){
-			key = conf.path+"/"+dir
-		}
-		else {
-			key = dir
-		}
-		s3.putObject({
-			Bucket: conf.bucket_name,
-    		Key: key,
-			}, function (err,data) {
-				if (err){
-					logger.showError(failureMessage);
-					logger.showError('Cannot create directory '+dir+'.');
-		  		}
-	  		});		
-	}
 	components = comps;
 }
 
@@ -157,29 +154,40 @@ S3.prototype.download = function(commands){
 		 });
 	}
 	else if (entityType === 'dashboards') {
+
 		successMessage = 'Dashboards downloaded successfully.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
-		_.forEach(dashboards,function(dashboard){
-			var key = ''
-	  		if(params.Key){
-	  			key = params.Key + '/dashboards/'+dashboard+'.json'
+		if(params.Key){
+	  			key = params.Key + '/dashboards/'
 	  		}
 	  		else{
-	  			key = 'dashboards/'+dashboard+'.json'	
+	  			key = 'dashboards/'	
 	  		}
-	  		s3.getObject({
-	    		Bucket: params.Bucket,
-	    		Key: key,
-	  		}, function (err,data) {
-			if (err){
-				logger.showError('Dashboard '+dashboard+' not present in location s3://'+params.Bucket+"/"+key+'.');
-			}
-			else{
-				components.saveDashboard(dashboard, JSON.parse(data.Body.toString()), false);
-			}
-		 });
+	  		s3.listObjects(params, function(err, data) {
+  				if (err) { 
+    				return reject(err);
+  				}
+  				else{
+  					var dashboards = data.Contents;
+  					_.forEach(dashboards,function(dashboard){
+						if(dashboard.Key.startsWith('dashboards/') && dashboard.Key.split('/').length == 2){
+							var key = dashboard.Key
+					  		s3.getObject({
+					    		Bucket: params.Bucket,
+					    		Key: key,
+					  		}, function (err,data) {
+								if (err){
+									logger.showError('Dashboard '+dashboard.Key.split('/')[1].split('.')[0]+' not present in location s3://'+params.Bucket+"/"+key+'.');
+								}
+								else{
+									components.saveDashboard(dashboard.Key.split('/')[1].split('.')[0], JSON.parse(data.Body.toString()), false);
+								}
+						 	});
+					  	}
+					});
+					logger.showResult(successMessage);
+  				}
 		});
-		logger.showResult(successMessage);
 	}
 	else {
 		logger.showError('Unsupported entity type ' + entityType);
