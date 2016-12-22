@@ -5,6 +5,7 @@
 var Logger = require('./logger.js');
 var logger = new Logger();
 var AWS = require('aws-sdk');
+var _ = require('lodash');
 
 var successMessage;
 var failureMessage;
@@ -76,67 +77,114 @@ S3.prototype.upload = function(commands){
 	if (entityType === 'dashboard') {
 		successMessage = 'Uploaded dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in uploading dashboard ' + entityValue + '.';
+		var dashboard_data = components.readDashboard(entityValue)
+	  	var key = ''
+	  	if(params.Key){
+	  		key = params.Key + '/dashboards/'+entityValue+'.json'
+	  	}
+	  	else{
+	  		key = 'dashboards/'+entityValue+'.json'	
+	  	}
+	  	s3.putObject({
+	    	Bucket: params.Bucket,
+	    	Key: key,
+	    	Body: JSON.stringify(dashboard_data)
+	  	}, function (err,data) {
+			if (err){
+				logger.showError(failureMessage);
+				logger.showError('Dashboard '+entityValue+' cannot be stored in location s3://'+params.Bucket+"/"+key+'.');
+			}
+			else{
+				logger.showResult(successMessage);
+			}
+		 });
+	}
+	else if (entityType === 'dashboards') {
+		successMessage = 'Dashboards uploaded successfully.';
+		var dashboards = components.readEntityNamesFromDir('dashboards');
+		_.forEach(dashboards,function(dashboard){
+			var dashboard_data = components.readDashboard(dashboard)
+	  		var key = ''
+		  	if(params.Key){
+		  		key = params.Key + '/dashboards/'+dashboard+'.json'
+		  	}
+		  	else{
+		  		key = 'dashboards/'+dashboard+'.json'	
+		  	}
+		  	s3.putObject({
+		    	Bucket: params.Bucket,
+		    	Key: key,
+		    	Body: JSON.stringify(dashboard_data)
+		  	}, function (err,data) {
+				if (err){
+					logger.showError('Dashboard '+entityValue+' cannot be stored in location s3://'+params.Bucket+"/"+key+'.');
+				}
+			 });
+		});
+		logger.showResult(successMessage);
 	}
 	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
-	}
-	var dashboard_data = components.readDashboard(entityValue)
-  	var key = ''
-  	if(params.Key){
-  		key = params.Key + '/dashboards/'+entityValue+'.json'
-  	}
-  	else{
-  		key = 'dashboards/'+entityValue+'.json'	
-  	}
-  	s3.putObject({
-    	Bucket: params.Bucket,
-    	Key: key,
-    	Body: JSON.stringify(dashboard_data)
-  	}, function (err,data) {
-		if (err){
-			logger.showError(failureMessage);
-		}
-		else{
-			logger.showError('Dashboard '+entityValue+' cannot be stored in location s3://'+params.Bucket+"/"+key+'.');
-			logger.showResult(successMessage);
-		}
-	 });	
+	}	
 }
 
 S3.prototype.download = function(commands){
-	successMessage = 'Dashboard '+ entityValue + ' download successful.';
-	failureMessage = 'Dashboard '+ entityValue + ' download failed.';
 	var entityType = commands[0];
 	var entityValue = commands[1];
 	if (entityType === 'dashboard') {
 		successMessage = 'Downloaded dashboard ' + entityValue + ' successfully.';
-		failureMessage = 'Error in downloading dashboard ' + entityValue + '.';
+		failureMessage = 'Error in downloading dashboard ' + entityValue + '.';	
+	  	var key = ''
+	  	if(params.Key){
+	  		key = params.Key + '/dashboards/'+entityValue+'.json'
+	  	}
+	  	else{
+	  		key = 'dashboards/'+entityValue+'.json'	
+	  	}
+	  	s3.getObject({
+	    	Bucket: params.Bucket,
+	    	Key: key,
+	  	}, function (err,data) {
+			if (err){
+				logger.showError(failureMessage);
+				logger.showError('Dashboard '+entityValue+' not present in location s3://'+params.Bucket+"/"+key+'.');
+			}
+			else{
+				components.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
+				logger.showResult(successMessage);
+			}
+		 });
+	}
+	else if (entityType === 'dashboards') {
+		successMessage = 'Dashboards downloaded successfully.';
+		var dashboards = components.readEntityNamesFromDir('dashboards');
+		_.forEach(dashboards,function(dashboard){
+			var key = ''
+	  		if(params.Key){
+	  			key = params.Key + '/dashboards/'+dashboard+'.json'
+	  		}
+	  		else{
+	  			key = 'dashboards/'+dashboard+'.json'	
+	  		}
+	  		s3.getObject({
+	    		Bucket: params.Bucket,
+	    		Key: key,
+	  		}, function (err,data) {
+			if (err){
+				logger.showError('Dashboard '+dashboard+' not present in location s3://'+params.Bucket+"/"+key+'.');
+			}
+			else{
+				components.saveDashboard(dashboard, JSON.parse(data.Body.toString()), false);
+			}
+		 });
+		});
+		logger.showResult(successMessage);
 	}
 	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
-	}
-  	var key = ''
-  	if(params.Key){
-  		key = params.Key + '/dashboards/'+entityValue+'.json'
-  	}
-  	else{
-  		key = 'dashboards/'+entityValue+'.json'	
-  	}
-  	s3.getObject({
-    	Bucket: params.Bucket,
-    	Key: key,
-  	}, function (err,data) {
-		if (err){
-			logger.showError(failureMessage);
-			logger.showError('Dashboard '+entityValue+' not present in location s3://'+params.Bucket+"/"+key+'.');
-		}
-		else{
-			components.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
-			logger.showResult(successMessage);
-		}
-	 });	
+	}	
 }
 
 module.exports = S3;
