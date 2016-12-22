@@ -1,6 +1,6 @@
 {
   "name": "wizzy",
-  "version": "0.4.2",
+  "version": "0.5.1",
   "description": "Lets you automate Grafana interaction",
   "main": "index.js",
   "scripts": {
@@ -28,10 +28,13 @@
     "colors": "^1.1.2",
     "commander": "^2.9.0",
     "fs": "0.0.1-security",
+    "gifencoder": "^1.0.6",
     "lodash": "^4.17.2",
     "nconf": "^0.8.4",
     "request": "^2.79.0",
     "aws-sdk": "^2.7.17"
+    "png-file-stream": "^1.0.0",
+    "sync-request": "^3.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

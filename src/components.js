@@ -455,6 +455,17 @@ Components.prototype.readTemplateVariable = function(varName) {
 
 }
 
+// Reads all entities from a directory and removes
+Components.prototype.readEntityNamesFromDir = function(dirName) {
+
+	var entities = [];
+	entities = _.map(localfs.readFilesFromDir('./' + dirName), function(fileNameWithExtension) {
+		return getFileName(fileNameWithExtension);
+	});
+	return entities;
+
+}
+
 // Saving a dashboard file on disk
 Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
 

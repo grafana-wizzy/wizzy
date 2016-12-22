@@ -2,6 +2,32 @@
 ================
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
+* [Understanding the use case](#understanding-the-use-case)
+* [Flow](#flow)
+* [Getting started with wizzy](#getting-started-with-wizzy)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Initialization](#initialization)
+* [Terminology](#terminology)
+* [Commands](#commands)
+  * [Remote commands](#remote-commands)
+    * [Dashboard commands](#dashboard-commands)
+    * [Organization commands](#organization-commands)
+    * [Datasource commands](#datasource-commands)    
+  * [Dashboard context](#dashboard-context)
+  * [Local commands](#local-commands)
+    * [Dashboard commands](#dashboard-commands-1)
+    * [Organization commands](#organization-commands-1)
+    * [Datasource commands](#datasource-commands-1)
+    * [Row commands](#row-commands)
+    * [Panel commands](#panel-commands)
+    * [Template variable commands](#template-variable-commands)
+  * [Configuration commands](#configuration-commands)
+  * [Help commands](#help-commands)
+  * [Grafana.net commands](#grafananet-commands)
+* [Project Initiator](#project-initiator)
+* [Contributors](https://github.com/utkarshcmu/wizzy/graphs/contributors)
+
 # Understanding the use case
 
 We want/need to edit and modify dashboards everyday and managing tens and hundreds of dashboard becomes hard for a Grafana user and as well as an administrator. To manage Grafana dashboards on command line makes it easier for the users who prefer keyboard over hundred of clicks. `wizzy` brings you that power to change dashboards on your command line. Together we can make it better and rich in terms of commands it support.
@@ -18,17 +44,38 @@ We want/need to edit and modify dashboards everyday and managing tens and hundre
 
 # Getting started with wizzy
 
-- Install nodejs by downloading it from nodejs.org. (https://nodejs.org/en/download/). After installing nodejs, run following commands:
+## Prerequisites
+Install nodejs by downloading it from nodejs.org. (https://nodejs.org/en/download/). After installing nodejs, run following commands:
 ```
 $ node -v
 $ npm -v
 ```
 Note: Please make sure node version is above 5.10.1.
 
-- Install wizzy using npm
+## Installation
+There are 3 different ways you can install wizzy:
+
+1 - Use docker image [wizzy-docker](https://github.com/utkarshcmu/wizzy-docker)
+```
+$ docker pull utkarshcmu/wizzy
+	- pulls latest docker image
+```
+2 - Using npm (Stable release):
 ```
 $ npm install -g wizzy
 	- Use sudo if needed or permission was denied
+```
+3 - Using Github (from source):
+```
+$ git clone https://github.com/utkarshcmu/wizzy.git
+$ cd wizzy
+$ npm install
+$ npm link
+```
+
+## Initialization
+- Check wizzy version
+```
 $ wizzy version
 ```
 
@@ -62,16 +109,17 @@ $ wizzy status
 
 You are ready to use wizzy. Import your first dashboard now!
 
-# Dashboard Commands
-
-## Dashboard Terminology
+# Terminology
 - *local dashboard* - a json dashboard file under dashboards directory on local disk
 - *remote dashboard* - a dashboard currently live in Grafana
 
-## Remote Commands
+# Commands
+Broadly there are two types of commands in wizzy. Remote commands, which interacts with external sources like Grafana, S3, etc, and local commands, which operate on local json entities like dashboards, datasources, etc.
+
+## Remote commands
 These commands operates directly on remote dashboards in Grafana via API, so please use them carefully. Dashboard Context(which is explained next) is not supported by these commands currently as they will interact with Grafana API directly.
 
-### Dashboard Commands
+### Dashboard commands
 ```
 $ wizzy list dashboards
 	- prints list of dashboards from Grafana in a tabular format
@@ -83,13 +131,15 @@ $ wizzy import dashboard DASHBOARD_SLUG
 	- copies a remote dashboard json and creates a local dashboard
 $ wizzy export dashboard DASHBOARD_SLUG
 	- exports a local dashboard to be saved as a remote dashboard and go live
-$ wizzy export new-dashboard DASHBOARD_SLUG
-	- exports a new local dashboard to be saved as a remote dashboard and go live
 $ wizzy delete dashboard DASHBOARD_SLUG
 	- deletes a remote dashboard from Grafana
+$ wizzy clip dashboard DASHBOARD_SLUG
+	- makes a clip (gif) of dashboard's last 24 hours of data
+	- Note: Pleas set all 6 clip configuration properties otherwise this command will not work
+	- See at the bottom of the page to set clip configuration properties
 ```
 
-### Organization Commands
+### Organization commands
 ```
 $ wizzy import orgs
 	- imports all orgs in JSON format and stores under orgs directory
@@ -107,31 +157,33 @@ $ wizzy export org ORG_ID
 	- exports an org from local JSON to replace the one in Grafana
 ```
 
-### Datasource Commands
+### Datasource commands
 ```
-$ wizzy import datasources
-	- imports all datasources in JSON format and store under datasources directory
-$ wizzy import datasource DATASOURCE_ID
-	- imports a datasource in JSON format and store under datasources directory
 $ wizzy show datasources
 	- shows you all the datasources in JSON
-$ wizzy show datasource DATASOURCE_ID
+$ wizzy import datasources
+	- imports all datasources in JSON format and store under datasources directory
+$ wizzy export datasources
+	- export all local datasources to Grafana
+$ wizzy import datasource DATASOURCE_NAME
+	- imports a datasource in JSON format and store under datasources directory
+$ wizzy show datasource DATASOURCE_NAME
 	- shows you a datasource in JSON
-$ wizzy export datasource DATASOURCE_ID
+$ wizzy export datasource DATASOURCE_NAME
 	- exports local datasource JSON object to replace the one in Grafana
 ```
 
-## Dashboard Context
+## Dashboard context
 A user can set the dashboard context in wizzy by the following command so that the wizzy cli is aware about the local dashboard on which it should operate. This is an optional setting for some commands and mandatory for other commands, which makes wizzy cli more intuitive and user-friendly.
 ```
 wizzy set context dashboard DASHBOARD_SLUG
 ```
 Note: Once context is set, wizzy will use this dashboard as default if no dashboard is supplied. It will be mentioned in the documentation where setting dashboard context is required.
 
-## Local Commands
+## Local commands
 These commands operates on local json file based dashboards and support Dashboard Context.
 
-### Dashboard Commands
+### Dashboard commands
 These commands impacts the dashboard wide changes
 ```
 $ wizzy summarize dashboard DASHBOARD_SLUG
@@ -140,19 +192,19 @@ $ wizzy change panels datasource OLD_DATASOURCE NEW_DATASOURCE
 	- changes OLD_DATASOURCE to NEW_DATASOURCE for all panels on a dashboard
 ```
 
-### Orgs Commands
+### Organization commands
 ```
 $ wizzy summarize orgs
 	- prints summary of all local orgs
 ```
 
-### Datasources Commands
+### Datasource commands
 ```
 $ wizzy summarize datasources
 	- prints summary of all local datasources
 ```
 
-### Row Commands
+### Row commands
 ```
 $ wizzy copy row SOURCE_ROW_NUMBER DESTINATION_ROW_NUMBER
 	- copies a row from one position to another on the same dashboard
@@ -166,7 +218,7 @@ $ wizzy remove row SOURCE_ROW_NUMBER
 	- removes a row from the current dashboard
 ```
 
-### Panel Commands
+### Panel commands
 ```
 $ wizzy copy panel SOURCE_ROW.PANEL_NUMBER DESTINATION_ROW_NUMBER.PANEL_NUMBER
 	- copies a panel from current row to another row on the same dashboard
@@ -181,7 +233,7 @@ $ wizzy remove panel SOURCE_ROW.PANEL_NUMBER
 
 ```
 
-### Template Variables Commands
+### Template variable commands
 ```
 $ wizzy copy temp-var SOURCE_TEMP-VAR_NUMBER DESTINATION_DASHBOARD_SLUG.TEMP-VAR_NUMBER
 	- copies a template variable from current dashboard to another dashboard
@@ -196,7 +248,7 @@ $ wizzy insert temp-var TEMP_VAR_NAME DASHBOARD_SLUG
 ```
 Note: wizzy removes `version` field from the imported dashboard before saving it to the disk as version is something what Grafana takes care of for a dashboard. ROW_NUMBER and PANEL_NUMBER starts from 1.
 
-# Set Configuration commands
+## Configuration commands
 Grafana properties can be set in wizzy by running following commands, if you have not set already:
 ```
 $ wizzy set grafana url GRAFANA_URL
@@ -205,8 +257,15 @@ $ wizzy set grafana password PASSWORD
 $ wizzy set grafana debug_api true
 	- an optional setting to debug Grafana API calls, `false` by default
 $ wizzy set context dashboard DASHBOARD_SLUG
+$ wizzy set clip render_height 600
+$ wizzy set clip render_width 600
+$ wizzy set clip render_timeout 10
+$ wizzy set clip canvas_width 800
+$ wizzy set clip canvas_height 600
+$ wizzy set clip delay 500
+	- sets delay between each snapshot, lower delay means short video
 ```
-# Help Commands
+## Help commands
 Help commands lets you explore wizzy's info, health, configuration.
 ```
 $ wizzy conf
@@ -218,7 +277,7 @@ $ wizzy help
 $ wizzy version
 ```
 
-# Grafana.net commands
+## Grafana.net commands
 wizzy can interact now with Grafana.net. It can list and download dashboards from Grafana.net.
 ```
 $ wizzy list gnet dashboards <FILTER>
@@ -228,5 +287,5 @@ $ wizzy download gnet dashboard DASHBOARD_ID REVISION_ID
 	- Download a dashboard json from Grafana.net and stores under dashboards directory.
 ```
 
-# Author
+# Project initiator
 Utkarsh Bhatnagar, @utkarshcmu, <utkarsh.cmu@gmail.com>

@@ -5,14 +5,13 @@
 var confDir = 'conf';
 var datasourceDir = 'datasources';
 var confFile = 'conf/wizzy.json';
-
 var dashDir = 'dashboards';
 var datasrcDir = 'datasources';
 var orgsDir = 'orgs';
 var tempVarsDir = 'template-vars';
 
 // Setting up cli version and commands
-var program = require('commander').version('0.4.2');
+var program = require('commander').version('0.5.1');
 
 var Commands = require('./commands.js');
 var commands = new Commands(dashDir, datasrcDir, orgsDir, tempVarsDir, confDir, confFile);

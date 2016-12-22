@@ -39,7 +39,7 @@ Commands.prototype.instructions = function() {
 		var command = commands[0];
 
 		if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
-			grafana = new Grafana(config.getConfig('config:grafana'), components);
+			grafana = new Grafana(config.getConfig('config'), components);
 		}
 
 		if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
@@ -89,6 +89,9 @@ Commands.prototype.instructions = function() {
 				} else {
 					grafana.list(_.drop(commands));
 				}
+				break;
+			case 'clip':
+				grafana.clip(_.drop(commands));
 				break;
 			case 'summarize':
 				components.summarize(_.drop(commands));

@@ -6,9 +6,11 @@ var expect = require('chai').expect;
 var Grafana = require('../src/grafana.js');
 
 var config = {
-	url: 'http://localhost:3000',
-	username: 'admin',
-	password: 'password'
+  grafana: {
+    url: 'http://localhost:3000',
+    username: 'admin',
+    password: 'password'
+  }
 }
 
 var components = {};
@@ -128,7 +130,7 @@ describe('Check Grafana URLs', function() {
   describe('create URL for showing a datasource', function() {
     it('should return URL /api/datasources/:datasourceId .', function() {
       var url = grafana.createURL('show', 'datasource', 1);
-      expect(url).to.equal('/api/datasources/1');
+      expect(url).to.equal('/api/datasources/name/1');
     });
   });
 
@@ -142,7 +144,7 @@ describe('Check Grafana URLs', function() {
   describe('create URL for importing a datasource', function() {
     it('should return URL /api/datasources/:datasourceId .', function() {
       var url = grafana.createURL('import', 'datasource', 1);
-      expect(url).to.equal('/api/datasources/1');
+      expect(url).to.equal('/api/datasources/name/1');
     });
   });
 
