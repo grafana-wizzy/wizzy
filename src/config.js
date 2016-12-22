@@ -16,6 +16,11 @@ var configs = [
 	'config:grafana:password',
 	'config:grafana:debug_api',
 	'config:context:dashboard',
+	'config:s3:access_key',
+	'config:s3:secret_key',
+	'config:s3:bucket_name',
+	'config:s3:path',
+	'config:s3:region'
 	'config:clip:render_height',
 	'config:clip:render_width',
 	'config:clip:render_timeout',
