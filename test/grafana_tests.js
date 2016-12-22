@@ -57,13 +57,6 @@ describe('Check Grafana URLs', function() {
     });
   });
 
-  describe('create URL for exporting a new dashboard', function() {
-    it('should return URL /api/dashboards/db .', function() {
-      var url = grafana.createURL('export', 'new-dashboard', 'test-dash');
-      expect(url).to.equal('/api/dashboards/db');
-    });
-  });
-
   describe('create URL for deleting a dashboard', function() {
     it('should return URL /api/dashboards/db .', function() {
       var url = grafana.createURL('delete', 'dashboard', 'test-dash');
