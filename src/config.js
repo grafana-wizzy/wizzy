@@ -15,7 +15,12 @@ var configs = [
 	'config:grafana:username',
 	'config:grafana:password',
 	'config:grafana:debug_api',
-	'config:context:dashboard'
+	'config:context:dashboard',
+	'config:s3:access_key',
+	'config:s3:secret_key',
+	'config:s3:bucket_name',
+	'config:s3:path',
+	'config:s3:region'
 ]
 
 var confDir;

@@ -9,12 +9,14 @@ var Logger = require('./logger.js');
 var logger = new Logger('Commands');
 var LocalFS = require('./localfs.js');
 var GNet = require('./gnet.js');
+var S3 = require('./s3services.js')
 var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 var config;
 var components;
 var grafana;
 var gnet;
+var s3;
 
 function Commands(dashDir, datasrcDir, orgsDir, tempVarDir, confDir, confFile) {
 	config = new Config(confDir, confFile);
@@ -38,6 +40,10 @@ Commands.prototype.instructions = function() {
 
 		if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
 			grafana = new Grafana(config.getConfig('config:grafana'), components);
+		}
+
+		if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
+			s3 = new S3(config.getConfig('config:s3'), components);
 		}
 
 		switch(command) {
@@ -108,6 +114,14 @@ Commands.prototype.instructions = function() {
 			case 'download':
 				if (commands[1] === 'gnet') {
 					gnet.download(_.drop(commands, 2));
+				}
+				else if (commands[1] === 's3') {
+					s3.download(_.drop(commands, 2));
+				}
+				break;
+			case 'upload':
+				if (commands[1] === 's3') {
+					s3.upload(_.drop(commands, 2));
 				}
 				break;
 			default:

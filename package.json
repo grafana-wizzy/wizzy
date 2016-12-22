@@ -30,7 +30,8 @@
     "fs": "0.0.1-security",
     "lodash": "^4.17.2",
     "nconf": "^0.8.4",
-    "request": "^2.79.0"
+    "request": "^2.79.0",
+    "aws-sdk": "^2.7.17"
   },
   "devDependencies": {
     "chai": "^3.5.0",

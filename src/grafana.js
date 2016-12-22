@@ -118,20 +118,20 @@ Grafana.prototype.import = function(commands) {
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
-	  	  output += body;
+	  	  		output += body;
 				components.saveDashboard(entityValue, body.dashboard, true);
-	    	logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	    		logger.showResult(successMessage);
+	  		} else {
+	  			output += 'Grafana API response status code = ' + response.statusCode;
+		  		if (error === null) {
+		  			output += '\nNo error body from Grafana API.';	
+		  		}
+		  		else {
+		  			output += '\n' + error;
+		  		}
+	  			logger.showOutput(output);
+	  			logger.showError(failureMessage);
 	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
 		});
 	} // import all dashboards
 	else if (entityType === 'dashboards') {
