@@ -24,8 +24,11 @@ function S3(conf, comps) {
 	AWS.config.secretAccessKey = conf.secret_key;
 	AWS.config.region = conf.region;
 	params.Bucket = conf.bucket_name
+	if(conf.path)
+		params.Key = conf.path;
 	s3.headObject(params, function(err, data) {
   		if (err){
+  			delete params.Key;
   			s3.createBucket(params, function(err_cb, data_cb) {
 		  		if (!err_cb){
 		  			  if(conf.path){ 
@@ -114,6 +117,7 @@ S3.prototype.upload = function(commands){
 		    	Body: JSON.stringify(dashboard_data)
 		  	}, function (err,data) {
 				if (err){
+					console.log(err)
 					logger.showError('Dashboard '+entityValue+' cannot be stored in location s3://'+params.Bucket+"/"+key+'.');
 				}
 			 });
@@ -157,30 +161,33 @@ S3.prototype.download = function(commands){
 
 		successMessage = 'Dashboards downloaded successfully.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
-		if(params.Key){
-	  			key = params.Key + '/dashboards/'
+			var bucket_key = ''
+			if(params.Key){
+	  			bucket_key = params.Key + '/dashboards/'
 	  		}
 	  		else{
-	  			key = 'dashboards/'	
+	  			bucket_key = 'dashboards/'	
 	  		}
+	  		delete params.Key
 	  		s3.listObjects(params, function(err, data) {
   				if (err) { 
-    				return reject(err);
+    				console.log(err);
+    				return;
   				}
   				else{
   					var dashboards = data.Contents;
   					_.forEach(dashboards,function(dashboard){
-						if(dashboard.Key.startsWith('dashboards/') && dashboard.Key.split('/').length == 2){
+						if(dashboard.Key.indexOf(bucket_key) > -1){
 							var key = dashboard.Key
 					  		s3.getObject({
 					    		Bucket: params.Bucket,
 					    		Key: key,
 					  		}, function (err,data) {
 								if (err){
-									logger.showError('Dashboard '+dashboard.Key.split('/')[1].split('.')[0]+' not present in location s3://'+params.Bucket+"/"+key+'.');
+									logger.showError('Dashboard '+dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0]+' not present in location s3://'+params.Bucket+"/"+key+'.');
 								}
 								else{
-									components.saveDashboard(dashboard.Key.split('/')[1].split('.')[0], JSON.parse(data.Body.toString()), false);
+									components.saveDashboard(dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0], JSON.parse(data.Body.toString()), false);
 								}
 						 	});
 					  	}
