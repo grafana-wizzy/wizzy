@@ -2,7 +2,7 @@
 "use strict";
 
 // Initializing logger
-var Logger = require('./logger.js');
+var Logger = require('../util/logger.js');
 var logger = new Logger('Grafana.net');
 
 var _ = require('lodash');

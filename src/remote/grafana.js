@@ -2,9 +2,9 @@
 "use strict";
 
 // Initializing logger
-var Logger = require('./logger.js');
+var Logger = require('../util/logger.js');
 var logger = new Logger();
-var LocalFS = require('./localfs.js');
+var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
 var syncReq = require('sync-request');
 

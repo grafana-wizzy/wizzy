@@ -3,7 +3,7 @@
 
 var expect = require('chai').expect;
 
-var Grafana = require('../src/grafana.js');
+var Grafana = require('../../src/remote/grafana.js');
 
 var config = {
   grafana: {

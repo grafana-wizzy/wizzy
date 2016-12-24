@@ -3,8 +3,8 @@
 
 // Setting up directory structure
 var confDir = 'conf';
-var datasourceDir = 'datasources';
 var confFile = 'conf/wizzy.json';
+var datasourceDir = 'datasources';
 var dashDir = 'dashboards';
 var datasrcDir = 'datasources';
 var orgsDir = 'orgs';

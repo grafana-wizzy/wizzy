@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 "use strict";
 
-var LocalFS = require('./localfs.js');
+var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
-var Logger = require('./logger.js');
+var Logger = require('../util/logger.js');
 var logger = new Logger('components');
 var Table = require('cli-table');
 

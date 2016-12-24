@@ -6,11 +6,11 @@ var assert = require('chai').assert;
 var sinon  = require("sinon");
 var colors = require('colors');
 
-var LocalFS = require('../src/localfs.js');
+var LocalFS = require('../../src/util/localfs.js');
 var localfs = new LocalFS();
 var nconf = require('nconf');
 
-var Config = require('../src/config.js');
+var Config = require('../../src/util/config.js');
 var config;
 
 var confDir = 'conf';

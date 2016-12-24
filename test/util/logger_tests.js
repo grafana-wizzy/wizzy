@@ -6,7 +6,7 @@ var assert = require('chai').assert;
 var sinon  = require("sinon");
 var colors = require('colors');
 
-var Logger = require('../src/logger.js');
+var Logger = require('../../src/util/logger.js');
 var logger;
 
 // Create a new Logger object for each test

@@ -2,14 +2,14 @@
 "use strict";
 
 var _ = require('lodash');
-var Config = require('./config.js');
-var Components = require('./components.js');
-var Grafana = require('./grafana.js');
-var Logger = require('./logger.js'); 
+var Config = require('./util/config.js');
+var Components = require('./local/components.js');
+var Grafana = require('./remote/grafana.js');
+var Logger = require('./util/logger.js'); 
 var logger = new Logger('Commands');
-var LocalFS = require('./localfs.js');
-var GNet = require('./gnet.js');
-var S3 = require('./s3services.js')
+var LocalFS = require('./util/localfs.js');
+var GNet = require('./remote/gnet.js');
+var S3 = require('./remote/s3services.js')
 var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
 var config;
