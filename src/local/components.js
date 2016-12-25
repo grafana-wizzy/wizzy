@@ -306,7 +306,7 @@ Components.prototype.readEntityNamesFromDir = function(dirName) {
 
 	var entities = [];
 	entities = _.map(localfs.readFilesFromDir('./' + dirName), function(fileNameWithExtension) {
-		return getFileName(fileNameWithExtension);
+		return localfs.getFileName(fileNameWithExtension);
 	});
 	return entities;
 
@@ -322,10 +322,6 @@ function checkOrGetContextDashboard() {
 		process.exit();
 	}
 
-}
-
-function getFileName(fileNameWithExtension) {
-	return fileNameWithExtension.split('.')[0];
 }
 
 module.exports = Components;
