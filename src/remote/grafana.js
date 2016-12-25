@@ -191,7 +191,7 @@ Grafana.prototype.import = function(commands) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
-	  	  components.saveOrg(entityValue, body, true);
+	  	  components.orgs.saveOrg(entityValue, body, true);
 	  	  logger.showResult(successMessage);
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
@@ -223,7 +223,7 @@ Grafana.prototype.import = function(commands) {
 					url = grafana_url + self.createURL('import', 'org', id);
 					request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 						if (!error && response.statusCode == 200) {
-							components.saveOrg(id, body, false);
+							components.orgs.saveOrg(id, body, false);
 				  	}
 					});
 				});

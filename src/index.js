@@ -4,17 +4,12 @@
 // Setting up directory structure
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
-var datasourceDir = 'datasources';
-var dashDir = 'dashboards';
-var datasrcDir = 'datasources';
-var orgsDir = 'orgs';
-var tempVarsDir = 'template-vars';
 
 // Setting up cli version and commands
 var program = require('commander').version('0.5.1');
 
 var Commands = require('./commands.js');
-var commands = new Commands(dashDir, datasrcDir, orgsDir, tempVarsDir, confDir, confFile);
+var commands = new Commands(confDir, confFile);
 
 // For any unsupported command wizzy will show help
 program.command('*').action(commands.instructions);

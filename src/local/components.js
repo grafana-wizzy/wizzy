@@ -14,34 +14,34 @@ var nconf = require('nconf');
 var successMessage;
 var failureMessage;
 
+var Datasources = require('../local/datasources.js');
+var TempVars = require('../local/temp-vars.js');
+var Orgs = require('../local/orgs.js');
+
 var config;
 var dashDir;
-var datasrcDir;
-var orgsDir;
-var tempVarsDir;
 
-function Components(dir, dsDir, orgDir, tempVarDir, conf) {
-	datasrcDir = dsDir;
-	orgsDir = orgDir;
-	tempVarsDir = tempVarDir;
-	dashDir = dir;
+function Components(conf) {
+	dashDir = 'dashboards';
 	config = conf;
+	this.orgs = new Orgs();
+	this.tempVars = new TempVars();
+	this.datasources = new Datasources();
 }
 
 // creates dashboards dir if not exist
 Components.prototype.createIfNotExists = function() {
 
 	localfs.createIfNotExists(dashDir, 'dir', 'dashboards directory');
-	localfs.createIfNotExists(datasrcDir, 'dir', 'datasources directory');
-	localfs.createIfNotExists(orgsDir, 'dir', 'orgs directory');
-	localfs.createIfNotExists(tempVarsDir, 'dir', 'template-variables directory');
 
 }
 
 Components.prototype.checkDirsStatus = function() {
 
-	return localfs.checkExists(dashDir) && localfs.checkExists(datasrcDir) &&
-		localfs.checkExists(orgsDir) && localfs.checkExists(tempVarsDir);
+	var self = this;
+
+	return localfs.checkExists(dashDir) && self.tempVars.checkDirStatus()
+		self.orgs.checkDirStatus() && self.datasources.checkDirStatus();
 
 }
 
@@ -262,42 +262,13 @@ Components.prototype.summarize = function(commands) {
 		arch.time.timezone = dashboard.timezone;
 		logger.showOutput(logger.stringify(arch));
 	} else if (entityType === 'orgs') {
-
+		self.orgs.summarize();
 		successMessage = 'Showed orgs summary successfully.';
-
-		var table = new Table({
-    	head: ['Org Id', 'Org Name'],
-  		colWidths: [25, 25]
-		});
-
-		var orgFiles = localfs.readFilesFromDir(orgsDir);
-		_.each(orgFiles, function(orgFile) {
-			var org = self.readOrg(getFileName(orgFile));
-			table.push([org.id, org.name]);
-		});
-
-  	logger.showOutput(table.toString());
-  	logger.showResult('Total orgs: ' + orgFiles.length);
-
 	} else if (entityType === 'datasources') {
-
+		self.datasources.summarize();
 		successMessage = 'Showed datasources summary successfully.';
-
-		var table = new Table({
-    	head: ['Datasource Id', 'Datasource Name', 'Datasource Type'],
-  		colWidths: [30, 30, 30]
-		});
-
-		var dsFiles = localfs.readFilesFromDir(datasrcDir);
-		_.each(dsFiles, function(dsFile) {
-			var ds = self.readDatasource(getFileName(dsFile));
-			table.push([ds.id, ds.name, ds.type]);
-		});
-
-  	logger.showOutput(table.toString());
-  	logger.showResult('Total datasources: ' + dsFiles.length);
-
 	} else {
+
 		logger.showError('Unsupported command. Please try `wizzy help`.');
 		return;
 	}
@@ -416,32 +387,6 @@ Components.prototype.readDashboard = function(slug) {
 	
 }
 
-// Reads org json from file.
-Components.prototype.readOrg = function(id) {
-
-	if (localfs.checkExists(getOrgFile(id))) {
-		return JSON.parse(localfs.readFile(getOrgFile(id)));
-	}
-	else {
-		logger.showError('Org file ' + getOrgFile(id) + ' does not exist.');
-		process.exit();
-	}
-
-}
-
-// Reads datasource json from file.
-Components.prototype.readDatasource = function(id) {
-
-	if (localfs.checkExists(getDatasourceFile(id))) {
-		return JSON.parse(localfs.readFile(getDatasourceFile(id)));
-	}
-	else {
-		logger.showError('Datasource file ' + getDatasourceFile(id) + ' does not exist.');
-		process.exit();
-	}
-
-}
-
 // Reads template variable json from file.
 Components.prototype.readTemplateVariable = function(varName) {
 
@@ -474,16 +419,6 @@ Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
 	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
 	if (showResult) {
 		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
-	}
-
-}
-
-// Saves an org file under orgs directory on disk
-Components.prototype.saveOrg = function(id, org, showResult) {
-
-	localfs.writeFile(getOrgFile(id), logger.stringify(org, null, 2));
-	if (showResult) {
-		logger.showResult('Org ' + id + ' saved successfully under orgs directory.');
 	}
 
 }
@@ -522,10 +457,6 @@ function checkOrGetContextDashboard() {
 
 function getDatasourceFile(id) {
 	return datasrcDir + '/' + id + '.json';
-}
-
-function getOrgFile(id) {
-	return orgsDir + '/' + id +'.json';
 }
 
 // Get dashboard file name from slug

@@ -12,125 +12,124 @@ var GNet = require('./remote/gnet.js');
 var S3 = require('./remote/s3services.js')
 var localfs = new LocalFS();
 var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
+
 var config;
 var components;
-var grafana;
 var gnet;
+var grafana;
 var s3;
 
-function Commands(dashDir, datasrcDir, orgsDir, tempVarDir, confDir, confFile) {
+function Commands(confDir, confFile) {
 	config = new Config(confDir, confFile);
-	components = new Components(dashDir, datasrcDir, orgsDir, tempVarDir, config);
+	components = new Components(config);
 	gnet = new GNet(components);
+
+	if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
+		grafana = new Grafana(config.getConfig('config'), components);
+	}
+	if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
+		s3 = new S3(config.getConfig('config:s3'), components);
+	}
 	addCommandsToHelp();
 }
 
 // Creates an entity in wizzy or Grafana
 Commands.prototype.instructions = function() {
 
-		/* Key points before editing the cases:
-			1. case 'version' does not have to be defined as it comes from commander.js
-			2. process.argv[0] - reserverd for `node`
-			3. process.argv[1] - reserverd for `wizzy` or `index.js`
-		*/
+	/* Key points before editing the cases:
+		1. case 'version' does not have to be defined as it comes from commander.js
+		2. process.argv[0] - reserverd for `node`
+		3. process.argv[1] - reserverd for `wizzy` or `index.js`
+	*/
 
-		var commands = _.drop(process.argv, 2);
+	var commands = _.drop(process.argv, 2);
+	var command = commands[0];
 
-		var command = commands[0];
-
-		if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
-			grafana = new Grafana(config.getConfig('config'), components);
-		}
-
-		if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
-			s3 = new S3(config.getConfig('config:s3'), components);
-		}
-
-		switch(command) {
-			
-			case 'help':
-				showHelp();
-				break;
-			case 'init':
-				config.createIfNotExists();
-				components.createIfNotExists();
-				logger.showResult('wizzy successfully initialized.')
-				break;
-			case 'status':
-				status();
-				break;
-			case 'conf':
-					config.showConfig('config');
-				break;
-			case 'set':
-					/*
-						// TODO: Give an example how a property is added.
-					*/
-					config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
-				break;
-			case 'import':
-				grafana.import(_.drop(commands));
-				break;
-			case 'export':
-				grafana.export(_.drop(commands));
-				break;
-			case 'create':
-				grafana.create(_.drop(commands));
-				break;
-			case 'delete':
-				grafana.delete(_.drop(commands));
-				break;
-			case 'show':
-				grafana.show(_.drop(commands));
-				break;
-			case 'list':
-				if (commands[1] === 'gnet') {
-					gnet.list(_.drop(commands,2));
-				} else {
-					grafana.list(_.drop(commands));
-				}
-				break;
-			case 'clip':
-				grafana.clip(_.drop(commands));
-				break;
-			case 'summarize':
-				components.summarize(_.drop(commands));
-				break;
-			case 'change':
-        		components.change(_.drop(commands));
-        		break;
-			case 'move':
-				components.moveCopyOrRemove(commands);
-				break;
-			case 'copy':
-				components.moveCopyOrRemove(commands);
-				break;
-			case 'remove':
-				components.moveCopyOrRemove(commands);
-				break;
-			case 'extract':
-				components.extract(_.drop(commands));
-				break;
-			case 'insert':
-				components.insert(_.drop(commands));
-				break;
-			case 'download':
-				if (commands[1] === 'gnet') {
-					gnet.download(_.drop(commands, 2));
-				}
-				else if (commands[1] === 's3') {
-					s3.download(_.drop(commands, 2));
-				}
-				break;
-			case 'upload':
-				if (commands[1] === 's3') {
-					s3.upload(_.drop(commands, 2));
-				}
-				break;
-			default:
-				logger.showError('Unsupported command called.');
-				logger.justShow(help);
-		}
+	switch(command) {
+		
+		case 'help':
+			showHelp();
+			break;
+		case 'init':
+			config.createIfNotExists();
+			components.createIfNotExists();
+			logger.showResult('wizzy successfully initialized.')
+			break;
+		case 'status':
+			status();
+			break;
+		case 'conf':
+			config.showConfig('config');
+			break;
+		case 'set':
+				/*
+					// TODO: Give an example how a property is added.
+				*/
+			config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
+			break;
+		case 'import':
+			grafana.import(_.drop(commands));
+			break;
+		case 'export':
+			grafana.export(_.drop(commands));
+			break;
+		case 'create':
+			grafana.create(_.drop(commands));
+			break;
+		case 'delete':
+			grafana.delete(_.drop(commands));
+			break;
+		case 'show':
+			grafana.show(_.drop(commands));
+			break;
+		case 'list':
+			if (commands[1] === 'gnet') {
+				gnet.list(_.drop(commands,2));
+			} else {
+				grafana.list(_.drop(commands));
+			}
+			break;
+		case 'clip':
+			grafana.clip(_.drop(commands));
+			break;
+		case 'summarize':
+			components.summarize(_.drop(commands));
+			break;
+		case 'change':
+      components.change(_.drop(commands));
+      break;
+		case 'move':
+			components.moveCopyOrRemove(commands);
+			break;
+		case 'copy':
+			components.moveCopyOrRemove(commands);
+			break;
+		case 'remove':
+			components.moveCopyOrRemove(commands);
+			break;
+		case 'extract':
+			components.extract(_.drop(commands));
+			break;
+		case 'insert':
+			components.insert(_.drop(commands));
+			break;
+		case 'download':
+			if (commands[1] === 'gnet') {
+				gnet.download(_.drop(commands, 2));
+			}
+			else if (commands[1] === 's3') {
+				s3.download(_.drop(commands, 2));
+			}
+			break;
+		case 'upload':
+			if (commands[1] === 's3') {
+				s3.upload(_.drop(commands, 2));
+			}
+			break;
+		default:
+			logger.showError('Unsupported command called.');
+			logger.justShow(help);
+	}
 }
 
 function addCommandsToHelp() {
@@ -178,7 +177,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = config.checkConfigStatus('config', true);
+	var setupProblem = self.config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);
