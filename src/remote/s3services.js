@@ -77,7 +77,7 @@ S3.prototype.upload = function(commands){
 	if (entityType === 'dashboard') {
 		successMessage = 'Uploaded dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in uploading dashboard ' + entityValue + '.';
-		var dashboard_data = components.readDashboard(entityValue)
+		var dashboard_data = components.dashboards.readDashboard(entityValue)
 	  	var key = ''
 	  	if(params.Key){
 	  		key = params.Key + '/dashboards/'+entityValue+'.json'
@@ -103,7 +103,7 @@ S3.prototype.upload = function(commands){
 		successMessage = 'Dashboards uploaded successfully.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 		_.forEach(dashboards,function(dashboard){
-			var dashboard_data = components.readDashboard(dashboard)
+			var dashboard_data = components.dashboards.readDashboard(dashboard)
 	  		var key = ''
 		  	if(params.Key){
 		  		key = params.Key + '/dashboards/'+dashboard+'.json'
@@ -152,7 +152,7 @@ S3.prototype.download = function(commands){
 				logger.showError('Dashboard '+entityValue+' not present in location s3://'+params.Bucket+"/"+key+'.');
 			}
 			else{
-				components.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
+				components.dashboards.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
 				logger.showResult(successMessage);
 			}
 		 });
@@ -187,7 +187,7 @@ S3.prototype.download = function(commands){
 									logger.showError('Dashboard '+dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0]+' not present in location s3://'+params.Bucket+"/"+key+'.');
 								}
 								else{
-									components.saveDashboard(dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0], JSON.parse(data.Body.toString()), false);
+									components.dashboards.saveDashboard(dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0], JSON.parse(data.Body.toString()), false);
 								}
 						 	});
 					  	}

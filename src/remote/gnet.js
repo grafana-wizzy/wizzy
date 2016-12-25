@@ -96,7 +96,7 @@ GNet.prototype.download = function(commands) {
 		request.get({url: dashboardUrl, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
-				components.saveDashboard(convertName2Slug(body.title), body, true);
+				components.dashboards.saveDashboard(convertName2Slug(body.title), body, true);
 	    	logger.showResult(successMessage);
 		  } else {
 	  		output += 'Unable to get dashboard ' + dashId + ' with ' + revisionId + ' from Grafana.net.';
