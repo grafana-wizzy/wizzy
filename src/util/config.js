@@ -29,12 +29,10 @@ var configs = [
 	'config:clip:delay'
 ]
 
-var confDir;
-var confFile;
+var confDir = 'conf';
+var confFile = 'conf/wizzy.json';
 
-function Config(dir, file) {
-	confDir = dir;
-	confFile = file;
+function Config() {
 	nconf.argv().env().file({ file: confFile });
 }
 
