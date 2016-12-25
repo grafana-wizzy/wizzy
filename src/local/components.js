@@ -29,7 +29,9 @@ function Components(conf) {
 
 Components.prototype.checkDirsStatus = function(showOutput) {
 
-	return this.dashboards.checkDirStatus(showOutput) && this.orgs.checkDirStatus(showOutput) && this.datasources.checkDirStatus(showOutput);
+	return this.dashboards.checkDirStatus(showOutput) && 
+		this.orgs.checkDirStatus(showOutput) && 
+		this.datasources.checkDirStatus(showOutput);
 
 }
 
@@ -44,7 +46,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	var destination = commands[3];
 
 	var srcDashboardSlug = checkOrGetContextDashboard();
-	var srcDashboard = self.readDashboard(srcDashboardSlug);
+	var srcDashboard = self.dashboards.readDashboard(srcDashboardSlug);
 	var sourceArray = entityValue.split('.');
 	
 	var destinationArray = [];
@@ -75,7 +77,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 			// when only remove row command is triggered
 			if (destinationArray.length === 0 && command === 'remove') {
 				srcRows.splice(srcRowNumber-1, 1);
-				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			}
 
@@ -86,22 +88,22 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 					srcRows.splice(srcRowNumber-1, 1);
 				}
 				srcRows.splice(destRowNumber-1, 0, srcRow);
-				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			}
 
 			// when destination is a row on another dashboard
 			else if (destinationArray.length === 2) {
 				destDashboardSlug = destinationArray[0];
-				var destDashboard = self.readDashboard(destDashboardSlug);
+				var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
 				var destRows = destDashboard.rows;
 				var destRowNumber = parseInt(destinationArray[1]);
 				if (command === 'move') {
 					srcRows.splice(srcRowNumber-1, 1);
-					self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+					self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				}
 				destRows.splice(destRowNumber-1, 0, srcRow);
-				self.saveDashboard(destDashboardSlug, destDashboard, true);
+				self.dashboards.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
 			} 
 
@@ -123,7 +125,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 			// when only remove panel command is triggered
 			if (destinationArray.length === 0 && command === 'remove') {
 				srcPanels.splice(srcPanelNumber-1, 1);
-				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			}
 			
@@ -141,21 +143,21 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 					srcPanels.splice(srcPanelNumber-1, 1);
 				}
 				destPanels.splice(destPanelNumber-1, 0, srcPanel);
-				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			} else if (destinationArray.length === 3) {
 				var destDashboardSlug = destinationArray[0];
-				var destDashboard = self.readDashboard(destDashboardSlug);
+				var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
 				var destRows = destDashboard.rows;
 				var destRowNumber = parseInt(destinationArray[1]);
 				var destPanels = destRows[destRowNumber-1].panels;
 				var destPanelNumber = parseInt(destinationArray[2]);
 				if (command === 'move') {
 					srcPanels.splice(srcPanelNumber-1, 1);
-					self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+					self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				}
 				destPanels.splice(destPanelNumber-1, 0, srcPanel);
-				self.saveDashboard(destDashboardSlug, destDashboard, true);
+				self.dashboards.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
 			} else {
 				logger.showError(failureMessage);
@@ -173,7 +175,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 		// remove operation
 		if (destinationArray.length === 0 && command === 'remove') {
 			srcTempVarList.splice(srcTempVarNumber-1, 1);
-			self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+			self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 			logger.showResult(successMessage);
 		}
 
@@ -187,16 +189,16 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 		else if (destinationArray.length === 2) {
 			
 			destDashboardSlug = destinationArray[0];
-			var destDashboard = self.readDashboard(destDashboardSlug);
+			var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
 			var destTempVarList = destDashboard.templating.list;
 			var destTempVarNumber = parseInt(destinationArray[1]);
 			var desrTempVar = srcTempVarList[destTempVarNumber-1];
 			if (command === 'move') {
 				srcTempVarList.splice(srcTempVarNumber-1, 1);
-				self.saveDashboard(srcDashboardSlug, srcDashboard, true);
+				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 			}
 			destTempVarList.splice(destTempVarNumber-1, 0, srcTempVar);
-			self.saveDashboard(destDashboardSlug, destDashboard, true);
+			self.dashboards.saveDashboard(destDashboardSlug, destDashboard, true);
 			logger.showResult(successMessage);
 		} else {
 			logger.showError(failureMessage);
@@ -259,6 +261,7 @@ Components.prototype.change = function(commands) {
  			return;
  		}
  		this.dashboards.change(entityValue, oldDatasource, newDatasource);
+ 		logger.showResult(successMessage);
  	}
  	else {
  		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');

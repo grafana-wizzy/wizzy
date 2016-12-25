@@ -21,6 +21,9 @@ Orgs.prototype.checkDirStatus = function(showOutput) {
 
 // summarize the orgs
 Orgs.prototype.summarize = function() {
+
+	var self = this;
+
 	var table = new Table({
 		head: ['Org Id', 'Org Name'],
 		colWidths: [25, 25]
@@ -28,7 +31,7 @@ Orgs.prototype.summarize = function() {
 
 	var orgFiles = localfs.readFilesFromDir(orgsDir);
 	_.each(orgFiles, function(orgFile) {
-		var org = this.readOrg(localfs.getFileName(orgFile));
+		var org = self.readOrg(localfs.getFileName(orgFile));
 		table.push([org.id, org.name]);
 	});
 

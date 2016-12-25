@@ -104,7 +104,6 @@ Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource
 			}
 		});
 	});
-	logger.showResult(successMessage);
 	this.saveDashboard(entityValue, dashboard, true);
 
 }

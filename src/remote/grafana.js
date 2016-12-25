@@ -379,7 +379,7 @@ Grafana.prototype.export = function(commands) {
 		var self =  this;
 		successMessage = 'Datasource '+ entityValue + ' export successful.';
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
-		var checkDsUrl = grafana_url + this.createURL('show', entityType, entityValue);
+		var checkDsUrl = grafana_url + self.createURL('show', entityType, entityValue);
 		request.get({url: checkDsUrl, auth:auth, json:true}, function checkHandler(error_check, response_check, body_check) {
 			if (response_check.statusCode === 404) {
 				logger.justShow('Datasource does not exists in Grafana.');
@@ -389,7 +389,7 @@ Grafana.prototype.export = function(commands) {
 				sendRequest('POST', url);
 			} else if (response_check.statusCode === 200) {
 				var url = grafana_url + self.createURL('export', entityType, body_check.id);
-				sendRequest('POST', url);
+				sendRequest('PUT', url);
 			} else {
 				logger.showError('Unknown response from Grafana.');
 			}
@@ -417,7 +417,7 @@ Grafana.prototype.export = function(commands) {
 			_.forEach(dsNames, function(ds) {
 				var url;
 				var method;
-				body = components.readDatasource(ds);
+				body = components.datasources.readDatasource(ds);
 				// if local dashboard exists in Grafana we update
 				if (body.name in ids) {
 					body.id = ids[body.name];

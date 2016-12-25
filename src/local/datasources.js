@@ -22,6 +22,8 @@ Datasources.prototype.checkDirStatus = function(showOutput) {
 // summarize the datasources
 Datasources.prototype.summarize = function() {
 
+	var self = this;
+
 	var table = new Table({
   	head: ['Datasource Name', 'Datasource Type'],
 		colWidths: [30, 30]
@@ -30,7 +32,7 @@ Datasources.prototype.summarize = function() {
 	var dsFiles = localfs.readFilesFromDir(datasrcDir);
 
 	_.each(dsFiles, function(dsFile) {
-		var ds = this.readDatasource(localfs.getFileName(dsFile));
+		var ds = self.readDatasource(localfs.getFileName(dsFile));
 		table.push([ds.name, ds.type]);
 	});
 
