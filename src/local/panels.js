@@ -14,9 +14,9 @@ function Panels() {
 	localfs.createIfNotExists(panelsDir, 'dir', false);
 }
 
-// checks dir status for the datasources
-Panels.prototype.checkDirStatus = function() {
-	return localfs.checkExists(panelsDir, 'panels directory', false);
+// checks dir status for the panels
+Panels.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(panelsDir, 'panels directory', showOutput);
 }
 
 module.exports = Panels;

@@ -15,8 +15,8 @@ function Datasources() {
 }
 
 // checks dir status for the datasources
-Datasources.prototype.checkDirStatus = function() {
-	return localfs.checkExists(datasrcDir, 'datasources directory', false);
+Datasources.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(datasrcDir, 'datasources directory', showOutput);
 }
 
 // summarize the datasources

@@ -15,8 +15,8 @@ function Orgs() {
 }
 
 // checks dir status for the datasources
-Orgs.prototype.checkDirStatus = function() {
-	return localfs.checkExists(orgsDir, 'orgs directory', false);
+Orgs.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(orgsDir, 'orgs directory', showOutput);
 }
 
 // summarize the orgs

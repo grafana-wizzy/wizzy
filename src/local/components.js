@@ -27,9 +27,9 @@ function Components(conf) {
 	this.datasources = new Datasources();
 }
 
-Components.prototype.checkDirsStatus = function() {
+Components.prototype.checkDirsStatus = function(showOutput) {
 
-	return this.dashboards.checkDirStatus() && this.orgs.checkDirStatus() && this.datasources.checkDirStatus();
+	return this.dashboards.checkDirStatus(showOutput) && this.orgs.checkDirStatus(showOutput) && this.datasources.checkDirStatus(showOutput);
 
 }
 
@@ -246,7 +246,6 @@ Components.prototype.change = function(commands) {
  		return;
  	}
 
-	var self = this;
  	successMessage = 'Datasource changed successfully';
  
  	if (component === 'panels' && entityType === 'datasource') {
@@ -259,21 +258,7 @@ Components.prototype.change = function(commands) {
  			logger.showError('New datasource value not supported or incorrect.')
  			return;
  		}
- 		var dashboard = self.readDashboard(entityValue);
- 		var arch = {};
- 		// Extracting row information
- 		arch.title = dashboard.title;
- 		arch.rowCount = _.size(dashboard.rows);
- 		arch.rows = [];
- 		_.forEach(dashboard.rows, function(row) {
- 			_.forEach(row.panels,function(panel){
- 				if(panel.datasource === oldDatasource){
- 					panel.datasource = newDatasource
- 				}
- 			});
- 		});
- 		logger.showResult(successMessage);
- 		this.saveDashboard(entityValue, dashboard, true);
+ 		this.dashboards.change(entityValue, oldDatasource, newDatasource);
  	}
  	else {
  		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
@@ -281,7 +266,6 @@ Components.prototype.change = function(commands) {
 
  }
 
- 
 // Extracts entities from dashboard json
 Components.prototype.extract = function(commands) {
 
@@ -291,11 +275,10 @@ Components.prototype.extract = function(commands) {
 		}
 		successMessage = 'Template variable ' + commands[1] + ' extracted successfully.';
 		this.dashboards.extract(commands[2], commands[1]);
+		logger.showResult(successMessage);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
-		return;
 	}
-	logger.showResult(successMessage);
 
 }
 
@@ -308,11 +291,10 @@ Components.prototype.insert = function(commands) {
 		}
 		successMessage = 'Template variable ' + commands[1] + ' inserted successfully.';
 		this.dashboards.insert(commands[2], commands[1]);
+		logger.showResult(successMessage);	
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
-		return;
 	}
-	logger.showResult(successMessage);	
 
 }
 

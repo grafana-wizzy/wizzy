@@ -22,8 +22,9 @@ function Dashboards() {
 }
 
 // checks dir status for the dashboards
-Dashboards.prototype.checkDirStatus = function() {
-	return localfs.checkExists(dashDir, 'dashboards directory', false);
+Dashboards.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) && this.tempVars.checkDirStatus(showOutput)
+		&& this.panels.checkDirStatus(showOutput) && this.rows.checkDirStatus(showOutput);
 }
 
 // summarize dashboard
@@ -85,6 +86,26 @@ Dashboards.prototype.extract = function(dashboard, tempVar) {
 	var srcTempVarNumber = parseInt(tempVar);
 	var srcTempVar = srcTempVarList[srcTempVarNumber-1];	
 	this.tempVars.saveTemplateVars(dashboard, srcTempVar, true);
+
+}
+
+Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource) {
+
+	var dashboard = readDashboard(entityValue);
+	var arch = {};
+	// Extracting row information
+	arch.title = dashboard.title;
+	arch.rowCount = _.size(dashboard.rows);
+	arch.rows = [];
+	_.forEach(dashboard.rows, function(row) {
+		_.forEach(row.panels,function(panel){
+			if(panel.datasource === oldDatasource){
+				panel.datasource = newDatasource
+			}
+		});
+	});
+	logger.showResult(successMessage);
+	this.saveDashboard(entityValue, dashboard, true);
 
 }
 

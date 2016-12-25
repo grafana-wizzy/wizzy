@@ -51,8 +51,8 @@ Commands.prototype.instructions = function() {
 			showHelp();
 			break;
 		case 'init':
-			config.createIfNotExists();
-			components.createIfNotExists();
+			config.checkConfigStatus('config', true);
+			components.checkDirsStatus(true);
 			logger.showResult('wizzy successfully initialized.')
 			break;
 		case 'status':
@@ -177,7 +177,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = self.config.checkConfigStatus('config', true);
+	var setupProblem = config.checkConfigStatus('config', true);
 
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);

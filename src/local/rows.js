@@ -14,9 +14,9 @@ function Rows() {
 	localfs.createIfNotExists(rowsDir, 'dir', false);
 }
 
-// checks dir status for the datasources
-Rows.prototype.checkDirStatus = function() {
-	return localfs.checkExists(rowsDir, 'temp-vars directory', false);
+// checks dir status for the rows
+Rows.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(rowsDir, 'rows directory', showOutput);
 }
 
 module.exports = Rows;

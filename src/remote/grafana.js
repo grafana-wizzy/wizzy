@@ -319,7 +319,7 @@ Grafana.prototype.export = function(commands) {
 		request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
 			// this means that dashboard does not exist so will create a new one
 			var dashBody = {
-				dashboard: components.readDashboard(entityValue),
+				dashboard: components.dashboards.readDashboard(entityValue),
 				overwrite: true
 			}
 			if (response_check.statusCode === 404) {
@@ -345,7 +345,7 @@ Grafana.prototype.export = function(commands) {
 			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
 				
 				var dashBody = {
-						dashboard: components.readDashboard(dashboard),
+						dashboard: components.dashboards.readDashboard(dashboard),
 						overwrite: true
 				}
 				
@@ -366,7 +366,7 @@ Grafana.prototype.export = function(commands) {
 
 	// exporting a local org to Grafana
 	else if (entityType === 'org') {
-		body = components.readOrg(entityValue);
+		body = components.orgs.readOrg(entityValue);
 		successMessage = 'Org '+ entityValue + ' export successful.';
 		failureMessage = 'Org '+ entityValue + ' export failed.';
 		var url = grafana_url + this.createURL('export', entityType, entityValue);
@@ -375,7 +375,7 @@ Grafana.prototype.export = function(commands) {
 
 	// exporting a single local datasource to Grafana
 	else if (entityType === 'datasource') {
-		body = components.readDatasource(entityValue);
+		body = components.datasources.readDatasource(entityValue);
 		var self =  this;
 		successMessage = 'Datasource '+ entityValue + ' export successful.';
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';

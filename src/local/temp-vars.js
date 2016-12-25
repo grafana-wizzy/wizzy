@@ -15,8 +15,8 @@ function TempVars() {
 }
 
 // checks dir status for the datasources
-TempVars.prototype.checkDirStatus = function() {
-	return localfs.checkExists(tempVarsDir, 'temp-vars directory', false);
+TempVars.prototype.checkDirStatus = function(showOutput) {
+	return localfs.checkExists(tempVarsDir, 'temp-vars directory', showOutput);
 }
 
 // Save a template variable under template-variables directory on disk
