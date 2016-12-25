@@ -29,7 +29,7 @@ Dashboards.prototype.checkDirStatus = function(showOutput) {
 
 // summarize dashboard
 Dashboards.prototype.summarize = function(dashboardSlug) {
-	var dashboard = readDashboard(dashboardSlug);
+	var dashboard = this.readDashboard(dashboardSlug);
 	var arch = {};
 
 	// Extracting row information
@@ -72,7 +72,7 @@ Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
 Dashboards.prototype.insert = function(dashboard, tempVar) {
 
 	var destDashboardSlug = dashboard;
-	var destDashboard = readDashboard(destDashboardSlug);
+	var destDashboard = this.readDashboard(destDashboardSlug);
 	var destTempVarList = destDashboard.templating.list;
 	destTempVarList.push(this.tempVars.readTemplateVariable(tempVar));
 	this.saveDashboard(destDashboardSlug, destDashboard, true);
@@ -81,7 +81,7 @@ Dashboards.prototype.insert = function(dashboard, tempVar) {
 
 Dashboards.prototype.extract = function(dashboard, tempVar) {
 
-	var srcDashboard = readDashboard(dashboard);
+	var srcDashboard = this.readDashboard(dashboard);
 	var srcTempVarList = srcDashboard.templating.list;
 	var srcTempVarNumber = parseInt(tempVar);
 	var srcTempVar = srcTempVarList[srcTempVarNumber-1];	
@@ -91,7 +91,7 @@ Dashboards.prototype.extract = function(dashboard, tempVar) {
 
 Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource) {
 
-	var dashboard = readDashboard(entityValue);
+	var dashboard = this.readDashboard(entityValue);
 	var arch = {};
 	// Extracting row information
 	arch.title = dashboard.title;
@@ -110,7 +110,7 @@ Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource
 }
 
 // Reads dashboard json from file.
-function readDashboard(slug) {
+Dashboards.prototype.readDashboard = function(slug) {
 
 	if (localfs.checkExists(getDashboardFile(slug))) {
 		return JSON.parse(localfs.readFile(getDashboardFile(slug)));

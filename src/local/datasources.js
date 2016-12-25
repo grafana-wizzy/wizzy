@@ -30,7 +30,7 @@ Datasources.prototype.summarize = function() {
 	var dsFiles = localfs.readFilesFromDir(datasrcDir);
 
 	_.each(dsFiles, function(dsFile) {
-		var ds = readDatasource(localfs.getFileName(dsFile));
+		var ds = this.readDatasource(localfs.getFileName(dsFile));
 		table.push([ds.name, ds.type]);
 	});
 
@@ -50,7 +50,7 @@ Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
 }
 
 // reads datasource json from file.
-function readDatasource(id) {
+Datasources.prototype.readDatasource = function(id) {
 
 	if (localfs.checkExists(getDatasourceFile(id))) {
 		return JSON.parse(localfs.readFile(getDatasourceFile(id)));

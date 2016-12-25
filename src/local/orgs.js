@@ -28,7 +28,7 @@ Orgs.prototype.summarize = function() {
 
 	var orgFiles = localfs.readFilesFromDir(orgsDir);
 	_.each(orgFiles, function(orgFile) {
-		var org = readOrg(localfs.getFileName(orgFile));
+		var org = this.readOrg(localfs.getFileName(orgFile));
 		table.push([org.id, org.name]);
 	});
 
@@ -48,7 +48,7 @@ Orgs.prototype.saveOrg = function(id, org, showResult) {
 }
 
 // Reads org json from file.
-function readOrg(id) {
+Orgs.prototype.readOrg = function(id) {
 
 	if (localfs.checkExists(getOrgFile(id))) {
 		return JSON.parse(localfs.readFile(getOrgFile(id)));
