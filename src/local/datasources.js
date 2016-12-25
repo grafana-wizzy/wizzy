@@ -39,6 +39,16 @@ Datasources.prototype.summarize = function() {
 
 }
 
+// Saves a datasource file under datasources directory on disk
+Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
+
+	localfs.writeFile(getDatasourceFile(id), logger.stringify(datasource, null, 2));
+	if (showResult) {
+		logger.showResult('Datasource ' + id + ' saved successfully under datasources directory.');
+	}
+
+}
+
 // reads datasource json from file.
 function readDatasource(id) {
 

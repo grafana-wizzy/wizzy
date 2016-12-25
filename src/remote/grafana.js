@@ -130,7 +130,7 @@ Grafana.prototype.import = function(commands) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  		output += body;
-				components.saveDashboard(entityValue, body.dashboard, true);
+				components.dashboards.saveDashboard(entityValue, body.dashboard, true);
 	    		logger.showResult(successMessage);
 	  		} else {
 	  			output += 'Grafana API response status code = ' + response.statusCode;
@@ -162,7 +162,7 @@ Grafana.prototype.import = function(commands) {
 	  	  	url = grafana_url + self.createURL('import', 'dashboard', dash);
 	  	  	request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 						if (!error && response.statusCode == 200) {
-							components.saveDashboard(dash, body.dashboard, false);
+							components.dashboards.saveDashboard(dash, body.dashboard, false);
 				  	}
 					});
 	  	  });
@@ -253,7 +253,7 @@ Grafana.prototype.import = function(commands) {
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
 	  	  delete body.id;
-	  	  components.saveDatasource(entityValue, body, true);
+	  	  components.datasources.saveDatasource(entityValue, body, true);
 	  	  logger.showResult(successMessage);
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
@@ -280,7 +280,7 @@ Grafana.prototype.import = function(commands) {
 			if (!error && response.statusCode == 200) {
 				_.each(body, function(datasource){
 					delete datasource.id;
-					components.saveDatasource(datasource.name, datasource);
+					components.datasources.saveDatasource(datasource.name, datasource);
 				});
 	  	  logger.showResult('Total datasources imported: ' + body.length);
 	  	  logger.showResult(successMessage);

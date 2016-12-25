@@ -15,33 +15,21 @@ var successMessage;
 var failureMessage;
 
 var Datasources = require('../local/datasources.js');
-var TempVars = require('../local/temp-vars.js');
 var Orgs = require('../local/orgs.js');
+var Dashboards = require('../local/dashboards.js');
 
 var config;
-var dashDir;
 
 function Components(conf) {
-	dashDir = 'dashboards';
 	config = conf;
+	this.dashboards = new Dashboards();
 	this.orgs = new Orgs();
-	this.tempVars = new TempVars();
 	this.datasources = new Datasources();
-}
-
-// creates dashboards dir if not exist
-Components.prototype.createIfNotExists = function() {
-
-	localfs.createIfNotExists(dashDir, 'dir', 'dashboards directory');
-
 }
 
 Components.prototype.checkDirsStatus = function() {
 
-	var self = this;
-
-	return localfs.checkExists(dashDir) && self.tempVars.checkDirStatus()
-		self.orgs.checkDirStatus() && self.datasources.checkDirStatus();
+	return this.dashboards.checkDirStatus() && this.orgs.checkDirStatus() && this.datasources.checkDirStatus();
 
 }
 
@@ -220,47 +208,19 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	}
 }
 
-// summarizes a dashboard
+// summarizes an entity
 Components.prototype.summarize = function(commands) {
 
 	var entityType = commands[0];
 	var entityValue = commands[1];
-
 	var self = this;
 
 	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
 			entityValue = config.getConfig('config:context:dashboard');
 		}
-
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
-
-		var dashboard = self.readDashboard(entityValue);
-		var arch = {};
-
-		// Extracting row information
-		arch.title = dashboard.title;
-		arch.rowCount = _.size(dashboard.rows);
-		arch.rows = [];
-		_.forEach(dashboard.rows, function(row) {
-
-			var panelInfo = _.map(row.panels, function(panel) {
-				return panel.title + '(' + panel.datasource + ')';
-			});
-
-			arch.rows.push({
-	  		title: row.title,
-				panelCount: _.size(row.panels),
-				panels: _.join(panelInfo, ', ')
-			});
-		});
-		if ('templating' in dashboard) {
-			arch.templateVariableCount = _.size(dashboard.templating.list);
-			arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
-		}
-		arch.time = dashboard.time;
-		arch.time.timezone = dashboard.timezone;
-		logger.showOutput(logger.stringify(arch));
+		self.dashboards.summarize(entityValue);
 	} else if (entityType === 'orgs') {
 		self.orgs.summarize();
 		successMessage = 'Showed orgs summary successfully.';
@@ -268,11 +228,9 @@ Components.prototype.summarize = function(commands) {
 		self.datasources.summarize();
 		successMessage = 'Showed datasources summary successfully.';
 	} else {
-
 		logger.showError('Unsupported command. Please try `wizzy help`.');
 		return;
 	}
-
 	logger.showResult(successMessage);
 
 }
@@ -328,22 +286,15 @@ Components.prototype.change = function(commands) {
 Components.prototype.extract = function(commands) {
 
 	if (commands[0] === 'temp-var') {
-
+		if (typeof commands[2] != 'string') {
+			commands[2] = config.getConfig('config:context:dashboard');
+		}
 		successMessage = 'Template variable ' + commands[1] + ' extracted successfully.';
-
-		var srcDashboardSlug = checkOrGetContextDashboard();
-		var srcDashboard = this.readDashboard(srcDashboardSlug);
-		var srcTempVarList = srcDashboard.templating.list;
-		var srcTempVarNumber = parseInt(commands[1]);
-		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
-		
-		this.saveTemplateVars(commands[2], srcTempVar, true);
-
+		this.dashboards.extract(commands[2], commands[1]);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 		return;
 	}
-
 	logger.showResult(successMessage);
 
 }
@@ -352,51 +303,16 @@ Components.prototype.extract = function(commands) {
 Components.prototype.insert = function(commands) {
 
 	if (commands[0] === 'temp-var') {
-
 		if (typeof commands[2] != 'string') {
 			commands[2] = config.getConfig('config:context:dashboard');
 		}
-
 		successMessage = 'Template variable ' + commands[1] + ' inserted successfully.';
-
-		var destDashboardSlug = commands[2]
-		var destDashboard = this.readDashboard(destDashboardSlug);
-		var destTempVarList = destDashboard.templating.list;
-		destTempVarList.push(this.readTemplateVariable(commands[1]));
-		this.saveDashboard(destDashboardSlug, destDashboard, true);
-
+		this.dashboards.insert(commands[2], commands[1]);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 		return;
 	}
-
 	logger.showResult(successMessage);	
-
-}
-
-// Reads dashboard json from file.
-Components.prototype.readDashboard = function(slug) {
-
-	if (localfs.checkExists(getDashboardFile(slug))) {
-		return JSON.parse(localfs.readFile(getDashboardFile(slug)));
-	}
-	else {
-		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
-		process.exit();
-	}
-	
-}
-
-// Reads template variable json from file.
-Components.prototype.readTemplateVariable = function(varName) {
-
-	if (localfs.checkExists(getTempVarFile(varName))) {
-		return JSON.parse(localfs.readFile(getTempVarFile(varName)));
-	}
-	else {
-		logger.showError('Template variable file ' + getTempVarFile(varName) + ' does not exist.');
-		process.exit();
-	}
 
 }
 
@@ -411,38 +327,6 @@ Components.prototype.readEntityNamesFromDir = function(dirName) {
 
 }
 
-// Saving a dashboard file on disk
-Components.prototype.saveDashboard = function(slug, dashboard, showResult) {
-
-	// we delete version when we import the dashboard... as version is maintained by Grafana
-	delete dashboard.version;
-	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
-	if (showResult) {
-		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
-	}
-
-}
-
-// Saves a datasource file under datasources directory on disk
-Components.prototype.saveDatasource = function(id, datasource, showResult) {
-
-	localfs.writeFile(getDatasourceFile(id), logger.stringify(datasource, null, 2));
-	if (showResult) {
-		logger.showResult('Datasource ' + id + ' saved successfully under datasources directory.');
-	}
-
-}
-
-// Save a template variable under template-variables directory on disk
-Components.prototype.saveTemplateVars = function(varName, content, showResult) {
-
-	localfs.writeFile(getTempVarFile(varName), logger.stringify(content, null, 2));
-	if (showResult) {
-		logger.showResult('Template variable ' + varName + ' saved successfully under template-vars directory.');
-	}
-
-}
-
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {
 
@@ -453,20 +337,6 @@ function checkOrGetContextDashboard() {
 		process.exit();
 	}
 
-}
-
-function getDatasourceFile(id) {
-	return datasrcDir + '/' + id + '.json';
-}
-
-// Get dashboard file name from slug
-function getDashboardFile(slug) {
-	return dashDir + '/' + slug + '.json';
-}
-
-// Get temp-var file name from var name
-function getTempVarFile(varName) {
-	return tempVarsDir + '/' + varName + '.json';
 }
 
 function getFileName(fileNameWithExtension) {
