@@ -237,21 +237,24 @@ Components.prototype.summarize = function(commands) {
 
 }
 
+// Change an entity
 Components.prototype.change = function(commands) {
 
- 	var component = commands[0];
- 	var entityType = commands[1];
- 	var oldDatasource = commands[2];
- 	var newDatasource = commands[3];
-
- 	if (commands.length != 4) {
+	if (commands.length != 4) {
  		logger.showError('Incorrect arguments, please read the usage.')
  		return;
  	}
- 	successMessage = 'Datasource changed successfully';
  
  	if (component === 'panels' && entityType === 'datasource') {
+ 		
+ 		successMessage = 'Datasource changed successfully';
+
+ 		var component = commands[0];
+ 		var entityType = commands[1];
+ 		var oldDatasource = commands[2];
+ 		var newDatasource = commands[3];
  		var entityValue = config.getConfig('config:context:dashboard');
+
  		if (typeof oldDatasource != 'string') {
  			logger.showError('Old datasource value not supported or incorrect.')
  			return;
@@ -264,37 +267,35 @@ Components.prototype.change = function(commands) {
  		logger.showResult(successMessage);
  	}
  	else {
- 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
+ 		logger.showError('Unsupported command ' + commands + '. Please try `wizzy help`.');
  	}
 
  }
 
-// Extracts entities from dashboard json
+// Extracts entities from dashboard json to local independent json
 Components.prototype.extract = function(commands) {
 
-	if (commands[0] === 'temp-var') {
+	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
+		// Getting the context dashboard
 		if (typeof commands[2] != 'string') {
 			commands[2] = config.getConfig('config:context:dashboard');
 		}
-		successMessage = 'Template variable ' + commands[1] + ' extracted successfully.';
-		this.dashboards.extract(commands[2], commands[1]);
-		logger.showResult(successMessage);
+		this.dashboards.extract(commands[0], commands[1], commands[2]);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}
 
 }
 
-// Inserts entities from local json to dashboard json
+// Inserts entities from local independent json to dashboard json
 Components.prototype.insert = function(commands) {
 
-	if (commands[0] === 'temp-var') {
+	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
+		// Getting the context dashboard
 		if (typeof commands[2] != 'string') {
 			commands[2] = config.getConfig('config:context:dashboard');
 		}
-		successMessage = 'Template variable ' + commands[1] + ' inserted successfully.';
-		this.dashboards.insert(commands[2], commands[1]);
-		logger.showResult(successMessage);	
+		this.dashboards.insert(commands[0], commands[1], commands[2]);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}

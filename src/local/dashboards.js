@@ -69,23 +69,49 @@ Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
 
 }
 
-Dashboards.prototype.insert = function(dashboard, tempVar) {
+Dashboards.prototype.insert = function(type, entity, dashboard) {
 
 	var destDashboardSlug = dashboard;
 	var destDashboard = this.readDashboard(destDashboardSlug);
-	var destTempVarList = destDashboard.templating.list;
-	destTempVarList.push(this.tempVars.readTemplateVariable(tempVar));
-	this.saveDashboard(destDashboardSlug, destDashboard, true);
+
+	if (type === 'temp-var') {
+		var destTempVarList = destDashboard.templating.list;
+		destTempVarList.push(this.tempVars.readTemplateVariable(tempVar));
+		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		logger.showResult('Template variable ' + commands[1] + ' inserted successfully.');
+	} else if (type === 'panel') {
+
+	} else if (type === 'row') {
+
+	}
 
 }
 
-Dashboards.prototype.extract = function(dashboard, tempVar) {
+Dashboards.prototype.extract = function(type, entity, dashboard) {
 
 	var srcDashboard = this.readDashboard(dashboard);
-	var srcTempVarList = srcDashboard.templating.list;
-	var srcTempVarNumber = parseInt(tempVar);
-	var srcTempVar = srcTempVarList[srcTempVarNumber-1];
-	this.tempVars.saveTemplateVars(dashboard, srcTempVar, true);
+
+	if (type === 'temp-var') {
+		var srcTempVarList = srcDashboard.templating.list;
+		var srcTempVarNumber = parseInt(entity);
+		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
+		this.tempVars.saveTemplateVar(dashboard, srcTempVar, true);
+		logger.showResult('Template variable ' + entity + ' extracted successfully.');
+	} else if (type === 'row') {
+		var srcRows = srcDashboard.rows;
+		var srcRowNumber = parseInt(entity);
+		var srcRow = srcRows[srcRowNumber-1];
+		this.rows.saveRow(dashboard + '-' + srcRowNumber, srcRow, true);
+		logger.showResult('Row ' + entity + ' extracted successfully.');
+	} else if (type === 'panel') {
+		var srcEntity = entity.split('.');
+		var srcRows = srcDashboard.rows;
+		var srcPanels = srcRows[srcEntity[0]-1].panels;
+		var srcPanelNumber = parseInt(srcEntity[1]);
+		var srcPanel = srcPanels[srcPanelNumber-1];
+		this.panels.savePanel(dashboard + '-' + srcEntity[0] + '-' + srcEntity[1], srcPanel, true);
+		logger.showResult('Panel ' + entity + ' extracted successfully.');
+	}
 
 }
 
