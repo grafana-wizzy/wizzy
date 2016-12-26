@@ -25,7 +25,7 @@
     * [Template variable commands](#template-variable-commands)
   * [Configuration commands](#configuration-commands)
   * [Help commands](#help-commands)
-  * [Grafana.net commands](#docs/grafana_net.md)
+  * [Grafana.net commands](/docs/grafana_net.md)
 * [Project Initiator](#project-initiator)
 * [Contributors](https://github.com/utkarshcmu/wizzy/graphs/contributors)
 
