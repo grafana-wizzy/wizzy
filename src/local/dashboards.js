@@ -78,11 +78,14 @@ Dashboards.prototype.insert = function(type, entity, dashboard) {
 		var destTempVarList = destDashboard.templating.list;
 		destTempVarList.push(this.tempVars.readTemplateVariable(tempVar));
 		this.saveDashboard(destDashboardSlug, destDashboard, true);
-		logger.showResult('Template variable ' + commands[1] + ' inserted successfully.');
-	} else if (type === 'panel') {
-
+		logger.showResult('Template variable ' + entity + ' inserted successfully.');
 	} else if (type === 'row') {
-
+		var destRows = destDashboard.rows;
+		destRows.push(this.rows.readRow(entity));
+		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		logger.showResult('Row ' + entity + ' inserted successfully.');
+	} else if (type === 'panel') {
+		
 	}
 
 }

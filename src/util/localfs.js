@@ -8,16 +8,16 @@ var logger = new Logger('localfs');
 
 function LocalFS() {}
 
-LocalFS.prototype.checkExists = function(name, output, showOnOk) {
+LocalFS.prototype.checkExists = function(name, output, showOutput) {
 
 	if (fs.existsSync(name)){
-		if (showOnOk) {
+		if (showOutput) {
 			logger.showResult(output + ' exists.');
 		}
     return true;
 	} else {
-		if (showOnOk) {
-			logger.showResult(output + ' does not exists.');
+		if (showOutput) {
+			logger.justShow(output + ' does not exists.');
 		}
 		return false;
 	}
@@ -33,11 +33,11 @@ LocalFS.prototype.createIfNotExists = function(name, type, showResult) {
 			
 		}
 		if (showResult) {
-			logger.showResult(name + ' created.');	
+			logger.showResult(name + ' ' + type + ' created.');	
 		}
 	} else {
 		if (showResult) {
-			logger.showResult(name + ' already exists.');
+			logger.showResult(name + ' ' + type + ' already exists.');
 		}
 	}
 	
