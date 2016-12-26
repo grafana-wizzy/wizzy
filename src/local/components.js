@@ -238,6 +238,7 @@ Components.prototype.summarize = function(commands) {
 }
 
 Components.prototype.change = function(commands) {
+
  	var component = commands[0];
  	var entityType = commands[1];
  	var oldDatasource = commands[2];
@@ -247,7 +248,6 @@ Components.prototype.change = function(commands) {
  		logger.showError('Incorrect arguments, please read the usage.')
  		return;
  	}
-
  	successMessage = 'Datasource changed successfully';
  
  	if (component === 'panels' && entityType === 'datasource') {

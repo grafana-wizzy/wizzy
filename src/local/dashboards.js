@@ -84,7 +84,7 @@ Dashboards.prototype.extract = function(dashboard, tempVar) {
 	var srcDashboard = this.readDashboard(dashboard);
 	var srcTempVarList = srcDashboard.templating.list;
 	var srcTempVarNumber = parseInt(tempVar);
-	var srcTempVar = srcTempVarList[srcTempVarNumber-1];	
+	var srcTempVar = srcTempVarList[srcTempVarNumber-1];
 	this.tempVars.saveTemplateVars(dashboard, srcTempVar, true);
 
 }
