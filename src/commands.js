@@ -126,6 +126,9 @@ Commands.prototype.instructions = function() {
 				s3.upload(_.drop(commands, 2));
 			}
 			break;
+		case 'alerts':
+			grafana.alerts(_.drop(commands))
+			break;
 		default:
 			logger.showError('Unsupported command called.');
 			logger.justShow(help);
@@ -155,7 +158,8 @@ function addCommandsToHelp() {
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
 	addToHelp('wizzy upload s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
 	addToHelp('wizzy download s3 ENTITY ENTITY_NAME', 'download entities from S3.');
-
+	addToHelp('wizzy alerts pause', 'pause all the alerts in grafana');
+	
 }
 
 function addToHelp(syntax, description) {

@@ -296,7 +296,9 @@ Grafana.prototype.import = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} else {
+	} 
+		
+	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
@@ -462,6 +464,26 @@ Grafana.prototype.export = function(commands) {
 		return;
 	}
 
+}
+
+Grafana.prototype.alerts = function(commands){
+	var entityType = commands[0];
+	if (entityType === 'pause'){
+		successMessage = 'Alert paused successfully.';
+		failureMessage = 'Alert could not be paused.';
+		var self = this;
+		var url = grafana_url + self.createURL('import', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			_.forEach(body, function(alert) {
+				var url_check = url + "/"+alert.id+"/pause"
+				var body = {
+					"alertId": alert.id,
+					"paused": true
+				}
+				sendRequest('POST',url_check,body);
+			});
+		});
+	}
 }
 
 // list all dashboards
@@ -633,13 +655,16 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 			url += '/api/datasources/' + entityValue;	
 		}
 	}
+	else if(entityType === 'pause'){
+		url += '/api/alerts';
+	}
 
 	return url;
 
 }
 
 // Sends an HTTP API request to Grafana
-function sendRequest(method, url) {
+function sendRequest(method, url, body) {
 	if (method === 'POST') {
 		request.post({url: url, auth: auth, json: true, body: body}, printResponse); 
 	} else if (method === 'GET') {
@@ -655,9 +680,9 @@ function sendRequest(method, url) {
 // prints HTTP response from Grafana
 function printResponse(error, response, body) {
 	var output = '';
-		if (!error && response.statusCode == 200) {
-  	  output += logger.stringify(body);
-  	  logger.showOutput(output);
+	if (!error && response.statusCode == 200) {
+  	  	output += logger.stringify(body);
+  	  	logger.showOutput(output);
     	logger.showResult(successMessage);
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
