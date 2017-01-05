@@ -61,7 +61,7 @@ Grafana.prototype.create = function(commands) {
 	}
 	var url = grafana_url + this.createURL('create', entityType, entityValue);
 	sendRequest('POST', url);
-	
+
 }
 
 // deletes a dashboard or an org
@@ -133,9 +133,12 @@ Grafana.prototype.import = function(commands) {
 				components.dashboards.saveDashboard(entityValue, body.dashboard, true);
 	    		logger.showResult(successMessage);
 	  		} else {
-	  			output += 'Grafana API response status code = ' + response.statusCode;
+					if (response != null){
+	  				output += 'Grafana API response status code = ' + response.statusCode;
+					}
+					
 		  		if (error === null) {
-		  			output += '\nNo error body from Grafana API.';	
+		  			output += '\nNo error body from Grafana API.';
 		  		}
 		  		else {
 		  			output += '\n' + error;
@@ -171,7 +174,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -196,7 +199,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -232,7 +235,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -258,7 +261,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -287,7 +290,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -340,15 +343,15 @@ Grafana.prototype.export = function(commands) {
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 
 		_.forEach(dashboards,function(dashboard){
-			
+
 			var url_check = grafana_url + self.createURL('show', 'dashboard', dashboard);
 			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
-				
+
 				var dashBody = {
 						dashboard: components.dashboards.readDashboard(dashboard),
 						overwrite: true
 				}
-				
+
 				if (response_check.statusCode === 404) {
 					dashBody.dashboard.id = null;
 				} else {
@@ -494,7 +497,7 @@ Grafana.prototype.list = function(commands) {
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
-  			output += '\nNo error body from Grafana API.';	
+  			output += '\nNo error body from Grafana API.';
   		}
   		else {
   			output += '\n' + error;
@@ -522,7 +525,7 @@ Grafana.prototype.clip = function(commands) {
 
 	if (entityType === 'dashboard') {
 
-		var url = grafana_url + self.createURL('clip', entityType, entityValue) + 
+		var url = grafana_url + self.createURL('clip', entityType, entityValue) +
 			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 			config.clip.render_timeout;
 
@@ -560,7 +563,7 @@ Grafana.prototype.clip = function(commands) {
 			logger.showOutput('Taking dashboard snapshots.');
 			var dashboards = _.each(responseBody, function (dashboard) {
 				var dashName = dashboard.uri.substring(3);
-				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) + 
+				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) +
 					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 					config.clip.render_timeout;
 				dashUrl = addAuth(dashUrl);
@@ -628,9 +631,9 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {
 		if (command === 'show' || command === 'import') {
-			url += '/api/datasources/name/' + entityValue;	
+			url += '/api/datasources/name/' + entityValue;
 		} else if (command === 'export') {
-			url += '/api/datasources/' + entityValue;	
+			url += '/api/datasources/' + entityValue;
 		}
 	}
 
@@ -641,7 +644,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 // Sends an HTTP API request to Grafana
 function sendRequest(method, url) {
 	if (method === 'POST') {
-		request.post({url: url, auth: auth, json: true, body: body}, printResponse); 
+		request.post({url: url, auth: auth, json: true, body: body}, printResponse);
 	} else if (method === 'GET') {
 		request.get({url: url, auth: auth, json: true, method: method}, printResponse);
 	} else if (method === 'DELETE') {
@@ -649,7 +652,7 @@ function sendRequest(method, url) {
 	} else if (method === 'PUT') {
 		request.put({url: url, auth: auth, json: true, body: body}, printResponse);
 	}
-	
+
 }
 
 // prints HTTP response from Grafana
@@ -662,7 +665,7 @@ function printResponse(error, response, body) {
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
-  			output += '\nNo error body from Grafana API.';	
+  			output += '\nNo error body from Grafana API.';
   		}
   		else {
   			output += '\n' + error;
