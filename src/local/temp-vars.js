@@ -10,28 +10,29 @@ var _ = require('lodash');
 
 var tempVarsDir = 'temp-vars';
 
-function TempVars() {
+function TempVars() {}
 
-	localfs.createIfNotExists(tempVarsDir, 'dir', false);
-
-}
+// creates temp-vars directory if it does not exist
+TempVars.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(tempVarsDir, 'dir', showOutput);
+};
 
 // checks dir status for the datasources
 TempVars.prototype.checkDirStatus = function(showOutput) {
 
 	return localfs.checkExists(tempVarsDir, 'temp-vars directory', showOutput);
 
-}
+};
 
 // Save a template variable under template-variables directory on disk
 TempVars.prototype.saveTemplateVar = function(varName, content, showResult) {
 
 	localfs.writeFile(getTempVarFile(varName), logger.stringify(content, null, 2));
 	if (showResult) {
-		logger.showResult('Template variable ' + varName + ' saved successfully under template-vars directory.');
+		logger.showResult('Template variable ' + varName + ' saved successfully under temp-vars directory.');
 	}
 
-}
+};
 
 // Reads template variable json from file.
 TempVars.prototype.readTemplateVar = function(varName) {
@@ -44,7 +45,7 @@ TempVars.prototype.readTemplateVar = function(varName) {
 		process.exit();
 	}
 
-}
+};
 
 // Get temp-var file name from var name
 function getTempVarFile(varName) {

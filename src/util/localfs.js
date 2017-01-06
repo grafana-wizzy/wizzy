@@ -9,7 +9,6 @@ var logger = new Logger('localfs');
 function LocalFS() {}
 
 LocalFS.prototype.checkExists = function(name, output, showOutput) {
-
 	if (fs.existsSync(name)){
 		if (showOutput) {
 			logger.showResult(output + ' exists.');
@@ -21,11 +20,9 @@ LocalFS.prototype.checkExists = function(name, output, showOutput) {
 		}
 		return false;
 	}
-
-}
+};
 
 LocalFS.prototype.createIfNotExists = function(name, type, showResult) {
-
 	if (!fs.existsSync(name)){
 		if (type === 'dir') {
 			fs.mkdirSync(name);
@@ -40,11 +37,9 @@ LocalFS.prototype.createIfNotExists = function(name, type, showResult) {
 			logger.showResult(name + ' ' + type + ' already exists.');
 		}
 	}
-	
-}
+};
 
 LocalFS.prototype.readFile = function(name, showOnError) {
-
 	return fs.readFileSync(name, 'utf8', function (error, data) {
 		if (!error) {
 			logger.showResult('Read file ' + name + ' successfully.');
@@ -53,34 +48,29 @@ LocalFS.prototype.readFile = function(name, showOnError) {
 			logger.showError('Error in reading file ' + name);
 		}
 	});
-
-}
+};
 
 LocalFS.prototype.writeFile = function(name, content) {
-
 	fs.writeFileSync(name, content);
-
-}
+};
 
 LocalFS.prototype.readFilesFromDir = function(dirName) {
-
 	return fs.readdirSync(dirName);
-
-}
+};
 
 LocalFS.prototype.createDir = function(name, output) {
 	fs.mkdirSync(name);
 	if (output) {
 		logger.showResult(output + ' created.');
 	}
-}
+};
 
 LocalFS.prototype.deleteDir = function(name, output) {
 	fs.rmdir(name);
 	if (output) {
 		logger.showResult(output + ' deleted.');
 	}
-}
+};
 
 LocalFS.prototype.deleteDirRecursive = function(name, output) {
 	var self = this;
@@ -90,14 +80,14 @@ LocalFS.prototype.deleteDirRecursive = function(name, output) {
 		fs.unlinkSync(name + '/' + file);
 	});
 	self.deleteDir(name);
-}
+};
 
 LocalFS.prototype.writeStream = function(name) {
 	return fs.createWriteStream(name);
-}
+};
 
 LocalFS.prototype.getFileName = function(fileNameWithExtension) {
 	return fileNameWithExtension.split('.')[0];
-}
+};
 
 module.exports = LocalFS;

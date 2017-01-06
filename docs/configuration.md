@@ -27,13 +27,7 @@ $ wizzy set clip canvas_height 600
 $ wizzy set clip delay 500
 	- sets delay between each snapshot, lower delay means short video
 
-$ wizzy set s3 access_key
-
-$ wizzy set s3 secret_key
-
 $ wizzy set s3 bucket_name
 
 $ wizzy set s3 path
-
-$ wizzy set s3 region
 ```

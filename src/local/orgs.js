@@ -10,14 +10,17 @@ var _ = require('lodash');
 
 var orgsDir = 'orgs';
 
-function Orgs() {
-	localfs.createIfNotExists(orgsDir, 'dir', false);
-}
+function Orgs() {}
+
+// creates orgs directory if it does not exist
+Orgs.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(orgsDir, 'dir', showOutput);
+};
 
 // checks dir status for the datasources
 Orgs.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(orgsDir, 'orgs directory', showOutput);
-}
+};
 
 // summarize the orgs
 Orgs.prototype.summarize = function() {
@@ -38,7 +41,7 @@ Orgs.prototype.summarize = function() {
 	logger.showOutput(table.toString());
 	logger.showResult('Total orgs: ' + orgFiles.length);
 
-}
+};
 
 // Saves an org file under orgs directory on disk
 Orgs.prototype.saveOrg = function(id, org, showResult) {
@@ -48,7 +51,7 @@ Orgs.prototype.saveOrg = function(id, org, showResult) {
 		logger.showResult('Org ' + id + ' saved successfully under orgs directory.');
 	}
 
-}
+};
 
 // Reads org json from file.
 Orgs.prototype.readOrg = function(id) {
@@ -61,7 +64,7 @@ Orgs.prototype.readOrg = function(id) {
 		process.exit();
 	}
 
-}
+};
 
 // gets org filename
 function getOrgFile(id) {

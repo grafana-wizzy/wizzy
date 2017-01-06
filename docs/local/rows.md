@@ -15,4 +15,13 @@ $ wizzy move row SOURCE_ROW_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
 
 $ wizzy remove row SOURCE_ROW_NUMBER
 	- removes a row from the current dashboard
+
+$ wizzy extract row SOURCE_ROW_NUMBER
+  - removes a row from the current dashboard and saves it under rows directory
+
+$ wizzy insert row ROW_NAME
+  - inserts a row from the rows directory to context dashboard
+
+$ wizzy insert row ROW_NAME DESTINATION_SLUG
+	- inserts a row from the rows directory to a dashboard
 ```

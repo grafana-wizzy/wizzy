@@ -1,0 +1,8 @@
+[0.5.1]
+
+New Features:
+- Store/Upload/Download dashboards in S3.
+
+Breaking Changes:
+- `wizzy export new-dashboard` is changed to `wizzy export dashboard`.
+- `wizzy datasource` commands are using names now instead of ids.

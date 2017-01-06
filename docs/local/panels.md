@@ -15,4 +15,13 @@ $ wizzy move panel SOURCE_ROW.PANEL_NUMBER DESTINATION_DASHBOARD_SLUG.ROW_NUMBER
 
 $ wizzy remove panel SOURCE_ROW.PANEL_NUMBER
 	- removes a panel from current dashboard
+
+$ wizzy extract panel SOURCE_ROW_NUMBER.PANEL_NUMBER PANEL_NAME
+  - removes a panel from the current dashboard and saves it under panels directory
+
+$ wizzy insert panel PANEL_NAME ROW_NUMBER
+  - inserts a panel from the panels directory to a row in context dashboard
+
+$ wizzy insert panel ROW_NAME DESTINATION_SLUG.ROW_NUMBER
+	- inserts a panel from the panels directory to a row in a dashboard
 ```

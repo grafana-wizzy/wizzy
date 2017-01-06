@@ -5,7 +5,7 @@ var _ = require('lodash');
 var Components = require('./local/components.js');
 var Grafana = require('./remote/grafana.js');
 var GNet = require('./remote/gnet.js');
-var S3 = require('./remote/s3services.js')
+var S3 = require('./remote/s3services.js');
 var LocalFS = require('./util/localfs.js');
 var localfs = new LocalFS();
 var Config = require('./util/config.js');
@@ -51,9 +51,9 @@ Commands.prototype.instructions = function() {
 			showHelp();
 			break;
 		case 'init':
-			config.checkConfigStatus('config', true);
-			components.checkDirsStatus(true);
-			logger.showResult('wizzy successfully initialized.')
+			config.createIfNotExists();
+			components.createIfNotExists(true);
+			logger.showResult('wizzy successfully initialized.');
 			break;
 		case 'status':
 			status();
@@ -90,7 +90,11 @@ Commands.prototype.instructions = function() {
 			}
 			break;
 		case 'clip':
-			grafana.clip(_.drop(commands));
+			if (config.checkConfigStatus('config:clip', false)) {
+				grafana.clip(_.drop(commands));
+			} else {
+				logger.showError('Clip config not found. Please set clip config. Refer to README.');
+			}
 			break;
 		case 'summarize':
 			components.summarize(_.drop(commands));
@@ -114,16 +118,24 @@ Commands.prototype.instructions = function() {
 			components.insert(_.drop(commands));
 			break;
 		case 'download':
-			if (commands[1] === 'gnet') {
+			if (commands[1] === 'from-gnet') {
 				gnet.download(_.drop(commands, 2));
 			}
-			else if (commands[1] === 's3') {
-				s3.download(_.drop(commands, 2));
+			else if (commands[1] === 'from-s3') {
+				if (config.checkConfigStatus('config:s3', false)) {
+					s3.download(_.drop(commands, 2));
+				} else {
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
+				}
 			}
 			break;
 		case 'upload':
-			if (commands[1] === 's3') {
-				s3.upload(_.drop(commands, 2));
+			if (commands[1] === 'to-s3') {
+				if (config.checkConfigStatus('config:s3', false)) {
+					s3.upload(_.drop(commands, 2));
+				} else {
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
+				}
 			}
 			break;
 		case 'pause':
@@ -133,7 +145,7 @@ Commands.prototype.instructions = function() {
 			logger.showError('Unsupported command called.');
 			logger.justShow(help);
 	}
-}
+};
 
 function addCommandsToHelp() {
 
@@ -146,7 +158,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another.');
 	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
 	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
-	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
+	addToHelp('wizzy download from-gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
 	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
 	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
 	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana or Grafana.net.');
@@ -156,17 +168,16 @@ function addCommandsToHelp() {
 	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
-	addToHelp('wizzy upload s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
 	addToHelp('wizzy download s3 ENTITY ENTITY_NAME', 'download entities from S3.');
 	addToHelp('wizzy pause alerts', 'pause all the alerts in grafana');
-	
+	addToHelp('wizzy upload to-s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
 }
 
 function addToHelp(syntax, description) {
 
 	// Adding command to help
   help += '\n  ' + syntax;
-  if (description != null) {
+  if (description !== null) {
 		help += ' - ' + description;
 	}
 
@@ -181,7 +192,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = config.checkConfigStatus('config', true);
+	var setupProblem = config.checkExists('config', true);
 
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);
