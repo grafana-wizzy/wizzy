@@ -466,9 +466,9 @@ Grafana.prototype.export = function(commands) {
 
 }
 
-Grafana.prototype.alerts = function(commands){
+Grafana.prototype.pause = function(commands){
 	var entityType = commands[0];
-	if (entityType === 'pause'){
+	if (entityType === 'alerts'){
 		successMessage = 'Alert paused successfully.';
 		failureMessage = 'Alert could not be paused.';
 		var self = this;
@@ -655,7 +655,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 			url += '/api/datasources/' + entityValue;	
 		}
 	}
-	else if(entityType === 'pause'){
+	else if(entityType === 'alerts'){
 		url += '/api/alerts';
 	}
 
