@@ -21,7 +21,7 @@ TempVars.prototype.checkDirStatus = function(showOutput) {
 
 	return localfs.checkExists(tempVarsDir, 'temp-vars directory', showOutput);
 
-}
+};
 
 // Save a template variable under template-variables directory on disk
 TempVars.prototype.saveTemplateVar = function(varName, content, showResult) {
@@ -31,7 +31,7 @@ TempVars.prototype.saveTemplateVar = function(varName, content, showResult) {
 		logger.showResult('Template variable ' + varName + ' saved successfully under template-vars directory.');
 	}
 
-}
+};
 
 // Reads template variable json from file.
 TempVars.prototype.readTemplateVar = function(varName) {
@@ -44,7 +44,7 @@ TempVars.prototype.readTemplateVar = function(varName) {
 		process.exit();
 	}
 
-}
+};
 
 // Get temp-var file name from var name
 function getTempVarFile(varName) {

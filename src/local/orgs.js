@@ -17,7 +17,7 @@ function Orgs() {
 // checks dir status for the datasources
 Orgs.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(orgsDir, 'orgs directory', showOutput);
-}
+};
 
 // summarize the orgs
 Orgs.prototype.summarize = function() {
@@ -38,7 +38,7 @@ Orgs.prototype.summarize = function() {
 	logger.showOutput(table.toString());
 	logger.showResult('Total orgs: ' + orgFiles.length);
 
-}
+};
 
 // Saves an org file under orgs directory on disk
 Orgs.prototype.saveOrg = function(id, org, showResult) {
@@ -48,7 +48,7 @@ Orgs.prototype.saveOrg = function(id, org, showResult) {
 		logger.showResult('Org ' + id + ' saved successfully under orgs directory.');
 	}
 
-}
+};
 
 // Reads org json from file.
 Orgs.prototype.readOrg = function(id) {
@@ -61,7 +61,7 @@ Orgs.prototype.readOrg = function(id) {
 		process.exit();
 	}
 
-}
+};
 
 // gets org filename
 function getOrgFile(id) {

@@ -17,7 +17,7 @@ function Panels() {
 // checks dir status for the panels
 Panels.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(panelsDir, 'panels directory', showOutput);
-}
+};
 
 // Save a panel under panels directory on disk
 Panels.prototype.savePanel = function(panelName, content, showResult) {
@@ -27,7 +27,7 @@ Panels.prototype.savePanel = function(panelName, content, showResult) {
 		logger.showResult('Panel ' + panelName + ' saved successfully under template-vars directory.');
 	}
 
-}
+};
 
 // Reads panel json from file.
 Panels.prototype.readPanel = function(panelName) {
@@ -40,7 +40,7 @@ Panels.prototype.readPanel = function(panelName) {
 		process.exit();
 	}
 
-}
+};
 
 // Get panels file name from panel name
 function getPanelsFile(panelName) {

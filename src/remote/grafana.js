@@ -51,7 +51,7 @@ Grafana.prototype.create = function(commands) {
 	var entityValue = commands[1];
 
 	if (entityType === 'org') {
-		body['name'] = entityValue;
+		body.name = entityValue;
 		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
 		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
 	}
@@ -62,7 +62,7 @@ Grafana.prototype.create = function(commands) {
 	var url = grafana_url + this.createURL('create', entityType, entityValue);
 	sendRequest('POST', url);
 	
-}
+};
 
 // deletes a dashboard or an org
 Grafana.prototype.delete = function(commands) {
@@ -83,7 +83,7 @@ Grafana.prototype.delete = function(commands) {
 	var url = grafana_url + this.createURL('delete', entityType, entityValue);
 	sendRequest('DELETE', url);
 
-}
+};
 
 // shows an org or orgs or a dashboard
 Grafana.prototype.show = function(commands) {
@@ -113,7 +113,7 @@ Grafana.prototype.show = function(commands) {
 	}
 	sendRequest('GET', url);
 
-}
+};
 
 // imports a dashboard or all dashboards from Grafana
 Grafana.prototype.import = function(commands) {
@@ -300,7 +300,7 @@ Grafana.prototype.import = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-}
+};
 
 // export a dashboard to Grafana
 Grafana.prototype.export = function(commands) {
@@ -321,7 +321,7 @@ Grafana.prototype.export = function(commands) {
 			var dashBody = {
 				dashboard: components.dashboards.readDashboard(entityValue),
 				overwrite: true
-			}
+			};
 			if (response_check.statusCode === 404) {
 				dashBody.dashboard.id = null;
 			} else {

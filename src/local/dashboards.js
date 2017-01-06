@@ -23,9 +23,10 @@ function Dashboards() {
 
 // checks dir status for the dashboards
 Dashboards.prototype.checkDirStatus = function(showOutput) {
-	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) && this.tempVars.checkDirStatus(showOutput)
-		&& this.panels.checkDirStatus(showOutput) && this.rows.checkDirStatus(showOutput);
-}
+	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) && this.tempVars.checkDirStatus(showOutput) && 
+		this.panels.checkDirStatus(showOutput) &&
+		this.rows.checkDirStatus(showOutput);
+};
 
 // summarize dashboard
 Dashboards.prototype.summarize = function(dashboardSlug) {
@@ -55,19 +56,17 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 	arch.time = dashboard.time;
 	arch.time.timezone = dashboard.timezone;
 	logger.showOutput(logger.stringify(arch));
-}
+};
 
 // Saving a dashboard file on disk
 Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
-	
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
 	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
 	if (showResult) {
 		logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
 	}
-
-}
+};
 
 Dashboards.prototype.insert = function(type, entity, dashboard) {
 
@@ -88,11 +87,12 @@ Dashboards.prototype.insert = function(type, entity, dashboard) {
 		
 	}
 
-}
+};
 
 Dashboards.prototype.extract = function(type, entity, dashboard) {
 
 	var srcDashboard = this.readDashboard(dashboard);
+	var srcRows;
 
 	if (type === 'temp-var') {
 		var srcTempVarList = srcDashboard.templating.list;
@@ -101,14 +101,14 @@ Dashboards.prototype.extract = function(type, entity, dashboard) {
 		this.tempVars.saveTemplateVar(dashboard, srcTempVar, true);
 		logger.showResult('Template variable ' + entity + ' extracted successfully.');
 	} else if (type === 'row') {
-		var srcRows = srcDashboard.rows;
+		srcRows = srcDashboard.rows;
 		var srcRowNumber = parseInt(entity);
 		var srcRow = srcRows[srcRowNumber-1];
 		this.rows.saveRow(dashboard + '-' + srcRowNumber, srcRow, true);
 		logger.showResult('Row ' + entity + ' extracted successfully.');
 	} else if (type === 'panel') {
 		var srcEntity = entity.split('.');
-		var srcRows = srcDashboard.rows;
+		srcRows = srcDashboard.rows;
 		var srcPanels = srcRows[srcEntity[0]-1].panels;
 		var srcPanelNumber = parseInt(srcEntity[1]);
 		var srcPanel = srcPanels[srcPanelNumber-1];
@@ -116,7 +116,7 @@ Dashboards.prototype.extract = function(type, entity, dashboard) {
 		logger.showResult('Panel ' + entity + ' extracted successfully.');
 	}
 
-}
+};
 
 Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource) {
 
@@ -129,13 +129,13 @@ Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource
 	_.forEach(dashboard.rows, function(row) {
 		_.forEach(row.panels,function(panel){
 			if(panel.datasource === oldDatasource){
-				panel.datasource = newDatasource
+				panel.datasource = newDatasource;
 			}
 		});
 	});
 	this.saveDashboard(entityValue, dashboard, true);
 
-}
+};
 
 // Reads dashboard json from file.
 Dashboards.prototype.readDashboard = function(slug) {
@@ -148,7 +148,7 @@ Dashboards.prototype.readDashboard = function(slug) {
 		process.exit();
 	}
 	
-}
+};
 
 // Get dashboard file name from slug
 function getDashboardFile(slug) {

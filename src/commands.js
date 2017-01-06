@@ -5,7 +5,7 @@ var _ = require('lodash');
 var Components = require('./local/components.js');
 var Grafana = require('./remote/grafana.js');
 var GNet = require('./remote/gnet.js');
-var S3 = require('./remote/s3services.js')
+var S3 = require('./remote/s3services.js');
 var LocalFS = require('./util/localfs.js');
 var localfs = new LocalFS();
 var Config = require('./util/config.js');
@@ -53,7 +53,7 @@ Commands.prototype.instructions = function() {
 		case 'init':
 			config.checkConfigStatus('config', true);
 			components.checkDirsStatus(true);
-			logger.showResult('wizzy successfully initialized.')
+			logger.showResult('wizzy successfully initialized.');
 			break;
 		case 'status':
 			status();
@@ -114,15 +114,15 @@ Commands.prototype.instructions = function() {
 			components.insert(_.drop(commands));
 			break;
 		case 'download':
-			if (commands[1] === 'gnet') {
+			if (commands[1] === 'from-gnet') {
 				gnet.download(_.drop(commands, 2));
 			}
-			else if (commands[1] === 's3') {
+			else if (commands[1] === 'from-s3') {
 				s3.download(_.drop(commands, 2));
 			}
 			break;
 		case 'upload':
-			if (commands[1] === 's3') {
+			if (commands[1] === 'to-s3') {
 				s3.upload(_.drop(commands, 2));
 			}
 			break;
@@ -130,7 +130,7 @@ Commands.prototype.instructions = function() {
 			logger.showError('Unsupported command called.');
 			logger.justShow(help);
 	}
-}
+};
 
 function addCommandsToHelp() {
 
@@ -143,7 +143,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another.');
 	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
 	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
-	addToHelp('wizzy download gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
+	addToHelp('wizzy download from-gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
 	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
 	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
 	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana or Grafana.net.');
@@ -153,8 +153,7 @@ function addCommandsToHelp() {
 	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
-	addToHelp('wizzy upload s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
-	addToHelp('wizzy download s3 ENTITY ENTITY_NAME', 'download entities from S3.');
+	addToHelp('wizzy upload to-s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
 
 }
 
@@ -162,7 +161,7 @@ function addToHelp(syntax, description) {
 
 	// Adding command to help
   help += '\n  ' + syntax;
-  if (description != null) {
+  if (description !== null) {
 		help += ' - ' + description;
 	}
 

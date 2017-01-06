@@ -17,7 +17,7 @@ function Rows() {
 // checks dir status for the rows
 Rows.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(rowsDir, 'rows directory', showOutput);
-}
+};
 
 // Save a row under rows directory on disk
 Rows.prototype.saveRow = function(rowName, content, showResult) {
@@ -27,7 +27,7 @@ Rows.prototype.saveRow = function(rowName, content, showResult) {
 		logger.showResult('Panel ' + rowName + ' saved successfully under template-vars directory.');
 	}
 
-}
+};
 
 // Reads row json from file.
 Rows.prototype.readRow = function(rowName) {
@@ -40,7 +40,7 @@ Rows.prototype.readRow = function(rowName) {
 		process.exit();
 	}
 
-}
+};
 
 // Get row file name from var name
 function getRowsFile(rowName) {

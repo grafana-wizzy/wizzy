@@ -17,7 +17,7 @@ function Datasources() {
 // checks dir status for the datasources
 Datasources.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(datasrcDir, 'datasources directory', showOutput);
-}
+};
 
 // summarize the datasources
 Datasources.prototype.summarize = function() {
@@ -39,7 +39,7 @@ Datasources.prototype.summarize = function() {
 	logger.showOutput(table.toString());
 	logger.showResult('Total datasources: ' + dsFiles.length);
 
-}
+};
 
 // Saves a datasource file under datasources directory on disk
 Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
@@ -49,7 +49,7 @@ Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
 		logger.showResult('Datasource ' + id + ' saved successfully under datasources directory.');
 	}
 
-}
+};
 
 // reads datasource json from file.
 Datasources.prototype.readDatasource = function(id) {
@@ -62,7 +62,7 @@ Datasources.prototype.readDatasource = function(id) {
 		process.exit();
 	}
 
-}
+};
 
 // get a datasource file name
 function getDatasourceFile(id) {

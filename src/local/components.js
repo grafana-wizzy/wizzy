@@ -33,7 +33,7 @@ Components.prototype.checkDirsStatus = function(showOutput) {
 		this.orgs.checkDirStatus(showOutput) && 
 		this.datasources.checkDirStatus(showOutput);
 
-}
+};
 
 // moves or copies a dashboard entity
 Components.prototype.moveCopyOrRemove = function(commands) {
@@ -50,7 +50,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	var sourceArray = entityValue.split('.');
 	
 	var destinationArray = [];
-	if (destination != undefined) {
+	if (destination !== undefined) {
 		destinationArray = destination.split('.');
 	}
 
@@ -208,7 +208,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	else {
 		logger.showError('Unsupported command called. Use `wizzy help` to find available commands.');
 	}
-}
+};
 
 // summarizes an entity
 Components.prototype.summarize = function(commands) {
@@ -235,7 +235,7 @@ Components.prototype.summarize = function(commands) {
 	}
 	logger.showResult(successMessage);
 
-}
+};
 
 // Change an entity
 Components.prototype.change = function(commands) {
@@ -270,7 +270,7 @@ Components.prototype.change = function(commands) {
  		logger.showError('Unsupported command ' + commands + '. Please try `wizzy help`.');
  	}
 
- }
+ };
 
 // Extracts entities from dashboard json to local independent json
 Components.prototype.extract = function(commands) {
@@ -285,7 +285,7 @@ Components.prototype.extract = function(commands) {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}
 
-}
+};
 
 // Inserts entities from local independent json to dashboard json
 Components.prototype.insert = function(commands) {
@@ -300,7 +300,7 @@ Components.prototype.insert = function(commands) {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}
 
-}
+};
 
 // Reads all entities from a directory and removes
 Components.prototype.readEntityNamesFromDir = function(dirName) {
@@ -311,7 +311,7 @@ Components.prototype.readEntityNamesFromDir = function(dirName) {
 	});
 	return entities;
 
-}
+};
 
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {

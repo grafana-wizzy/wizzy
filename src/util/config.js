@@ -27,7 +27,7 @@ var configs = [
 	'config:clip:canvas_height',
 	'config:clip:canvas_width',
 	'config:clip:delay'
-]
+];
 
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
@@ -37,19 +37,16 @@ function Config() {
 }
 
 Config.prototype.createIfNotExists = function() {
-
 	localfs.createIfNotExists(confDir, 'dir', 'conf directory');
 	if(!localfs.checkExists(confFile)) {
 		saveConfig(false);
-		logger.showResult('conf file created.')
+		logger.showResult('conf file created.');
 	} else {
-		logger.showResult('conf file already exists.')
+		logger.showResult('conf file already exists.');
 	}
-
-}
+};
 
 Config.prototype.checkConfigStatus = function(prop, showOutput) {
-
 	if (!nconf.get(prop)) {
 		if (showOutput) {
 			logger.showError('Config not found.');
@@ -57,16 +54,14 @@ Config.prototype.checkConfigStatus = function(prop, showOutput) {
 		return false;
 	} else {
 		if(showOutput) {
-			logger.showResult('Configuration found.')
+			logger.showResult('Configuration found.');
 		}
 		return true;
 	}
-
-}
+};
 
 // Adds a new wizzy config property
 Config.prototype.addProperty = function(key, value) {
-
 	if (_.includes(configs, key)) {
 		nconf.set(key, value);
 		saveConfig(true);
@@ -74,24 +69,19 @@ Config.prototype.addProperty = function(key, value) {
 	} else {
 		logger.showError('Unknown configuration property.');
 	}
-
-}
+};
 
 // Shows wizzy config
 Config.prototype.showConfig = function(config) {
-	
 	checkConfigPrerequisites();
 	logger.showOutput(logger.stringify(nconf.get(config)));
-
-}
+};
 
 // Shows wizzy config
 Config.prototype.getConfig = function(config) {
-	
 	checkConfigPrerequisites();
 	return(nconf.get(config));
-
-}
+};
 
 // check if conf dir and conf file exists or not.
 function checkConfigPrerequisites() {

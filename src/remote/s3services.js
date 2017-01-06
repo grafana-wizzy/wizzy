@@ -12,64 +12,26 @@ var failureMessage;
 
 var components;
 var body = {};
-var s3 = new AWS.S3();
+var s3;
 var params = {};
 
 
 //Create the s3 bucket and required directories
 function S3(conf, comps) {
+
 	failureMessage = 'Connection to S3 failed.';
-	AWS.config = new AWS.Config();
-	AWS.config.accessKeyId = conf.access_key;
-	AWS.config.secretAccessKey = conf.secret_key;
-	AWS.config.region = conf.region;
-	params.Bucket = conf.bucket_name
-	if(conf.path)
+	params.Bucket = conf.bucket_name;
+	if(conf.path) {
 		params.Key = conf.path;
-	s3.headObject(params, function(err, data) {
-  		if (err){
-  			delete params.Key;
-  			s3.createBucket(params, function(err_cb, data_cb) {
-		  		if (!err_cb){
-		  			  if(conf.path){ 
-						s3.putObject({
-			        	  	Bucket: conf.bucket_name,
-			        		Key: conf.path,
-			    			}, function (err_cb_key,res_cb_key) {
-			    				if(err_cb_key){
-									logger.showError('dnajsasjlasj');
-									logger.showError('Cannot create directory '+conf.path+' in s3 bucket '+params.Bucket+'.');
-			    				}
-	         	  			});				
-					  	}
-					  	var directories = new Set();
-					  	directories.add('dashboards');
-					  	for(let dir of directories){
-						  	var key = ''
-							if(conf.path){
-								key = conf.path+"/"+dir
-							}
-							else {
-								key = dir
-							}
-							s3.putObject({
-								Bucket: conf.bucket_name,
-					    		Key: key,
-								}, function (err,data) {
-									if (err){
-										logger.showError(failureMessage);
-										logger.showError('Cannot create directory '+dir+'.');
-							  		}
-						  		});	
-						 }
-				}         
-			});	
-		}
-	});
+	}
 	components = comps;
+	s3 = new AWS.S3({params: {Bucket: params.Bucket}});
 }
 
-S3.prototype.upload = function(commands){
+S3.prototype.upload = function(commands) {
+
+	var self = this;
+
 	successMessage = 'Dashboard '+ entityValue + ' upload successful.';
 	failureMessage = 'Dashboard '+ entityValue + ' upload failed.';
 	var entityType = commands[0];
@@ -80,13 +42,12 @@ S3.prototype.upload = function(commands){
 		var dashboard_data = components.dashboards.readDashboard(entityValue)
 	  	var key = ''
 	  	if(params.Key){
-	  		key = params.Key + '/dashboards/'+entityValue+'.json'
+	  		key = params.Key + 'dashboards/'+entityValue+'.json'
 	  	}
 	  	else{
 	  		key = 'dashboards/'+entityValue+'.json'	
 	  	}
 	  	s3.putObject({
-	    	Bucket: params.Bucket,
 	    	Key: key,
 	    	Body: JSON.stringify(dashboard_data)
 	  	}, function (err,data) {
@@ -100,19 +61,18 @@ S3.prototype.upload = function(commands){
 		 });
 	}
 	else if (entityType === 'dashboards') {
-		successMessage = 'Dashboards uploaded successfully.';
+		successMessage = 'Dashboards are being uploaded. Command will exit once all dashboards are uploaded.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 		_.forEach(dashboards,function(dashboard){
 			var dashboard_data = components.dashboards.readDashboard(dashboard)
 	  		var key = ''
 		  	if(params.Key){
-		  		key = params.Key + '/dashboards/'+dashboard+'.json'
+		  		key = params.Key + 'dashboards/'+dashboard+'.json'
 		  	}
 		  	else{
 		  		key = 'dashboards/'+dashboard+'.json'	
 		  	}
 		  	s3.putObject({
-		    	Bucket: params.Bucket,
 		    	Key: key,
 		    	Body: JSON.stringify(dashboard_data)
 		  	}, function (err,data) {
@@ -128,7 +88,7 @@ S3.prototype.upload = function(commands){
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}	
-}
+};
 
 S3.prototype.download = function(commands){
 	var entityType = commands[0];
@@ -159,7 +119,7 @@ S3.prototype.download = function(commands){
 	}
 	else if (entityType === 'dashboards') {
 
-		successMessage = 'Dashboards downloaded successfully.';
+		successMessage = 'Dashboards are being downloaded. Command will exit once all dashboards are downloaded.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 			var bucket_key = ''
 			if(params.Key){
@@ -200,6 +160,6 @@ S3.prototype.download = function(commands){
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}	
-}
+};
 
 module.exports = S3;
