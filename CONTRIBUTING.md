@@ -12,8 +12,12 @@ wizzy is always open for contributions from the community. Let make it super eas
 $ git clone https://github.com/<your_github_username>/wizzy.git
 $ cd wizzy
 $ npm install
+$ npm install -g grunt-cli
 $ node src/index.js init
 ```
+
+- Test linting before submitting the PR:
+$ grunt
 
 - Run wizzy commands via index.js:
 ```

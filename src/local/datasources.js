@@ -10,14 +10,17 @@ var _ = require('lodash');
 
 var datasrcDir = 'datasources';
 
-function Datasources() {
-	localfs.createIfNotExists(datasrcDir, 'dir', false);
-}
+function Datasources() {}
+
+// creates datasources directory if it does not exist
+Datasources.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(datasrcDir, 'dir', showOutput);
+};
 
 // checks dir status for the datasources
 Datasources.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(datasrcDir, 'datasources directory', showOutput);
-}
+};
 
 // summarize the datasources
 Datasources.prototype.summarize = function() {
@@ -39,7 +42,7 @@ Datasources.prototype.summarize = function() {
 	logger.showOutput(table.toString());
 	logger.showResult('Total datasources: ' + dsFiles.length);
 
-}
+};
 
 // Saves a datasource file under datasources directory on disk
 Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
@@ -49,7 +52,7 @@ Datasources.prototype.saveDatasource = function(id, datasource, showResult) {
 		logger.showResult('Datasource ' + id + ' saved successfully under datasources directory.');
 	}
 
-}
+};
 
 // reads datasource json from file.
 Datasources.prototype.readDatasource = function(id) {
@@ -62,7 +65,7 @@ Datasources.prototype.readDatasource = function(id) {
 		process.exit();
 	}
 
-}
+};
 
 // get a datasource file name
 function getDatasourceFile(id) {

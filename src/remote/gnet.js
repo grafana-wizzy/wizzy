@@ -29,7 +29,7 @@ var datasourceMap = {
 	mixed: 'mixed',
 	opennms: 'opennms-datasource'
 
-}
+};
 
 function GNet(comps) {
 	components = comps;
@@ -40,8 +40,8 @@ GNet.prototype.list = function(commands) {
 	
 	if (commands[0] === 'dashboards') 
 	
-		successMessage = "Successfully searched Grafana.net."
-		failureMessage = "Searching Grafana.net failed."
+		successMessage = "Successfully searched Grafana.net.";
+		failureMessage = "Searching Grafana.net failed.";
 
 		gnet_dashboards_url += '?orderBy=name';
 
@@ -79,15 +79,15 @@ GNet.prototype.list = function(commands) {
   	}
 	});
 
-}
+};
 
 // searches Grafana.net dashboards for dashboard list
 GNet.prototype.download = function(commands) {
 	
 	if (commands[0] === 'dashboard') 
 	
-		successMessage = "Successfully downloaded Grafana.net dashboard."
-		failureMessage = "Grafana.net dashboard download failed."
+		successMessage = "Successfully downloaded Grafana.net dashboard.";
+		failureMessage = "Grafana.net dashboard download failed.";
 
 		var dashId = parseInt(commands[1]);
 		var revisionId = parseInt(commands[2]);
@@ -104,7 +104,7 @@ GNet.prototype.download = function(commands) {
 				logger.showError(failureMessage);
 			}
 		});
-}
+};
 
 function convertName2Slug(name) {
 	return name.toLowerCase().replace(/ /g,'-').replace(/[^a-zA-Z0-9-]/g, '');

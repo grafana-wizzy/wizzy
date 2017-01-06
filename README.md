@@ -107,7 +107,6 @@ These commands operates directly on remote dashboards in Grafana via API, so ple
 * [Dashboard commands](/docs/remote/dashboards.md)
 * [Organization commands](/docs/remote/orgs.md)
 * [Datasource commands](/docs/remote/datasources.md)
-* [S3 commands](/docs/remote/s3.md)
 
 ## Local commands
 These commands operates on local json file based dashboards and support Dashboard Context.
@@ -120,11 +119,16 @@ These commands operates on local json file based dashboards and support Dashboar
 * [Panel commands](/docs/local/panels.md)
 * [Template variable commands](/docs/local/template_variables.md)
 
+## External commands
+These commands interacts with external platforms such as Grafana.net, S3, etc.
+
+* [S3 commands](/docs/remote/s3.md)
+* [Grafana.net commands](/docs/remote/grafana_net.md)
+
 ## Other commands
 
 * [Configuration commands](/docs/configuration.md)
 * [Help commands](/docs/help.md)
-* [Grafana.net commands](/docs/grafana_net.md)
 
 # Project initiator
 Utkarsh Bhatnagar, @utkarshcmu, <utkarsh.cmu@gmail.com>

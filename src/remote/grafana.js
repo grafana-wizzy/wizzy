@@ -51,7 +51,7 @@ Grafana.prototype.create = function(commands) {
 	var entityValue = commands[1];
 
 	if (entityType === 'org') {
-		body['name'] = entityValue;
+		body.name = entityValue;
 		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
 		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
 	}
@@ -61,8 +61,7 @@ Grafana.prototype.create = function(commands) {
 	}
 	var url = grafana_url + this.createURL('create', entityType, entityValue);
 	sendRequest('POST', url);
-	
-}
+};
 
 // deletes a dashboard or an org
 Grafana.prototype.delete = function(commands) {
@@ -83,7 +82,7 @@ Grafana.prototype.delete = function(commands) {
 	var url = grafana_url + this.createURL('delete', entityType, entityValue);
 	sendRequest('DELETE', url);
 
-}
+};
 
 // shows an org or orgs or a dashboard
 Grafana.prototype.show = function(commands) {
@@ -113,29 +112,34 @@ Grafana.prototype.show = function(commands) {
 	}
 	sendRequest('GET', url);
 
-}
+};
 
 // imports a dashboard or all dashboards from Grafana
 Grafana.prototype.import = function(commands) {
 
 	var entityType = commands[0];
 	var entityValue = commands[1];
+	var self = this;
+	var url;
+	var output = '';
 
 	// imports a dashboard from Grafana
 	if (entityType === 'dashboard') {
 		successMessage = 'Dashboard '+ entityValue + ' import successful.';
 		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
-		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		url = grafana_url + self.createURL('import', entityType, entityValue);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
-			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  		output += body;
 				components.dashboards.saveDashboard(entityValue, body.dashboard, true);
 	    		logger.showResult(successMessage);
 	  		} else {
-	  			output += 'Grafana API response status code = ' + response.statusCode;
+					if (response !== null){
+	  				output += 'Grafana API response status code = ' + response.statusCode;
+					}
+					
 		  		if (error === null) {
-		  			output += '\nNo error body from Grafana API.';	
+		  			output += '\nNo error body from Grafana API.';
 		  		}
 		  		else {
 		  			output += '\n' + error;
@@ -150,8 +154,7 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'dashboards') {
 		successMessage = 'Dashboards imported successful.';
 		failureMessage = 'Dashboards import failed.';
-		var self = this;
-		var url = grafana_url + self.createURL('list', entityType);
+		url = grafana_url + self.createURL('list', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var dashList = [];
 			if (!error && response.statusCode == 200) {
@@ -171,7 +174,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -186,9 +189,8 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'org') {
 		successMessage = 'Org '+ entityValue + ' import successful.';
 		failureMessage = 'Org '+ entityValue + ' import failed.';
-		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		url = grafana_url + self.createURL('import', entityType, entityValue);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
-			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
 	  	  components.orgs.saveOrg(entityValue, body, true);
@@ -196,7 +198,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -211,8 +213,7 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'orgs') {
 		successMessage = 'Orgs import successful.';
 		failureMessage = 'Orgs import failed.';
-		var self = this;
-		var url = grafana_url + self.createURL('import', entityType);
+		url = grafana_url + self.createURL('import', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var orgList = [];
 			if (!error && response.statusCode == 200) {
@@ -232,7 +233,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -247,9 +248,8 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'datasource') {
 		successMessage = 'Datasource '+ entityValue + ' import successful.';
 		failureMessage = 'Datasource '+ entityValue + ' import failed.';
-		var url = grafana_url + this.createURL('import', entityType, entityValue);
+		url = grafana_url + this.createURL('import', entityType, entityValue);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
-			var output = '';
 			if (!error && response.statusCode == 200) {
 	  	  output += body;
 	  	  delete body.id;
@@ -258,7 +258,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -273,10 +273,8 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'datasources') {
 		successMessage = 'Datasources import successful.';
 		failureMessage = 'Datasources import failed.';
-		var self = this;
-		var url = grafana_url + self.createURL('import', entityType);
+		url = grafana_url + self.createURL('import', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
-			var output = '';
 			if (!error && response.statusCode == 200) {
 				_.each(body, function(datasource){
 					delete datasource.id;
@@ -287,7 +285,7 @@ Grafana.prototype.import = function(commands) {
 	  	} else {
 	  		output += 'Grafana API response status code = ' + response.statusCode;
 	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';	
+	  			output += '\nNo error body from Grafana API.';
 	  		}
 	  		else {
 	  			output += '\n' + error;
@@ -302,15 +300,16 @@ Grafana.prototype.import = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-}
+};
 
 // export a dashboard to Grafana
 Grafana.prototype.export = function(commands) {
 
 	var entityType = commands[0];
 	var entityValue = commands[1];
-
 	var self = this;
+	var url;
+
 	// exporting a dashboard to Grafana
 	if (entityType === 'dashboard') {
 
@@ -323,7 +322,7 @@ Grafana.prototype.export = function(commands) {
 			var dashBody = {
 				dashboard: components.dashboards.readDashboard(entityValue),
 				overwrite: true
-			}
+			};
 			if (response_check.statusCode === 404) {
 				dashBody.dashboard.id = null;
 			} else {
@@ -342,15 +341,15 @@ Grafana.prototype.export = function(commands) {
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 
 		_.forEach(dashboards,function(dashboard){
-			
+
 			var url_check = grafana_url + self.createURL('show', 'dashboard', dashboard);
 			request.get({url: url_check, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
-				
+
 				var dashBody = {
 						dashboard: components.dashboards.readDashboard(dashboard),
 						overwrite: true
-				}
-				
+				};
+
 				if (response_check.statusCode === 404) {
 					dashBody.dashboard.id = null;
 				} else {
@@ -371,26 +370,26 @@ Grafana.prototype.export = function(commands) {
 		body = components.orgs.readOrg(entityValue);
 		successMessage = 'Org '+ entityValue + ' export successful.';
 		failureMessage = 'Org '+ entityValue + ' export failed.';
-		var url = grafana_url + this.createURL('export', entityType, entityValue);
+		url = grafana_url + self.createURL('export', entityType, entityValue);
 		sendRequest('PUT', url);
 	}
 
 	// exporting a single local datasource to Grafana
 	else if (entityType === 'datasource') {
 		body = components.datasources.readDatasource(entityValue);
-		var self =  this;
 		successMessage = 'Datasource '+ entityValue + ' export successful.';
 		failureMessage = 'Datasource '+ entityValue + ' export failed.';
 		var checkDsUrl = grafana_url + self.createURL('show', entityType, entityValue);
 		request.get({url: checkDsUrl, auth:auth, json:true}, function checkHandler(error_check, response_check, body_check) {
+			var url;
 			if (response_check.statusCode === 404) {
 				logger.justShow('Datasource does not exists in Grafana.');
 				logger.justShow('Trying to create a new datasource.');
 				delete body.id;
-				var url = grafana_url + self.createURL('export', 'datasources', null);
+				url = grafana_url + self.createURL('export', 'datasources', null);
 				sendRequest('POST', url);
 			} else if (response_check.statusCode === 200) {
-				var url = grafana_url + self.createURL('export', entityType, body_check.id);
+				url = grafana_url + self.createURL('export', entityType, body_check.id);
 				sendRequest('PUT', url);
 			} else {
 				logger.showError('Unknown response from Grafana.');
@@ -399,18 +398,16 @@ Grafana.prototype.export = function(commands) {
 	}
 
 	// exporting all local datasources to Grafana
-	else if (entityType === 'datasources'){
-
-		var self = this;
+	else if (entityType === 'datasources') {
 
 		var dsNames = components.readEntityNamesFromDir('datasources');
-		var url = grafana_url + self.createURL('export', 'datasources', null)
+		url = grafana_url + self.createURL('export', 'datasources', null);
 		var failed = 0;
 		var success = 0;
 
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error_check, response_check, body_check) {
 			// Getting existing list of datasources and making a mapping of names to ids
-			var ids = {}
+			var ids = {};
 			_.forEach(body_check, function(datasource) {
 				ids[datasource.name] = datasource.id;
 			});
@@ -464,7 +461,7 @@ Grafana.prototype.export = function(commands) {
 		return;
 	}
 
-}
+};
 
 Grafana.prototype.alerts = function(commands){
 	var entityType = commands[0];
@@ -516,7 +513,7 @@ Grafana.prototype.list = function(commands) {
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
-  			output += '\nNo error body from Grafana API.';	
+  			output += '\nNo error body from Grafana API.';
   		}
   		else {
   			output += '\n' + error;
@@ -526,7 +523,7 @@ Grafana.prototype.list = function(commands) {
   	}
 	});
 
-}
+};
 
 // Creates a 8 second clip of a dashboard for last 24 hours
 Grafana.prototype.clip = function(commands) {
@@ -539,19 +536,20 @@ Grafana.prototype.clip = function(commands) {
 	var self = this;
 	var entityType = commands[0];
 	var entityValue = commands[1];
+	var url;
 
 	localfs.createIfNotExists('temp', 'dir', false);
 
 	if (entityType === 'dashboard') {
 
-		var url = grafana_url + self.createURL('clip', entityType, entityValue) + 
+		url = grafana_url + self.createURL('clip', entityType, entityValue) +
 			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 			config.clip.render_timeout;
 
 
 		url = addAuth(url);
 
-		var now = (new Date).getTime();
+		var now = (new Date()).getTime();
 
 		// Taking 24 screenshots
 		logger.justShow('Taking 24 snapshots.');
@@ -562,7 +560,7 @@ Grafana.prototype.clip = function(commands) {
 			var to = now - (i * 60 * 60000);
 			var completeUrl = url + '&from=' + from + '&to=' + to;
 			var response = syncReq('GET', completeUrl);
-			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png'
+			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png';
 			localfs.writeFile(filename, response.getBody());
 			i++;
 			logger.showResult('Took snapshot ' + i + '.');
@@ -574,7 +572,7 @@ Grafana.prototype.clip = function(commands) {
 
 	} else if (entityType === 'dashboards' && commands[1] === 'by' && commands[2] === 'tag') {
 		var tag = commands[3];
-		var url = grafana_url + self.createURL('search', entityType, null) + '?tag=' + tag;
+		url = grafana_url + self.createURL('search', entityType, null) + '?tag=' + tag;
 		url = addAuth(url);
 		var searchResponse = syncReq('GET', url);
 		var responseBody = JSON.parse(searchResponse.getBody('utf8'));
@@ -582,7 +580,7 @@ Grafana.prototype.clip = function(commands) {
 			logger.showOutput('Taking dashboard snapshots.');
 			var dashboards = _.each(responseBody, function (dashboard) {
 				var dashName = dashboard.uri.substring(3);
-				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) + 
+				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) +
 					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
 					config.clip.render_timeout;
 				dashUrl = addAuth(dashUrl);
@@ -604,7 +602,7 @@ Grafana.prototype.clip = function(commands) {
 	} else {
 		logger.showError('Unsupported set of commands ' + commands + '.');
 	}
-}
+};
 
 Grafana.prototype.createGif = function(clipName) {
 
@@ -620,7 +618,7 @@ Grafana.prototype.createGif = function(clipName) {
  	logger.justShow('Please delete temp directory');
  	//localfs.deleteDirRecursive('temp');
 
-}
+};
 
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
@@ -629,7 +627,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 	// Editing URL depending on entityType
 	if (entityType === 'org') {
-		url += '/api/orgs'
+		url += '/api/orgs';
 		if (command === 'show' || command === 'delete' || command === 'import' || command === 'export') {
 			 url += '/' + entityValue;
 		}
@@ -650,9 +648,9 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {
 		if (command === 'show' || command === 'import') {
-			url += '/api/datasources/name/' + entityValue;	
+			url += '/api/datasources/name/' + entityValue;
 		} else if (command === 'export') {
-			url += '/api/datasources/' + entityValue;	
+			url += '/api/datasources/' + entityValue;
 		}
 	}
 	else if(entityType === 'pause'){
@@ -661,12 +659,12 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 	return url;
 
-}
+};
 
 // Sends an HTTP API request to Grafana
 function sendRequest(method, url, body) {
 	if (method === 'POST') {
-		request.post({url: url, auth: auth, json: true, body: body}, printResponse); 
+		request.post({url: url, auth: auth, json: true, body: body}, printResponse);
 	} else if (method === 'GET') {
 		request.get({url: url, auth: auth, json: true, method: method}, printResponse);
 	} else if (method === 'DELETE') {
@@ -674,7 +672,7 @@ function sendRequest(method, url, body) {
 	} else if (method === 'PUT') {
 		request.put({url: url, auth: auth, json: true, body: body}, printResponse);
 	}
-	
+
 }
 
 // prints HTTP response from Grafana
@@ -687,7 +685,7 @@ function printResponse(error, response, body) {
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
-  			output += '\nNo error body from Grafana API.';	
+  			output += '\nNo error body from Grafana API.';
   		}
   		else {
   			output += '\n' + error;

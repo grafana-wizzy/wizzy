@@ -10,24 +10,27 @@ var _ = require('lodash');
 
 var panelsDir = 'panels';
 
-function Panels() {
-	localfs.createIfNotExists(panelsDir, 'dir', false);
-}
+function Panels() {}
+
+// creates panels directory if it does not exist
+Panels.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(panelsDir, 'dir', showOutput);
+};
 
 // checks dir status for the panels
 Panels.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(panelsDir, 'panels directory', showOutput);
-}
+};
 
 // Save a panel under panels directory on disk
 Panels.prototype.savePanel = function(panelName, content, showResult) {
 
 	localfs.writeFile(getPanelsFile(panelName), logger.stringify(content, null, 2));
 	if (showResult) {
-		logger.showResult('Panel ' + panelName + ' saved successfully under template-vars directory.');
+		logger.showResult('Panel ' + panelName + ' saved successfully under panels directory.');
 	}
 
-}
+};
 
 // Reads panel json from file.
 Panels.prototype.readPanel = function(panelName) {
@@ -40,7 +43,7 @@ Panels.prototype.readPanel = function(panelName) {
 		process.exit();
 	}
 
-}
+};
 
 // Get panels file name from panel name
 function getPanelsFile(panelName) {
