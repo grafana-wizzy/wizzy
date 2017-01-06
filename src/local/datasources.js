@@ -10,8 +10,11 @@ var _ = require('lodash');
 
 var datasrcDir = 'datasources';
 
-function Datasources() {
-	localfs.createIfNotExists(datasrcDir, 'dir', false);
+function Datasources() {}
+
+// creates datasources directory if it does not exist
+Datasources.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(datasrcDir, 'dir', showOutput);
 }
 
 // checks dir status for the datasources

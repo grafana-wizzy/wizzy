@@ -10,8 +10,11 @@ var _ = require('lodash');
 
 var orgsDir = 'orgs';
 
-function Orgs() {
-	localfs.createIfNotExists(orgsDir, 'dir', false);
+function Orgs() {}
+
+// creates orgs directory if it does not exist
+Orgs.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(orgsDir, 'dir', showOutput);
 }
 
 // checks dir status for the datasources

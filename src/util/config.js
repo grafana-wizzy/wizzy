@@ -46,6 +46,14 @@ Config.prototype.createIfNotExists = function() {
 	}
 };
 
+Config.prototype.checkExists = function(showOutput) {
+	if(!localfs.checkExists(confFile, 'conf file', showOutput)) {
+		return false;
+	} else {
+		return true;
+	}
+};
+
 Config.prototype.checkConfigStatus = function(prop, showOutput) {
 	if (!nconf.get(prop)) {
 		if (showOutput) {

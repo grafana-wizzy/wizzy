@@ -15,15 +15,23 @@ var Panels = require('../local/panels.js');
 var Rows = require('../local/rows.js');
 
 function Dashboards() {
-	localfs.createIfNotExists(dashDir, 'dir', false);
-	this.tempVars = new TempVars();
-	this.panels = new Panels();
 	this.rows = new Rows();
+	this.panels = new Panels();
+	this.tempVars = new TempVars();
+}
+
+// creates dashboards and other directories if they do not exist
+Dashboards.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(dashDir, 'dir', showOutput);
+	this.rows.createIfNotExists(showOutput);
+	this.panels.createIfNotExists(showOutput);
+	this.tempVars.createIfNotExists(showOutput);
 }
 
 // checks dir status for the dashboards
 Dashboards.prototype.checkDirStatus = function(showOutput) {
-	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) && this.tempVars.checkDirStatus(showOutput) && 
+	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) &&
+		this.tempVars.checkDirStatus(showOutput) && 
 		this.panels.checkDirStatus(showOutput) &&
 		this.rows.checkDirStatus(showOutput);
 };

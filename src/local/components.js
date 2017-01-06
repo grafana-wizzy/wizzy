@@ -27,6 +27,12 @@ function Components(conf) {
 	this.datasources = new Datasources();
 }
 
+Components.prototype.createIfNotExists = function(showOutput) {
+	this.dashboards.createIfNotExists(showOutput);
+	this.orgs.createIfNotExists(showOutput);
+	this.datasources.createIfNotExists(showOutput);
+}
+
 Components.prototype.checkDirsStatus = function(showOutput) {
 
 	return this.dashboards.checkDirStatus(showOutput) && 

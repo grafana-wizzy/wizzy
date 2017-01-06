@@ -10,8 +10,11 @@ var _ = require('lodash');
 
 var panelsDir = 'panels';
 
-function Panels() {
-	localfs.createIfNotExists(panelsDir, 'dir', false);
+function Panels() {}
+
+// creates panels directory if it does not exist
+Panels.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(panelsDir, 'dir', showOutput);
 }
 
 // checks dir status for the panels

@@ -10,10 +10,11 @@ var _ = require('lodash');
 
 var tempVarsDir = 'temp-vars';
 
-function TempVars() {
+function TempVars() {}
 
-	localfs.createIfNotExists(tempVarsDir, 'dir', false);
-
+// creates temp-vars directory if it does not exist
+TempVars.prototype.createIfNotExists = function(showOutput) {
+	localfs.createIfNotExists(tempVarsDir, 'dir', showOutput);
 }
 
 // checks dir status for the datasources

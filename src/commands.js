@@ -51,8 +51,8 @@ Commands.prototype.instructions = function() {
 			showHelp();
 			break;
 		case 'init':
-			config.checkConfigStatus('config', true);
-			components.checkDirsStatus(true);
+			config.createIfNotExists();
+			components.createIfNotExists(true);
 			logger.showResult('wizzy successfully initialized.');
 			break;
 		case 'status':
@@ -90,7 +90,11 @@ Commands.prototype.instructions = function() {
 			}
 			break;
 		case 'clip':
-			grafana.clip(_.drop(commands));
+			if (config.checkConfigStatus('config:clip', false)) {
+				grafana.clip(_.drop(commands));
+			} else {
+				logger.showError('Clip config not found. Please set clip config. Refer to README.')
+			}
 			break;
 		case 'summarize':
 			components.summarize(_.drop(commands));
@@ -118,12 +122,20 @@ Commands.prototype.instructions = function() {
 				gnet.download(_.drop(commands, 2));
 			}
 			else if (commands[1] === 'from-s3') {
-				s3.download(_.drop(commands, 2));
+				if (config.checkConfigStatus('config:s3', false)) {
+					s3.download(_.drop(commands, 2));
+				} else {
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.')
+				}
 			}
 			break;
 		case 'upload':
 			if (commands[1] === 'to-s3') {
-				s3.upload(_.drop(commands, 2));
+				if (config.checkConfigStatus('config:clip', false)) {
+					s3.upload(_.drop(commands, 2));
+				} else {
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.')
+				}
 			}
 			break;
 		default:
@@ -176,7 +188,7 @@ function showHelp() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = config.checkConfigStatus('config', true);
+	var setupProblem = config.checkExists('config', true);
 
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);
