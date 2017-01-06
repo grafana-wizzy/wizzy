@@ -39,13 +39,13 @@ S3.prototype.upload = function(commands) {
 	if (entityType === 'dashboard') {
 		successMessage = 'Uploaded dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in uploading dashboard ' + entityValue + '.';
-		var dashboard_data = components.dashboards.readDashboard(entityValue)
-	  	var key = ''
+		var dashboard_data = components.dashboards.readDashboard(entityValue);
+	  var key = '';
 	  	if(params.Key){
-	  		key = params.Key + 'dashboards/'+entityValue+'.json'
+	  		key = params.Key + 'dashboards/'+entityValue+'.json';
 	  	}
 	  	else{
-	  		key = 'dashboards/'+entityValue+'.json'	
+	  		key = 'dashboards/'+entityValue+'.json';
 	  	}
 	  	s3.putObject({
 	    	Key: key,
@@ -64,20 +64,20 @@ S3.prototype.upload = function(commands) {
 		successMessage = 'Dashboards are being uploaded. Command will exit once all dashboards are uploaded.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 		_.forEach(dashboards,function(dashboard){
-			var dashboard_data = components.dashboards.readDashboard(dashboard)
-	  		var key = ''
+			var dashboard_data = components.dashboards.readDashboard(dashboard);
+	  	var key = '';
 		  	if(params.Key){
-		  		key = params.Key + 'dashboards/'+dashboard+'.json'
+		  		key = params.Key + 'dashboards/'+dashboard+'.json';
 		  	}
 		  	else{
-		  		key = 'dashboards/'+dashboard+'.json'	
+		  		key = 'dashboards/'+dashboard+'.json';
 		  	}
 		  	s3.putObject({
 		    	Key: key,
 		    	Body: JSON.stringify(dashboard_data)
 		  	}, function (err,data) {
 				if (err){
-					console.log(err)
+					logger.showError(err);
 					logger.showError('Dashboard '+entityValue+' cannot be stored in location s3://'+params.Bucket+"/"+key+'.');
 				}
 			 });
@@ -96,12 +96,12 @@ S3.prototype.download = function(commands){
 	if (entityType === 'dashboard') {
 		successMessage = 'Downloaded dashboard ' + entityValue + ' successfully.';
 		failureMessage = 'Error in downloading dashboard ' + entityValue + '.';	
-	  	var key = ''
+	  var key = '';
 	  	if(params.Key){
-	  		key = params.Key + '/dashboards/'+entityValue+'.json'
+	  		key = params.Key + '/dashboards/'+entityValue+'.json';
 	  	}
 	  	else{
-	  		key = 'dashboards/'+entityValue+'.json'	
+	  		key = 'dashboards/'+entityValue+'.json';
 	  	}
 	  	s3.getObject({
 	    	Bucket: params.Bucket,
@@ -121,14 +121,14 @@ S3.prototype.download = function(commands){
 
 		successMessage = 'Dashboards are being downloaded. Command will exit once all dashboards are downloaded.';
 		var dashboards = components.readEntityNamesFromDir('dashboards');
-			var bucket_key = ''
+		var bucket_key = '';
 			if(params.Key){
-	  			bucket_key = params.Key + '/dashboards/'
+	  			bucket_key = params.Key + '/dashboards/';
 	  		}
 	  		else{
-	  			bucket_key = 'dashboards/'	
+	  			bucket_key = 'dashboards/';
 	  		}
-	  		delete params.Key
+	  		delete params.Key;
 	  		s3.listObjects(params, function(err, data) {
   				if (err) { 
     				console.log(err);
@@ -138,7 +138,7 @@ S3.prototype.download = function(commands){
   					var dashboards = data.Contents;
   					_.forEach(dashboards,function(dashboard){
 						if(dashboard.Key.indexOf(bucket_key) > -1){
-							var key = dashboard.Key
+							var key = dashboard.Key;
 					  		s3.getObject({
 					    		Bucket: params.Bucket,
 					    		Key: key,

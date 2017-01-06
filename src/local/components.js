@@ -53,6 +53,8 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	if (destination !== undefined) {
 		destinationArray = destination.split('.');
 	}
+	var destDashboard;
+	var destDashboardSlug;
 
 	if (command === 'move') {
 		successMessage = 'Successfully moved ' + entityType + '.';
@@ -71,6 +73,9 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 		var srcRowNumber = parseInt(sourceArray[0]);
 		var srcRow = srcRows[srcRowNumber-1];
 
+		var destRows;
+		var destRowNumber;
+
 		// row operation
 		if (entityType === 'row') {
 
@@ -83,7 +88,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 
 			// when destination is another row on the same dashboard
 			else if (destinationArray.length === 1 ) {
-				var destRowNumber = parseInt(destinationArray[0]);
+				destRowNumber = parseInt(destinationArray[0]);
 				if (command === 'move') {
 					srcRows.splice(srcRowNumber-1, 1);
 				}
@@ -95,9 +100,9 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 			// when destination is a row on another dashboard
 			else if (destinationArray.length === 2) {
 				destDashboardSlug = destinationArray[0];
-				var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
-				var destRows = destDashboard.rows;
-				var destRowNumber = parseInt(destinationArray[1]);
+				destDashboard = self.dashboards.readDashboard(destDashboardSlug);
+				destRows = destDashboard.rows;
+				destRowNumber = parseInt(destinationArray[1]);
 				if (command === 'move') {
 					srcRows.splice(srcRowNumber-1, 1);
 					self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
@@ -121,6 +126,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 			var srcPanel = srcPanels[srcPanelNumber-1];
 
 			var destPanels;
+			var destPanelNumber;
 
 			// when only remove panel command is triggered
 			if (destinationArray.length === 0 && command === 'remove') {
@@ -136,9 +142,9 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 
 			// when destination is another panel on the same dashboard 
 			else if (destinationArray.length === 2) {
-				var destRowNumber = parseInt(destinationArray[0]);
-				var destPanels = srcRows[destRowNumber-1].panels;
-				var destPanelNumber = parseInt(destinationArray[1]);
+				destRowNumber = parseInt(destinationArray[0]);
+				destPanels = srcRows[destRowNumber-1].panels;
+				destPanelNumber = parseInt(destinationArray[1]);
 				if (command === 'move') {
 					srcPanels.splice(srcPanelNumber-1, 1);
 				}
@@ -146,12 +152,12 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			} else if (destinationArray.length === 3) {
-				var destDashboardSlug = destinationArray[0];
-				var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
-				var destRows = destDashboard.rows;
-				var destRowNumber = parseInt(destinationArray[1]);
-				var destPanels = destRows[destRowNumber-1].panels;
-				var destPanelNumber = parseInt(destinationArray[2]);
+				destDashboardSlug = destinationArray[0];
+				destDashboard = self.dashboards.readDashboard(destDashboardSlug);
+				destRows = destDashboard.rows;
+				destRowNumber = parseInt(destinationArray[1]);
+				destPanels = destRows[destRowNumber-1].panels;
+				destPanelNumber = parseInt(destinationArray[2]);
 				if (command === 'move') {
 					srcPanels.splice(srcPanelNumber-1, 1);
 					self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
@@ -189,7 +195,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 		else if (destinationArray.length === 2) {
 			
 			destDashboardSlug = destinationArray[0];
-			var destDashboard = self.dashboards.readDashboard(destDashboardSlug);
+			destDashboard = self.dashboards.readDashboard(destDashboardSlug);
 			var destTempVarList = destDashboard.templating.list;
 			var destTempVarNumber = parseInt(destinationArray[1]);
 			var desrTempVar = srcTempVarList[destTempVarNumber-1];
@@ -241,28 +247,30 @@ Components.prototype.summarize = function(commands) {
 Components.prototype.change = function(commands) {
 
 	if (commands.length != 4) {
- 		logger.showError('Incorrect arguments, please read the usage.')
+ 		logger.showError('Incorrect arguments, please read the usage.');
  		return;
  	}
+
+ 	var component = commands[0];
+ 	var entityType = commands[1];
+	var oldDatasource = commands[2];
+ 	var newDatasource = commands[3];
  
  	if (component === 'panels' && entityType === 'datasource') {
  		
  		successMessage = 'Datasource changed successfully';
 
- 		var component = commands[0];
- 		var entityType = commands[1];
- 		var oldDatasource = commands[2];
- 		var newDatasource = commands[3];
- 		var entityValue = config.getConfig('config:context:dashboard');
-
  		if (typeof oldDatasource != 'string') {
- 			logger.showError('Old datasource value not supported or incorrect.')
+ 			logger.showError('Old datasource value not supported or incorrect.');
  			return;
  		}
  		if (typeof newDatasource != 'string') {
- 			logger.showError('New datasource value not supported or incorrect.')
+ 			logger.showError('New datasource value not supported or incorrect.');
  			return;
  		}
+
+ 		var entityValue = config.getConfig('config:context:dashboard');
+
  		this.dashboards.change(entityValue, oldDatasource, newDatasource);
  		logger.showResult(successMessage);
  	}

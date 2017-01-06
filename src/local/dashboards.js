@@ -75,7 +75,7 @@ Dashboards.prototype.insert = function(type, entity, dashboard) {
 
 	if (type === 'temp-var') {
 		var destTempVarList = destDashboard.templating.list;
-		destTempVarList.push(this.tempVars.readTemplateVariable(tempVar));
+		destTempVarList.push(this.tempVars.readTemplateVariable(entity));
 		this.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Template variable ' + entity + ' inserted successfully.');
 	} else if (type === 'row') {
