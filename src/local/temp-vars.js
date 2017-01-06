@@ -15,7 +15,7 @@ function TempVars() {}
 // creates temp-vars directory if it does not exist
 TempVars.prototype.createIfNotExists = function(showOutput) {
 	localfs.createIfNotExists(tempVarsDir, 'dir', showOutput);
-}
+};
 
 // checks dir status for the datasources
 TempVars.prototype.checkDirStatus = function(showOutput) {
@@ -29,7 +29,7 @@ TempVars.prototype.saveTemplateVar = function(varName, content, showResult) {
 
 	localfs.writeFile(getTempVarFile(varName), logger.stringify(content, null, 2));
 	if (showResult) {
-		logger.showResult('Template variable ' + varName + ' saved successfully under template-vars directory.');
+		logger.showResult('Template variable ' + varName + ' saved successfully under temp-vars directory.');
 	}
 
 };

@@ -15,7 +15,7 @@ function Rows() {}
 // creates rows directory if it does not exist
 Rows.prototype.createIfNotExists = function(showOutput) {
 	localfs.createIfNotExists(rowsDir, 'dir', showOutput);
-}
+};
 
 // checks dir status for the rows
 Rows.prototype.checkDirStatus = function(showOutput) {

@@ -14,6 +14,8 @@ var TempVars = require('../local/temp-vars.js');
 var Panels = require('../local/panels.js');
 var Rows = require('../local/rows.js');
 
+var contextDash;
+
 function Dashboards() {
 	this.rows = new Rows();
 	this.panels = new Panels();
@@ -26,7 +28,7 @@ Dashboards.prototype.createIfNotExists = function(showOutput) {
 	this.rows.createIfNotExists(showOutput);
 	this.panels.createIfNotExists(showOutput);
 	this.tempVars.createIfNotExists(showOutput);
-}
+};
 
 // checks dir status for the dashboards
 Dashboards.prototype.checkDirStatus = function(showOutput) {
@@ -38,6 +40,11 @@ Dashboards.prototype.checkDirStatus = function(showOutput) {
 
 // summarize dashboard
 Dashboards.prototype.summarize = function(dashboardSlug) {
+
+	if (dashboardSlug === undefined) {
+
+	}
+
 	var dashboard = this.readDashboard(dashboardSlug);
 	var arch = {};
 
@@ -76,14 +83,15 @@ Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
 	}
 };
 
-Dashboards.prototype.insert = function(type, entity, dashboard) {
+Dashboards.prototype.insert = function(type, entity, destination) {
 
-	var destDashboardSlug = dashboard;
+	var destArray = destination.split('.');
+	var destDashboardSlug = destArray[0];
 	var destDashboard = this.readDashboard(destDashboardSlug);
 
 	if (type === 'temp-var') {
 		var destTempVarList = destDashboard.templating.list;
-		destTempVarList.push(this.tempVars.readTemplateVariable(entity));
+		destTempVarList.push(this.tempVars.readTemplateVar(entity));
 		this.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Template variable ' + entity + ' inserted successfully.');
 	} else if (type === 'row') {
@@ -92,12 +100,16 @@ Dashboards.prototype.insert = function(type, entity, dashboard) {
 		this.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Row ' + entity + ' inserted successfully.');
 	} else if (type === 'panel') {
-		
+		var destRowNumber = parseInt(destArray[1]);
+		var destRow = destDashboard.rows[destRowNumber-1];
+		destRow.panels.push(this.panels.readPanel(entity));
+		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		logger.showResult('Panel ' + entity + ' inserted successfully.');
 	}
 
 };
 
-Dashboards.prototype.extract = function(type, entity, dashboard) {
+Dashboards.prototype.extract = function(type, entity, entityName, dashboard) {
 
 	var srcDashboard = this.readDashboard(dashboard);
 	var srcRows;
@@ -106,13 +118,13 @@ Dashboards.prototype.extract = function(type, entity, dashboard) {
 		var srcTempVarList = srcDashboard.templating.list;
 		var srcTempVarNumber = parseInt(entity);
 		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
-		this.tempVars.saveTemplateVar(dashboard, srcTempVar, true);
+		this.tempVars.saveTemplateVar(entityName, srcTempVar, true);
 		logger.showResult('Template variable ' + entity + ' extracted successfully.');
 	} else if (type === 'row') {
 		srcRows = srcDashboard.rows;
 		var srcRowNumber = parseInt(entity);
 		var srcRow = srcRows[srcRowNumber-1];
-		this.rows.saveRow(dashboard + '-' + srcRowNumber, srcRow, true);
+		this.rows.saveRow(entityName, srcRow, true);
 		logger.showResult('Row ' + entity + ' extracted successfully.');
 	} else if (type === 'panel') {
 		var srcEntity = entity.split('.');
@@ -120,7 +132,7 @@ Dashboards.prototype.extract = function(type, entity, dashboard) {
 		var srcPanels = srcRows[srcEntity[0]-1].panels;
 		var srcPanelNumber = parseInt(srcEntity[1]);
 		var srcPanel = srcPanels[srcPanelNumber-1];
-		this.panels.savePanel(dashboard + '-' + srcEntity[0] + '-' + srcEntity[1], srcPanel, true);
+		this.panels.savePanel(entityName, srcPanel, true);
 		logger.showResult('Panel ' + entity + ' extracted successfully.');
 	}
 

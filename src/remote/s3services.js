@@ -98,7 +98,7 @@ S3.prototype.download = function(commands){
 		failureMessage = 'Error in downloading dashboard ' + entityValue + '.';	
 	  var key = '';
 	  	if(params.Key){
-	  		key = params.Key + '/dashboards/'+entityValue+'.json';
+	  		key = params.Key + 'dashboards/'+entityValue+'.json';
 	  	}
 	  	else{
 	  		key = 'dashboards/'+entityValue+'.json';
@@ -123,7 +123,7 @@ S3.prototype.download = function(commands){
 		var dashboards = components.readEntityNamesFromDir('dashboards');
 		var bucket_key = '';
 			if(params.Key){
-	  			bucket_key = params.Key + '/dashboards/';
+	  			bucket_key = params.Key + 'dashboards/';
 	  		}
 	  		else{
 	  			bucket_key = 'dashboards/';

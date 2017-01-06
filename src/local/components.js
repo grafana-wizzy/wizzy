@@ -31,7 +31,7 @@ Components.prototype.createIfNotExists = function(showOutput) {
 	this.dashboards.createIfNotExists(showOutput);
 	this.orgs.createIfNotExists(showOutput);
 	this.datasources.createIfNotExists(showOutput);
-}
+};
 
 Components.prototype.checkDirsStatus = function(showOutput) {
 
@@ -231,7 +231,7 @@ Components.prototype.summarize = function(commands) {
 
 	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
-			entityValue = config.getConfig('config:context:dashboard');
+			entityValue = checkOrGetContextDashboard();
 		}
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
 		self.dashboards.summarize(entityValue);
@@ -275,7 +275,7 @@ Components.prototype.change = function(commands) {
  			return;
  		}
 
- 		var entityValue = config.getConfig('config:context:dashboard');
+ 		var entityValue = checkOrGetContextDashboard();
 
  		this.dashboards.change(entityValue, oldDatasource, newDatasource);
  		logger.showResult(successMessage);
@@ -291,10 +291,12 @@ Components.prototype.extract = function(commands) {
 
 	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
 		// Getting the context dashboard
+		var dashboard = checkOrGetContextDashboard();
 		if (typeof commands[2] != 'string') {
-			commands[2] = config.getConfig('config:context:dashboard');
+			logger.showError('Please provide a name for ' + commands[0] + ' ' + commands[1] + '.');
+			return;
 		}
-		this.dashboards.extract(commands[0], commands[1], commands[2]);
+		this.dashboards.extract(commands[0], commands[1], commands[2], dashboard);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}
@@ -304,12 +306,28 @@ Components.prototype.extract = function(commands) {
 // Inserts entities from local independent json to dashboard json
 Components.prototype.insert = function(commands) {
 
-	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
+	var dashboard;
+	if (commands[0] === 'temp-var' || commands[0] === 'row') {
 		// Getting the context dashboard
-		if (typeof commands[2] != 'string') {
-			commands[2] = config.getConfig('config:context:dashboard');
+		if (typeof commands[2] === 'string') {
+			dashboard = commands[2];
+		} else {
+			dashboard = checkOrGetContextDashboard();
 		}
-		this.dashboards.insert(commands[0], commands[1], commands[2]);
+		this.dashboards.insert(commands[0], commands[1], dashboard);
+	} else if (commands[0] === 'panel') {
+		var destinationArray;
+		if (typeof commands[2] === 'string') {
+			destinationArray = commands[2].split('.');
+			if (destinationArray.length === 1) {
+				dashboard = checkOrGetContextDashboard() + '.' + commands[2];
+			} else {
+				dashboard = commands[2];
+			}
+			this.dashboards.insert(commands[0], commands[1], dashboard);
+		} else {
+			logger.showError('Unknown destination for panel.');
+		}
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}

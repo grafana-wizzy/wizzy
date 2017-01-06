@@ -93,7 +93,7 @@ Commands.prototype.instructions = function() {
 			if (config.checkConfigStatus('config:clip', false)) {
 				grafana.clip(_.drop(commands));
 			} else {
-				logger.showError('Clip config not found. Please set clip config. Refer to README.')
+				logger.showError('Clip config not found. Please set clip config. Refer to README.');
 			}
 			break;
 		case 'summarize':
@@ -125,16 +125,16 @@ Commands.prototype.instructions = function() {
 				if (config.checkConfigStatus('config:s3', false)) {
 					s3.download(_.drop(commands, 2));
 				} else {
-					logger.showError('S3 config not found. Please set s3 config. Refer to README.')
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
 				}
 			}
 			break;
 		case 'upload':
 			if (commands[1] === 'to-s3') {
-				if (config.checkConfigStatus('config:clip', false)) {
+				if (config.checkConfigStatus('config:s3', false)) {
 					s3.upload(_.drop(commands, 2));
 				} else {
-					logger.showError('S3 config not found. Please set s3 config. Refer to README.')
+					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
 				}
 			}
 			break;

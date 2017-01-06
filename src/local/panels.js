@@ -15,7 +15,7 @@ function Panels() {}
 // creates panels directory if it does not exist
 Panels.prototype.createIfNotExists = function(showOutput) {
 	localfs.createIfNotExists(panelsDir, 'dir', showOutput);
-}
+};
 
 // checks dir status for the panels
 Panels.prototype.checkDirStatus = function(showOutput) {
@@ -27,7 +27,7 @@ Panels.prototype.savePanel = function(panelName, content, showResult) {
 
 	localfs.writeFile(getPanelsFile(panelName), logger.stringify(content, null, 2));
 	if (showResult) {
-		logger.showResult('Panel ' + panelName + ' saved successfully under template-vars directory.');
+		logger.showResult('Panel ' + panelName + ' saved successfully under panels directory.');
 	}
 
 };
