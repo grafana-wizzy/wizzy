@@ -138,6 +138,9 @@ Commands.prototype.instructions = function() {
 				}
 			}
 			break;
+		case 'alerts':
+			grafana.alerts(_.drop(commands))
+			break;
 		default:
 			logger.showError('Unsupported command called.');
 			logger.justShow(help);
@@ -165,8 +168,9 @@ function addCommandsToHelp() {
 	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
 	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
 	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
+	addToHelp('wizzy download s3 ENTITY ENTITY_NAME', 'download entities from S3.');
+	addToHelp('wizzy alerts pause', 'pause all the alerts in grafana');
 	addToHelp('wizzy upload to-s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
-
 }
 
 function addToHelp(syntax, description) {
