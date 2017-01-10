@@ -10,6 +10,7 @@ var _ = require('lodash');
 
 var dashDir = 'dashboards';
 
+var DashTags = require('../local/dash-tags.js');
 var TempVars = require('../local/temp-vars.js');
 var Panels = require('../local/panels.js');
 var Rows = require('../local/rows.js');
@@ -20,6 +21,7 @@ function Dashboards() {
 	this.rows = new Rows();
 	this.panels = new Panels();
 	this.tempVars = new TempVars();
+	this.dashTags = new DashTags();
 }
 
 // creates dashboards and other directories if they do not exist
@@ -28,6 +30,7 @@ Dashboards.prototype.createIfNotExists = function(showOutput) {
 	this.rows.createIfNotExists(showOutput);
 	this.panels.createIfNotExists(showOutput);
 	this.tempVars.createIfNotExists(showOutput);
+	this.dashTags.createIfNotExists(showOutput);
 };
 
 // checks dir status for the dashboards
@@ -35,7 +38,8 @@ Dashboards.prototype.checkDirStatus = function(showOutput) {
 	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) &&
 		this.tempVars.checkDirStatus(showOutput) && 
 		this.panels.checkDirStatus(showOutput) &&
-		this.rows.checkDirStatus(showOutput);
+		this.rows.checkDirStatus(showOutput) &&
+		this.dashTags.checkDirStatus(showOutput);
 };
 
 // summarize dashboard
@@ -64,9 +68,13 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 			panels: _.join(panelInfo, ', ')
 		});
 	});
-	if ('templating' in dashboard) {
+	if ('templating' in dashboard && dashboard.templating.list.length > 0) {
 		arch.templateVariableCount = _.size(dashboard.templating.list);
 		arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
+	}
+	if ('tags' in dashboard && dashboard.tags.length > 0) {
+		arch.tagCount = _.size(dashboard.tags);
+		arch.tags = _.join(dashboard.tags);
 	}
 	arch.time = dashboard.time;
 	arch.time.timezone = dashboard.timezone;

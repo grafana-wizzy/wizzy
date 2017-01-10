@@ -54,7 +54,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	var srcDashboardSlug = checkOrGetContextDashboard();
 	var srcDashboard = self.dashboards.readDashboard(srcDashboardSlug);
 	var sourceArray = entityValue.split('.');
-	
+
 	var destinationArray = [];
 	if (destination !== undefined) {
 		destinationArray = destination.split('.');
@@ -215,6 +215,20 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 		} else {
 			logger.showError(failureMessage);
 			logger.showError('Unknown destination ' + destination + '.');
+		}
+	}
+
+	else if (entityType === 'dash-tags') {
+		var srcTagsList = srcDashboard.tags;
+		// In this case entityValue is destination
+		if (entityValue === undefined && command === 'copy') {
+			logger.showError(failureMessage);
+			logger.showError('Unknown destination ' + destinationArray + '.');
+		} else {
+			destDashboard = self.dashboards.readDashboard(entityValue);
+			destDashboard.tags = destDashboard.tags.concat(srcTagsList);
+			self.dashboards.saveDashboard(entityValue, destDashboard, true);
+			logger.showOutput(successMessage);
 		}
 	}
 	else {

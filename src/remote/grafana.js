@@ -469,37 +469,67 @@ Grafana.prototype.list = function(commands) {
 	if (entityType === 'dashboards') {
 		successMessage = 'Displayed dashboards list successfully.';
 		failureMessage = 'Dashboards list display failed';
+		var url = grafana_url + this.createURL('list', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+				var table = new Table({
+	    		head: ['Title', 'Slug'],
+	  			colWidths: [50, 50]
+				});
+				_.each(body, function(dashboard){
+					table.push([dashboard.title, dashboard.uri.substring(3)]); //removing db/
+				});
+				output += table.toString();
+	  	  logger.showOutput(output);
+	  	  logger.showResult('Total dashboards: ' + body.length);
+	    	logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana API.';
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	} else if (entityType === 'dashboard-tags') {
+		successMessage = 'Displayed dashboard tags list successfully.';
+		failureMessage = 'Dashboard tags list display failed';
+		var url = grafana_url + this.createURL('list', entityType);
+		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
+			var output = '';
+			if (!error && response.statusCode == 200) {
+				var table = new Table({
+	    		head: ['Tag', 'Count'],
+	  			colWidths: [50, 50]
+				});
+				_.each(body, function(tag){
+					table.push([tag.term, tag.count]);
+				});
+				output += table.toString();
+	  	 		logger.showOutput(output);
+	  	  		logger.showResult('Total dashboard-tags: ' + body.length);
+	    		logger.showResult(successMessage);
+	  		} else {
+		  		output += 'Grafana API response status code = ' + response.statusCode;
+		  		if (error === null) {
+		  			output += '\nNo error body from Grafana API.';
+		  		}
+		  		else {
+		  			output += '\n' + error;
+		  		}
+		  		logger.showOutput(output);
+		  		logger.showError(failureMessage);
+	  		}
+		});
 	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + this.createURL('list', entityType);
-	request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
-		var output = '';
-		if (!error && response.statusCode == 200) {
-			var table = new Table({
-    		head: ['Title', 'Slug'],
-  			colWidths: [50, 50]
-			});
-			_.each(body, function(dashboard){
-				table.push([dashboard.title, dashboard.uri.substring(3)]); //removing db/
-			});
-			output += table.toString();
-  	  logger.showOutput(output);
-  	  logger.showResult('Total dashboards: ' + body.length);
-    	logger.showResult(successMessage);
-  	} else {
-  		output += 'Grafana API response status code = ' + response.statusCode;
-  		if (error === null) {
-  			output += '\nNo error body from Grafana API.';
-  		}
-  		else {
-  			output += '\n' + error;
-  		}
-  		logger.showOutput(output);
-  		logger.showError(failureMessage);
-  	}
-	});
 
 };
 
@@ -622,6 +652,8 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 		}
 	} else if (entityType === 'dashboards') {
 		url += '/api/search';
+	} else if (entityType === 'dashboard-tags') {
+		url += '/api/dashboards/tags';
 	} else if (entityType === 'datasources') {
 		url += '/api/datasources';
 	} else if (entityType === 'datasource') {

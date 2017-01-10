@@ -17,14 +17,14 @@ TempVars.prototype.createIfNotExists = function(showOutput) {
 	localfs.createIfNotExists(tempVarsDir, 'dir', showOutput);
 };
 
-// checks dir status for the datasources
+// checks dir status for the temp-vars
 TempVars.prototype.checkDirStatus = function(showOutput) {
 
 	return localfs.checkExists(tempVarsDir, 'temp-vars directory', showOutput);
 
 };
 
-// Save a template variable under template-variables directory on disk
+// Save a template variable under temp-vars directory on disk
 TempVars.prototype.saveTemplateVar = function(varName, content, showResult) {
 
 	localfs.writeFile(getTempVarFile(varName), logger.stringify(content, null, 2));
