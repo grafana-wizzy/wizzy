@@ -303,14 +303,22 @@ Components.prototype.change = function(commands) {
 // Extracts entities from dashboard json to local independent json
 Components.prototype.extract = function(commands) {
 
+	// Getting the context dashboard
+	var dashboard = checkOrGetContextDashboard();
 	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
-		// Getting the context dashboard
-		var dashboard = checkOrGetContextDashboard();
+		// Validating rows,panels and temp-vars commands
 		if (typeof commands[2] != 'string') {
 			logger.showError('Please provide a name for ' + commands[0] + ' ' + commands[1] + '.');
 			return;
 		}
 		this.dashboards.extract(commands[0], commands[1], commands[2], dashboard);
+	} else if (commands[0] === 'dash-tags') {
+		// Validating dash-tags commands
+		if (typeof commands[1] != 'string') {
+			logger.showError('Please provide a name for ' + commands[0] + '.');
+			return;
+		}
+		this.dashboards.extract(commands[0], null, commands[1], dashboard);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}
@@ -342,6 +350,14 @@ Components.prototype.insert = function(commands) {
 		} else {
 			logger.showError('Unknown destination for panel.');
 		}
+	} else if (commands[0] === 'dash-tags') {
+		// Getting the context dashboard
+		if (typeof commands[2] === 'string') {
+			dashboard = commands[2];
+		} else {
+			dashboard = checkOrGetContextDashboard();
+		}
+		this.dashboards.insert(commands[0], commands[1], dashboard);
 	} else {
 		logger.showError('Unsupported entity ' + commands[0] + '. Please try `wizzy help`.');
 	}

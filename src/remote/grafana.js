@@ -465,11 +465,11 @@ Grafana.prototype.export = function(commands) {
 Grafana.prototype.list = function(commands) {
 
 	var entityType = commands[0];
-
+	var url;
 	if (entityType === 'dashboards') {
 		successMessage = 'Displayed dashboards list successfully.';
 		failureMessage = 'Dashboards list display failed';
-		var url = grafana_url + this.createURL('list', entityType);
+		url = grafana_url + this.createURL('list', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
@@ -499,7 +499,7 @@ Grafana.prototype.list = function(commands) {
 	} else if (entityType === 'dashboard-tags') {
 		successMessage = 'Displayed dashboard tags list successfully.';
 		failureMessage = 'Dashboard tags list display failed';
-		var url = grafana_url + this.createURL('list', entityType);
+		url = grafana_url + this.createURL('list', entityType);
 		request.get({url: url, auth: auth, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {

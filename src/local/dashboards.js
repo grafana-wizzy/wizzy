@@ -102,6 +102,11 @@ Dashboards.prototype.insert = function(type, entity, destination) {
 		destTempVarList.push(this.tempVars.readTemplateVar(entity));
 		this.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Template variable ' + entity + ' inserted successfully.');
+	} else if (type === 'dash-tags') {
+		var dashTagsList = destDashboard.tags;
+		destDashboard.tags = destDashboard.tags.concat(this.dashTags.readDashTags(entity));
+		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		logger.showResult('Dashboard tags ' + entity + 'inserted successfully.');
 	} else if (type === 'row') {
 		var destRows = destDashboard.rows;
 		destRows.push(this.rows.readRow(entity));
@@ -128,7 +133,11 @@ Dashboards.prototype.extract = function(type, entity, entityName, dashboard) {
 		var srcTempVar = srcTempVarList[srcTempVarNumber-1];
 		this.tempVars.saveTemplateVar(entityName, srcTempVar, true);
 		logger.showResult('Template variable ' + entity + ' extracted successfully.');
-	} else if (type === 'row') {
+	}  else if (type === 'dash-tags') {
+		var srcDashTagsList = srcDashboard.tags;
+		this.dashTags.saveDashTags(entityName, srcDashTagsList, true);
+		logger.showResult('Dashboard Tags extracted successfully.');
+	}  else if (type === 'row') {
 		srcRows = srcDashboard.rows;
 		var srcRowNumber = parseInt(entity);
 		var srcRow = srcRows[srcRowNumber-1];
