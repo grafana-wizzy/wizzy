@@ -9,9 +9,10 @@ var S3 = require('./remote/s3services.js');
 var LocalFS = require('./util/localfs.js');
 var localfs = new LocalFS();
 var Config = require('./util/config.js');
-var Logger = require('./util/logger.js'); 
+var Logger = require('./util/logger.js');
+var Help = require('./util/help.js');
 var logger = new Logger('Commands');
-var help = '\nUsage: wizzy [commands]\n\nCommands:\n';
+var help = new Help();
 
 var config;
 var components;
@@ -30,7 +31,6 @@ function Commands() {
 	if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
 		s3 = new S3(config.getConfig('config:s3'), components);
 	}
-	addCommandsToHelp();
 }
 
 // Creates an entity in wizzy or Grafana
@@ -48,7 +48,7 @@ Commands.prototype.instructions = function() {
 	switch(command) {
 		
 		case 'help':
-			showHelp();
+			help.showHelp();
 			break;
 		case 'init':
 			config.createIfNotExists();
@@ -140,50 +140,9 @@ Commands.prototype.instructions = function() {
 			break;
 		default:
 			logger.showError('Unsupported command called.');
-			logger.justShow(help);
+			help.showHelp();
 	}
 };
-
-function addCommandsToHelp() {
-
-	addToHelp('wizzy help', 'shows available wizzy commands');
-	addToHelp('wizzy init', 'creates conf file with conf and dashboards directories.');
-	addToHelp('wizzy status', 'checks if any configuration property and if .git directory exists.');
-	addToHelp('wizzy conf', 'shows wizzy configuration properties.');
-	addToHelp('wizzy set CONFIG_NAME PROPERTY_NAME PROPERTY_VALUE', 'sets a configuration property for wizzy.');
-	addToHelp('wizzy change ENTITY OLD_ENTITY NEW_ENTITY', 'Updates an old entity with a new one on the context dashboard.');
-	addToHelp('wizzy copy ENTITY ENTITY_NAME', 'copies an entity from one position to another.');
-	addToHelp('wizzy create ENTITY ENTITY_NAME', 'creates a new entity.');
-	addToHelp('wizzy delete ENTITY ENTITY_NAME', 'deletes an entity.');
-	addToHelp('wizzy download from-gnet ENTITY ENTITY_NAME', 'download Grafana.net entities.');
-	addToHelp('wizzy export ENTITY ENTITY_NAME', 'exports an entity from local repo to Grafana.');
-	addToHelp('wizzy extract ENTITY ENTITY_NAME', 'extracts and entity from a local dashboard.');
-	addToHelp('wizzy list ENTITIES', 'lists entities in Grafana or Grafana.net.');
-	addToHelp('wizzy import ENTITY ENTITY_NAME', 'imports an entity from Grafana to local repo.');
-	addToHelp('wizzy insert ENTITY ENTITY_NAME', 'inserts an entity to a local dashboard.');
-	addToHelp('wizzy move ENTITY ENTITY_NAME', 'moves an entity from one position to another.');
-	addToHelp('wizzy remove ENTITY ENTITY_NAME', 'removes an entity from a local dashboard.');
-	addToHelp('wizzy show ENTITY ENTITY_NAME', 'shows an entity.');
-	addToHelp('wizzy summarize ENTITY ENTITY_NAME', 'summarize a large entity in a short user-friendly manner.');
-	addToHelp('wizzy upload to-s3 ENTITY ENTITY_NAME', 'upload entities to S3.');
-
-}
-
-function addToHelp(syntax, description) {
-
-	// Adding command to help
-  help += '\n  ' + syntax;
-  if (description !== null) {
-		help += ' - ' + description;
-	}
-
-}
-
-// Shows wizzy help
-function showHelp() {
-	help += '\n';
-	logger.justShow(help);
-}
 
 // Shows wizzy status
 function status() {

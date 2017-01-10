@@ -496,7 +496,7 @@ Grafana.prototype.list = function(commands) {
 	  		logger.showError(failureMessage);
 	  	}
 		});
-	} else if (entityType === 'dashboard-tags') {
+	} else if (entityType === 'dash-tags') {
 		successMessage = 'Displayed dashboard tags list successfully.';
 		failureMessage = 'Dashboard tags list display failed';
 		url = grafana_url + this.createURL('list', entityType);
@@ -512,7 +512,7 @@ Grafana.prototype.list = function(commands) {
 				});
 				output += table.toString();
 	  	 		logger.showOutput(output);
-	  	  		logger.showResult('Total dashboard-tags: ' + body.length);
+	  	  		logger.showResult('Total dashboard tags: ' + body.length);
 	    		logger.showResult(successMessage);
 	  		} else {
 		  		output += 'Grafana API response status code = ' + response.statusCode;
@@ -652,7 +652,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 		}
 	} else if (entityType === 'dashboards') {
 		url += '/api/search';
-	} else if (entityType === 'dashboard-tags') {
+	} else if (entityType === 'dash-tags') {
 		url += '/api/dashboards/tags';
 	} else if (entityType === 'datasources') {
 		url += '/api/datasources';
