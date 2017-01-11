@@ -164,7 +164,7 @@ DashList.prototype.getListNames = function() {
 		return [];
 	}
 
-}
+};
 
 // Save dashlist config
 DashList.prototype.saveConfig = function(showResult) {
@@ -175,6 +175,6 @@ DashList.prototype.saveConfig = function(showResult) {
   		logger.showResult('Dashboard list saved.');
   	}
 	});
-}
+};
 
 module.exports = DashList;
