@@ -8,19 +8,18 @@ var logger = new Logger('Config');
 var _ = require('lodash');
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
-var nconf = require('nconf');
 
 var confDir = 'conf';
 var dashListFile = 'conf/dash-list.json';
 
 function DashList() {
-	nconf.argv().env().file({ file: dashListFile });
+	this.nconf = require('nconf');
+	this.nconf.argv().env().file({ file: dashListFile });
 }
 
 DashList.prototype.createIfNotExists = function(showResult) {
-	localfs.createIfNotExists(confDir, 'dir', showResult);
 	if(!localfs.checkExists(dashListFile)) {
-		saveConfig(false);
+		localfs.createIfNotExists(dashListFile, 'file', showResult);
 		if (showResult) {
 			logger.showResult('dash-list file created under conf directory.');
 		}
@@ -31,7 +30,7 @@ DashList.prototype.createIfNotExists = function(showResult) {
 	}
 };
 
-DashList.prototype.checkExists = function(showOutput) {
+DashList.prototype.checkFileStatus = function(showOutput) {
 	if(!localfs.checkExists(dashListFile, 'dash-list file', showOutput)) {
 		return false;
 	} else {
@@ -40,64 +39,62 @@ DashList.prototype.checkExists = function(showOutput) {
 };
 
 DashList.prototype.createList = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
-
 	var self = this;
 	self.createIfNotExists(false);
-	if (!nconf.get('dashlists')) {
-		nconf.set('dashlists', []);
-		saveConfig(false);
+	if (!self.nconf.get('dashlists')) {
+		self.nconf.set('dashlists', []);
+		self.saveConfig(false);
 	}
-	if (_.includes(getListNames(),listName)) {
+	if (_.includes(self.getListNames(),listName)) {
 		logger.showOutput('Dashboard list ' + listName + ' already exists. Please choose another name.');
 	} else {
-		var lists = nconf.get('dashlists');
+		var lists = self.nconf.get('dashlists');
 		lists.push({name: listName, dashboards: []});
-		nconf.set('dashlists',lists);
-		saveConfig(false);
+		self.nconf.set('dashlists',lists);
+		self.saveConfig(false);
 		logger.showResult('Dashboard list ' + listName + ' created successfully.');
 	}
 
 };
 
 DashList.prototype.addDashboard = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
+	var self = this;
 	var dashboardName = commands[1];
-	var lists = nconf.get('dashlists');
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards.push(dashboardName);
-		nconf.set('dashlists',lists);
-		saveConfig(false);
+		self.nconf.set('dashlists',lists);
+		self.saveConfig(false);
 		logger.showResult('Dashboard ' + dashboardName + ' added to Dashboard list ' + listName + ' successfully.');
 	}
 };
 
 DashList.prototype.removeDashboard = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
+	var self = this;
 	var dashboardName = commands[1];
-	var lists = nconf.get('dashlists');
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		_.pull(lists[listIndex].dashboards, dashboardName);
-		nconf.set('dashlists',lists);
-		saveConfig(false);
+		self.nconf.set('dashlists',lists);
+		self.saveConfig(false);
 		logger.showResult('Dashboard ' + dashboardName + ' deleted from Dashboard list ' + listName + ' successfully.');
 	}
 };
 
 
 DashList.prototype.showList = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
-	var lists = nconf.get('dashlists');
+	var self = this;
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
@@ -108,38 +105,38 @@ DashList.prototype.showList = function(commands) {
 };
 
 DashList.prototype.clearList = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
-	var lists = nconf.get('dashlists');
+	var self = this;
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards = [];
-		nconf.set('dashlists',lists);
-		saveConfig(false);
+		self.nconf.set('dashlists',lists);
+		self.saveConfig(false);
 		logger.showResult('Dashboard list ' + listName + ' cleared successfully.');
 	}
 };
 
 DashList.prototype.deleteList = function(commands) {
-	nconf.argv().env().file({ file: dashListFile });
 	var listName = commands[0];
-	var lists = nconf.get('dashlists');
+	var self = this;
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists.splice(listIndex, 1);
-		nconf.set('dashlists',lists);
-		saveConfig(false);
+		self.nconf.set('dashlists',lists);
+		self.saveConfig(false);
 		logger.showResult('Dashboard list ' + listName + ' deleted successfully.');
 	}
 };
 
 DashList.prototype.getList = function(listName) {
-	nconf.argv().env().file({ file: dashListFile });
-	var lists = nconf.get('dashlists');
+	var self = this;
+	var lists = self.nconf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		return [];
@@ -149,18 +146,16 @@ DashList.prototype.getList = function(listName) {
 };
 
 function getListIndex(listName, lists) {
-
 	return _.findIndex(lists, function(list) {
 		if (list && list.name === listName) {
 			return true;
 		}
 	});
-
 }
 
-function getListNames() {
-	nconf.argv().env().file({ file: dashListFile });
-	var lists = nconf.get('dashlists');
+DashList.prototype.getListNames = function() {
+	var self = this;
+	var lists = self.nconf.get('dashlists');
 	if (lists && lists.length > 0) {
 		return _.map(lists, function (list) {
 			return list.name;
@@ -172,8 +167,9 @@ function getListNames() {
 }
 
 // Save dashlist config
-function saveConfig(showResult) {
-	nconf.save(function (err) {
+DashList.prototype.saveConfig = function(showResult) {
+	var self = this;
+	self.nconf.save(function (err) {
   	localfs.readFile(dashListFile, false );
   	if (showResult) {
   		logger.showResult('Dashboard list saved.');
