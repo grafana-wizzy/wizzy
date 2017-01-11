@@ -39,6 +39,7 @@ function addLocalCommands() {
 	addLocalTempVarsCommands();
 	addLocalDatasourceCommands();
 	addLocalOrgCommands();
+	addLocalDashListCommands();
 }
 
 function addExternalCommands() {
@@ -76,6 +77,8 @@ function addRemoteDashboardCommands() {
 	help += '\n   wizzy export dashboard DASHBOARD_SLUG';
 	help += '\n   wizzy delete dashboard DASHBOARD_SLUG';
 	help += '\n   wizzy clip dashboard DASHBOARD_SLUG';
+	help += '\n   wizzy clip dashboards-by-tag DASHBOARD_TAG_NAME';
+	help += '\n   wizzy clip dash-list DASH_LIST_NAME';
 	help += '\n';
 }
 
@@ -151,6 +154,17 @@ function addLocalDatasourceCommands() {
 function addLocalOrgCommands() {
 	help += '\n  Org Commands:\n';
 	help += '\n   wizzy summarize orgs';
+	help += '\n';
+}
+
+function addLocalDashListCommands() {
+	help += '\n  DashList Commands:\n';
+	help += '\n   wizzy create dash-list DASH_LIST_NAME';
+	help += '\n   wizzy add to-dash-list DASH_LIST_NAME DASHBOARD_SLUG';
+	help += '\n   wizzy remove from-dash-list DASH_LIST_NAME DASHBOARD_SLUG';
+	help += '\n   wizzy show dash-list DASH_LIST_NAME';
+	help += '\n   wizzy create dash-list DASH_LIST_NAME';
+	help += '\n   wizzy delete dash-list DASH_LIST_NAME';
 	help += '\n';
 }
 
