@@ -6,6 +6,9 @@ var Logger = require('../util/logger.js');
 var logger = new Logger();
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
+var DashList = require('../local/dashlist.js');
+var dashList = new DashList();
+
 var syncReq = require('sync-request');
 
 var _ = require('lodash');
@@ -578,8 +581,8 @@ Grafana.prototype.clip = function(commands) {
 		logger.justShow('Waiting 5 seconds before generating clip.');
 		setTimeout(self.createGif(entityValue), 5000);
 
-	} else if (entityType === 'dashboards' && commands[1] === 'by' && commands[2] === 'tag') {
-		var tag = commands[3];
+	} else if (entityType === 'dashboards-by-tag') {
+		var tag = commands[1];
 		url = grafana_url + self.createURL('search', entityType, null) + '?tag=' + tag;
 		url = addAuth(url);
 		var searchResponse = syncReq('GET', url);
@@ -607,6 +610,30 @@ Grafana.prototype.clip = function(commands) {
 		logger.showResult('Snapshots rendering completed.');
 		logger.justShow('Waiting 5 seconds before generating clip.');
 		setTimeout(self.createGif(tag), 5000);
+	} else if (entityType === 'dash-list') {
+		var listName = commands[1];
+		var list = dashList.getList(listName);
+		if (list.length < 1) {
+			logger.showOutput('No dashboard found in dashboard list ' + listName);
+		} else {
+			_.each(list, function(dashName) {
+				var dashUrl = grafana_url + self.createURL('clip', 'dashboard', dashName) +
+					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
+					config.clip.render_timeout;
+				dashUrl = addAuth(dashUrl);
+				var response = syncReq('GET', dashUrl);
+				var filename = 'temp/' + dashName + '.png';
+				if (response.statusCode === 200) {
+					localfs.writeFile(filename, response.getBody());
+					logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
+				} else {
+					logger.showError('Snapshot of ' + dashName + ' dashbaord failed. Please increase timeout.');
+				}
+			});
+		}
+		logger.showResult('Snapshots rendering completed.');
+		logger.justShow('Waiting 5 seconds before generating clip.');
+		setTimeout(self.createGif(listName), 5000);
 	} else {
 		logger.showError('Unsupported set of commands ' + commands + '.');
 	}
@@ -623,7 +650,7 @@ Grafana.prototype.createGif = function(clipName) {
  		.pipe(localfs.writeStream('clips/' + clipName + '.gif'));
 
  	logger.showResult('Successfully created ' + clipName + ' clip under clips directory.');
- 	logger.justShow('Please delete temp directory');
+ 	logger.justShow('Please delete temp directory before creating next clip.');
  	//localfs.deleteDirRecursive('temp');
 
 };
@@ -651,6 +678,8 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 			url += '/' + entityValue;
 		}
 	} else if (entityType === 'dashboards') {
+		url += '/api/search';
+	} else if (entityType === 'dashboards-by-tag') {
 		url += '/api/search';
 	} else if (entityType === 'dash-tags') {
 		url += '/api/dashboards/tags';
