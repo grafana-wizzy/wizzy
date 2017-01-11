@@ -37,6 +37,7 @@ function addLocalCommands() {
 	addLocalRowCommands();
 	addLocalPanelCommands();
 	addLocalTempVarsCommands();
+	addLocalDashboardTagsCommands();
 	addLocalDatasourceCommands();
 	addLocalOrgCommands();
 	addLocalDashListCommands();
@@ -109,9 +110,6 @@ function addLocalDashboardCommands() {
 	help += '\n  Dashboard Commands:\n';
 	help += '\n   wizzy summarize dashboard <DASHBOARD_SLUG>';
 	help += '\n   wizzy change panels datasource OLD_DATASOURCE NEW_DATASOURCE';
-	help += '\n   wizzy copy dash-tags DASHBOARD_SLUG';
-	help += '\n   wizzy extract dash-tags DASH-TAGS_NAME';
-	help += '\n   wizzy insert DASH-TAGS_NAME <DASHBOARD_SLUG>';
 	help += '\n';
 }
 
@@ -163,8 +161,16 @@ function addLocalDashListCommands() {
 	help += '\n   wizzy add to-dash-list DASH_LIST_NAME DASHBOARD_SLUG';
 	help += '\n   wizzy remove from-dash-list DASH_LIST_NAME DASHBOARD_SLUG';
 	help += '\n   wizzy show dash-list DASH_LIST_NAME';
-	help += '\n   wizzy create dash-list DASH_LIST_NAME';
+	help += '\n   wizzy clear dash-list DASH_LIST_NAME';
 	help += '\n   wizzy delete dash-list DASH_LIST_NAME';
+	help += '\n';
+}
+
+function addLocalDashboardTagsCommands() {
+	help += '\n  Dashboard Tags Commands:\n';
+	help += '\n   wizzy copy dash-tags DASHBOARD_SLUG';
+	help += '\n   wizzy extract dash-tags DASH-TAGS_NAME';
+	help += '\n   wizzy insert DASH-TAGS_NAME <DASHBOARD_SLUG>';
 	help += '\n';
 }
 
