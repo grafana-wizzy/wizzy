@@ -9,6 +9,7 @@ var S3 = require('./remote/s3services.js');
 var LocalFS = require('./util/localfs.js');
 var localfs = new LocalFS();
 var Config = require('./util/config.js');
+var Dashlist = require('./local/dashlist.js');
 var Logger = require('./util/logger.js');
 var Help = require('./util/help.js');
 var logger = new Logger('Commands');
@@ -19,18 +20,19 @@ var components;
 var gnet;
 var grafana;
 var s3;
+var dashlist;
 
 function Commands() {
 	config = new Config();
 	components = new Components(config);
 	gnet = new GNet(components);
-
 	if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
 		grafana = new Grafana(config.getConfig('config'), components);
 	}
 	if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
 		s3 = new S3(config.getConfig('config:s3'), components);
 	}
+	dashlist = new Dashlist();
 }
 
 // Creates an entity in wizzy or Grafana
@@ -74,13 +76,25 @@ Commands.prototype.instructions = function() {
 			grafana.export(_.drop(commands));
 			break;
 		case 'create':
-			grafana.create(_.drop(commands));
+			if (commands[1] === 'dash-list') {
+				dashlist.createList(_.drop(commands, 2));
+			} else {
+				grafana.create(_.drop(commands));
+			}
 			break;
 		case 'delete':
-			grafana.delete(_.drop(commands));
+			if (commands[1] === 'dash-list') {
+				dashlist.deleteList(_.drop(commands, 2));
+			} else {
+				grafana.delete(_.drop(commands));
+			}
 			break;
 		case 'show':
-			grafana.show(_.drop(commands));
+			if (commands[1] === 'dash-list') {
+				dashlist.showList(_.drop(commands, 2));
+			} else {
+				grafana.show(_.drop(commands));
+			}
 			break;
 		case 'list':
 			if (commands[1] === 'gnet') {
@@ -109,7 +123,11 @@ Commands.prototype.instructions = function() {
 			components.moveCopyOrRemove(commands);
 			break;
 		case 'remove':
-			components.moveCopyOrRemove(commands);
+			if (commands[1] === 'from-dash-list') {
+				dashlist.removeDashboard(_.drop(commands, 2));
+			} else {
+				components.moveCopyOrRemove(commands);
+			}
 			break;
 		case 'extract':
 			components.extract(_.drop(commands));
@@ -136,6 +154,16 @@ Commands.prototype.instructions = function() {
 				} else {
 					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
 				}
+			}
+			break;
+		case 'add':
+			if (commands[1] === 'to-dash-list') {
+				dashlist.addDashboard(_.drop(commands, 2));
+			}
+			break;
+		case 'clear':
+			if (commands[1] === 'dash-list') {
+				dashlist.clearList(_.drop(commands, 2));
 			}
 			break;
 		default:
