@@ -17,6 +17,7 @@ var failureMessage;
 var Datasources = require('../local/datasources.js');
 var Orgs = require('../local/orgs.js');
 var Dashboards = require('../local/dashboards.js');
+var Dashlist = require('../local/dashlist.js');
 
 var config;
 
@@ -25,19 +26,22 @@ function Components(conf) {
 	this.dashboards = new Dashboards();
 	this.orgs = new Orgs();
 	this.datasources = new Datasources();
+	this.dashlist = new Dashlist();
 }
 
 Components.prototype.createIfNotExists = function(showOutput) {
 	this.dashboards.createIfNotExists(showOutput);
 	this.orgs.createIfNotExists(showOutput);
 	this.datasources.createIfNotExists(showOutput);
+	this.dashlist.createIfNotExists(showOutput);
 };
 
 Components.prototype.checkDirsStatus = function(showOutput) {
 
 	return this.dashboards.checkDirStatus(showOutput) && 
 		this.orgs.checkDirStatus(showOutput) && 
-		this.datasources.checkDirStatus(showOutput);
+		this.datasources.checkDirStatus(showOutput) && 
+		this.dashlist.checkFileStatus(showOutput);
 
 };
 

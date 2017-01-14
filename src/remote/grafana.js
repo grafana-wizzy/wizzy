@@ -7,7 +7,6 @@ var logger = new Logger();
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
 var DashList = require('../local/dashlist.js');
-var dashList = new DashList();
 
 var syncReq = require('sync-request');
 
@@ -634,6 +633,7 @@ Grafana.prototype.clip = function(commands) {
 		setTimeout(self.createGif(tag), 5000);
 	} else if (entityType === 'dash-list') {
 		var listName = commands[1];
+		var dashList = new DashList();
 		var list = dashList.getList(listName);
 		if (list.length < 1) {
 			logger.showOutput('No dashboard found in dashboard list ' + listName);
