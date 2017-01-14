@@ -8,7 +8,6 @@ var logger = new Logger('Config');
 var _ = require('lodash');
 var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
-var nconf = require('nconf');
 
 var configs = [
 	'config:grafana:url',
@@ -32,88 +31,87 @@ var configs = [
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
 
+// Constructor
 function Config() {
-	nconf.argv().env().file({ file: confFile });
+	this.nconf = require('nconf');
+	this.nconf.argv().env().file({ file: confFile });
 }
 
-Config.prototype.createIfNotExists = function() {
-	localfs.createIfNotExists(confDir, 'dir', 'conf directory');
+// Initialize wizzy configuration
+Config.prototype.initialize = function() {
+	var self = this;
+	localfs.createDirIfNotExists(confDir, true);
 	if(!localfs.checkExists(confFile)) {
-		saveConfig(false);
+		self.saveConfig(false);
 		logger.showResult('conf file created.');
 	} else {
 		logger.showResult('conf file already exists.');
 	}
+}
+
+// Check wizzy configuration for status command
+Config.prototype.statusCheck = function() {
+	var self = this;
+	var check = true;
+	check = check && localfs.checkExists(confDir);
+	check = check && localfs.checkExists(confFile);
+	return check;
 };
 
-Config.prototype.checkExists = function(showOutput) {
-	if(!localfs.checkExists(confFile, 'conf file', showOutput)) {
-		return false;
-	} else {
-		return true;
-	}
-};
-
-Config.prototype.checkConfigStatus = function(prop, showOutput) {
-	nconf.argv().env().file({ file: confFile });
-	if (!nconf.get(prop)) {
+// Check if wizzy config dir, file and config field is initialized
+Config.prototype.checkConfigPrereq = function(showOutput) {
+	var self = this;
+	var check = self.statusCheck();
+	if (check) {
 		if (showOutput) {
-			logger.showError('Config not found.');
+			logger.showResult('wizzy configuration is initialized.');
 		}
-		return false;
+		return;
 	} else {
-		if(showOutput) {
-			logger.showResult('Configuration found.');
-		}
-		return true;
+		logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
+		process.exit();
 	}
-};
+}
 
 // Adds a new wizzy config property
 Config.prototype.addProperty = function(key, value) {
-	nconf.argv().env().file({ file: confFile });
+	var self = this;
+	self.checkConfigPrereq();
 	if (_.includes(configs, key)) {
-		nconf.set(key, value);
-		saveConfig(true);
+		self.nconf.set(key, value);
+		self.saveConfig(true);
 		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
 	} else {
 		logger.showError('Unknown configuration property.');
 	}
 };
 
-// Shows wizzy config
+// Shows all wizzy configuration properties
 Config.prototype.showConfig = function(config) {
-	nconf.argv().env().file({ file: confFile });
-	checkConfigPrerequisites();
+	var self = this;
+	self.checkConfigPrereq();
 	logger.showOutput(logger.stringify(nconf.get(config)));
 };
 
-// Shows wizzy config
+// Gets a config property from wizzy configuration file
 Config.prototype.getConfig = function(config) {
-	nconf.argv().env().file({ file: confFile });
-	checkConfigPrerequisites();
-	return(nconf.get(config));
+	var self = this;
+	self.checkConfigPrereq();
+	return(self.nconf.get(config));
 };
 
-// check if conf dir and conf file exists or not.
-function checkConfigPrerequisites() {
-
-	if (localfs.checkExists(confDir) && localfs.checkExists(confFile)) {
-		return;
-	} else {
-		logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
-		process.exit();
-	}
-
-}
-
-// Save wizzy config
-function saveConfig(showResult) {
-	nconf.save(function (err) {
-  	localfs.readFile(confFile, false );
-  	if (showResult) {
-  		logger.showResult('wizzy configuration saved.');
-  	}
+// Save wizzy config file
+Config.prototype.saveConfig = function(showResult) {
+	var self = this;
+	self.nconf.save(function (err) {
+		if (err) {
+			logger.showError('Error in saving wizzy config.');
+		} else {
+			localfs.readFile(confFile, false );
+	  		if (showResult) {
+	  			logger.showResult('wizzy configuration saved.');
+	  		}
+		}
 	});
 }
 

@@ -9,11 +9,6 @@ var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
 
-var successMessage;
-var failureMessage;
-
-var components;
-
 var gnet_dashboards_url = 'https://grafana.net/api/dashboards';
 
 var datasourceMap = {
@@ -32,26 +27,24 @@ var datasourceMap = {
 };
 
 function GNet(comps) {
-	components = comps;
+	this.components = comps;
 }
 
 // searches Grafana.net dashboards for dashboard list
 GNet.prototype.list = function(commands) {
 	
+	var self = this;
+
 	if (commands[0] === 'dashboards') 
-	
-		successMessage = "Successfully searched Grafana.net.";
-		failureMessage = "Searching Grafana.net failed.";
-
+		var successMessage = "Successfully searched Grafana.net.";
+		var failureMessage = "Searching Grafana.net failed.";
 		gnet_dashboards_url += '?orderBy=name';
-
 		if (commands.length === 2) {
 			var filter = commands[1].split('=');
 			if (filter[0] === 'ds') {
 				gnet_dashboards_url += '&dataSourceSlugIn=' + datasourceMap[filter[1].toLowerCase()];
 			}
 		}
-
 		request.get({url: gnet_dashboards_url, json: true}, function saveHandler(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode == 200) {
@@ -63,8 +56,8 @@ GNet.prototype.list = function(commands) {
 				table.push([dashboard.id, dashboard.name, dashboard.datasource, dashboard.downloads, dashboard.revision]); //removing db/
 			});
 			output += table.toString();
-  	  logger.showOutput(output);
-  	  logger.showResult('Total dashboards: ' + body.items.length);
+  	 	logger.showOutput(output);
+  	  	logger.showResult('Total dashboards: ' + body.items.length);
     	logger.showResult(successMessage);
   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
@@ -78,32 +71,29 @@ GNet.prototype.list = function(commands) {
   		logger.showError(failureMessage);
   	}
 	});
-
 };
 
 // searches Grafana.net dashboards for dashboard list
 GNet.prototype.download = function(commands) {
-	
-	if (commands[0] === 'dashboard') 
-	
-		successMessage = "Successfully downloaded Grafana.net dashboard.";
-		failureMessage = "Grafana.net dashboard download failed.";
-
+	var self = this;
+	if (commands[0] === 'dashboard') {
+		var successMessage = "Successfully downloaded Grafana.net dashboard.";
+		var failureMessage = "Grafana.net dashboard download failed.";
 		var dashId = parseInt(commands[1]);
 		var revisionId = parseInt(commands[2]);
-
 		var dashboardUrl = gnet_dashboards_url + '/' + dashId + '/revisions/' + revisionId + '/download';
 		request.get({url: dashboardUrl, json: true}, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode == 200) {
-				components.dashboards.saveDashboard(convertName2Slug(body.title), body, true);
-	    	logger.showResult(successMessage);
-		  } else {
-	  		output += 'Unable to get dashboard ' + dashId + ' with ' + revisionId + ' from Grafana.net.';
+				self.components.dashboards.saveDashboard(convertName2Slug(body.title), body, true);
+	    		logger.showResult(successMessage);
+		  	} else {
+	  			output += 'Unable to get dashboard ' + dashId + ' with ' + revisionId + ' from Grafana.net.';
 				logger.showOutput(output);
 				logger.showError(failureMessage);
 			}
 		});
+	}
 };
 
 function convertName2Slug(name) {

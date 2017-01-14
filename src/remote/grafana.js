@@ -19,6 +19,7 @@ var GIFEncoder = require('gifencoder');
 var encoder;
 var pngFileStream = require('png-file-stream');
 
+/*
 var successMessage;
 var failureMessage;
 
@@ -28,42 +29,63 @@ var config;
 var grafana_url;
 var auth = {};
 var body = {};
-
+*/
 
 function Grafana(conf, comps) {
-	grafana_url = conf.grafana.url;
+	console.log(conf);
+	this.grafana_url = conf.grafana.url;
+	this.auth = {};
 	if (conf.grafana.username && conf.grafana.password) {
-		auth.username = conf.grafana.username;
-		auth.password = conf.grafana.password;
+		this.auth.username = conf.grafana.username;
+		this.auth.password = conf.grafana.password;
 	} else {
-		auth = null;
+		this.auth = null;
 	}
+	this.request = {};
 	if (conf.grafana.debug_api === true || conf.grafana.debug_api === 'true') {
-		request.debug = true;
+		this.request.debug = true;
 	} else {
-		request.debug = false;
+		this.request.debug = false;
 	}
-	components = comps;
-	config = conf;
+	this.components = comps;
+	this.config = conf;
 }
 
 // creates an org
 Grafana.prototype.create = function(commands) {
-
+	var self = this;
+	var successMessage;
+	var failureMessage;
 	var entityType = commands[0];
 	var entityValue = commands[1];
-
 	if (entityType === 'org') {
+		var body = {};
 		body.name = entityValue;
 		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
 		failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
-	}
-	else {
+	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	var url = grafana_url + this.createURL('create', entityType, entityValue);
-	sendRequest('POST', url);
+	var url = self.grafana_url + self.createURL('create', entityType, entityValue);
+	request.post({url: url, auth: self.auth, json: true, body: body}, function printResponse(error, response, body) {
+		var output = '';
+		if (!error && response.statusCode == 200) {
+  			output += logger.stringify(body);
+  			logger.showOutput(output);
+			logger.showResult(successMessage);
+		} else {
+			output += 'Grafana API response status code = ' + response.statusCode;
+			if (error === null) {
+				output += '\nNo error body from Grafana API.';
+			}
+			else {
+				output += '\n' + error;
+			}
+			logger.showOutput(output);
+			logger.showError(failureMessage);
+		}
+	});
 };
 
 // deletes a dashboard or an org
@@ -698,7 +720,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 };
 
 // Sends an HTTP API request to Grafana
-function sendRequest(method, url) {
+function sendRequest(method, auth, url) {
 	if (method === 'POST') {
 		request.post({url: url, auth: auth, json: true, body: body}, printResponse);
 	} else if (method === 'GET') {

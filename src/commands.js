@@ -6,33 +6,33 @@ var Components = require('./local/components.js');
 var Grafana = require('./remote/grafana.js');
 var GNet = require('./remote/gnet.js');
 var S3 = require('./remote/s3services.js');
-var LocalFS = require('./util/localfs.js');
-var localfs = new LocalFS();
 var Config = require('./util/config.js');
 var Dashlist = require('./local/dashlist.js');
 var Logger = require('./util/logger.js');
 var Help = require('./util/help.js');
+var LocalFS = require('./util/localfs.js');
+var localfs = new LocalFS();
 var logger = new Logger('Commands');
 var help = new Help();
 
+/*
 var config;
 var components;
 var gnet;
 var grafana;
 var s3;
 var dashlist;
+*/
 
 function Commands() {
-	config = new Config();
-	components = new Components(config);
-	gnet = new GNet(components);
-	if (config.checkConfigStatus('config:grafana', false) && components.checkDirsStatus()) {
-		grafana = new Grafana(config.getConfig('config'), components);
+	this.config = new Config();
+	if (this.config.statusCheck()) {
+		this.components = new Components(this.config.getConfig());
+		this.grafana = new Grafana(this.config.getConfig(), this.components);
+		this.s3 = new S3(this.config.getConfig(), this.components);
 	}
-	if (config.checkConfigStatus('config:s3', false) && components.checkDirsStatus()) {
-		s3 = new S3(config.getConfig('config:s3'), components);
-	}
-	dashlist = new Dashlist();
+	this.gnet = new GNet(this.components);
+	this.dashlist = new Dashlist();
 }
 
 // Creates an entity in wizzy or Grafana
@@ -44,6 +44,7 @@ Commands.prototype.instructions = function() {
 		3. process.argv[1] - reserverd for `wizzy` or `index.js`
 	*/
 
+	var self = this;
 	var commands = _.drop(process.argv, 2);
 	var command = commands[0];
 
@@ -53,117 +54,100 @@ Commands.prototype.instructions = function() {
 			help.showHelp();
 			break;
 		case 'init':
-			config.createIfNotExists();
-			components.createIfNotExists(true);
+			self.config.initialize();
 			logger.showResult('wizzy successfully initialized.');
 			break;
 		case 'status':
 			status();
 			break;
 		case 'conf':
-			config.showConfig('config');
+			self.config.showConfig('config');
 			break;
 		case 'set':
-				/*
-					// TODO: Give an example how a property is added.
-				*/
-			config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
+			self.config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
 			break;
 		case 'import':
-			grafana.import(_.drop(commands));
+			self.grafana.import(_.drop(commands));
 			break;
 		case 'export':
-			grafana.export(_.drop(commands));
+			self.grafana.export(_.drop(commands));
 			break;
 		case 'create':
 			if (commands[1] === 'dash-list') {
-				dashlist.createList(_.drop(commands, 2));
+				self.dashlist.createList(_.drop(commands, 2));
 			} else {
-				grafana.create(_.drop(commands));
+				self.grafana.create(_.drop(commands));
 			}
 			break;
 		case 'delete':
 			if (commands[1] === 'dash-list') {
-				dashlist.deleteList(_.drop(commands, 2));
+				self.dashlist.deleteList(_.drop(commands, 2));
 			} else {
-				grafana.delete(_.drop(commands));
+				self.grafana.delete(_.drop(commands));
 			}
 			break;
 		case 'show':
 			if (commands[1] === 'dash-list') {
-				dashlist.showList(_.drop(commands, 2));
+				self.dashlist.showList(_.drop(commands, 2));
 			} else {
-				grafana.show(_.drop(commands));
+				self.grafana.show(_.drop(commands));
 			}
 			break;
 		case 'list':
 			if (commands[1] === 'gnet') {
-				gnet.list(_.drop(commands,2));
+				self.gnet.list(_.drop(commands,2));
 			} else {
-				grafana.list(_.drop(commands));
+				self.grafana.list(_.drop(commands));
 			}
 			break;
 		case 'clip':
-			if (config.checkConfigStatus('config:clip', false)) {
-				grafana.clip(_.drop(commands));
-			} else {
-				logger.showError('Clip config not found. Please set clip config. Refer to README.');
-			}
+			self.grafana.clip(_.drop(commands));
 			break;
 		case 'summarize':
-			components.summarize(_.drop(commands));
+			self.components.summarize(_.drop(commands));
 			break;
 		case 'change':
-      components.change(_.drop(commands));
-      break;
+      		self.components.change(_.drop(commands));
+      		break;
 		case 'move':
-			components.moveCopyOrRemove(commands);
+			self.components.moveCopyOrRemove(commands);
 			break;
 		case 'copy':
-			components.moveCopyOrRemove(commands);
+			self.components.moveCopyOrRemove(commands);
 			break;
 		case 'remove':
 			if (commands[1] === 'from-dash-list') {
-				dashlist.removeDashboard(_.drop(commands, 2));
+				self.dashlist.removeDashboard(_.drop(commands, 2));
 			} else {
-				components.moveCopyOrRemove(commands);
+				self.components.moveCopyOrRemove(commands);
 			}
 			break;
 		case 'extract':
-			components.extract(_.drop(commands));
+			self.components.extract(_.drop(commands));
 			break;
 		case 'insert':
-			components.insert(_.drop(commands));
+			self.components.insert(_.drop(commands));
 			break;
 		case 'download':
 			if (commands[1] === 'from-gnet') {
-				gnet.download(_.drop(commands, 2));
-			}
-			else if (commands[1] === 'from-s3') {
-				if (config.checkConfigStatus('config:s3', false)) {
-					s3.download(_.drop(commands, 2));
-				} else {
-					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
-				}
+				self.gnet.download(_.drop(commands, 2));
+			} else if (commands[1] === 'from-s3') {
+				self.s3.download(_.drop(commands, 2));
 			}
 			break;
 		case 'upload':
 			if (commands[1] === 'to-s3') {
-				if (config.checkConfigStatus('config:s3', false)) {
-					s3.upload(_.drop(commands, 2));
-				} else {
-					logger.showError('S3 config not found. Please set s3 config. Refer to README.');
-				}
+				self.s3.upload(_.drop(commands, 2));
 			}
 			break;
 		case 'add':
 			if (commands[1] === 'to-dash-list') {
-				dashlist.addDashboard(_.drop(commands, 2));
+				self.dashlist.addDashboard(_.drop(commands, 2));
 			}
 			break;
 		case 'clear':
 			if (commands[1] === 'dash-list') {
-				dashlist.clearList(_.drop(commands, 2));
+				self.dashlist.clearList(_.drop(commands, 2));
 			}
 			break;
 		default:
@@ -175,8 +159,7 @@ Commands.prototype.instructions = function() {
 // Shows wizzy status
 function status() {
 
-	var setupProblem = config.checkExists('config', true);
-
+	var setupProblem = config.statusCheck(true);
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);
 		if(setupGit)

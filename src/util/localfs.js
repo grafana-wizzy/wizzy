@@ -22,21 +22,20 @@ LocalFS.prototype.checkExists = function(name, output, showOutput) {
 	}
 };
 
-LocalFS.prototype.createIfNotExists = function(name, type, showResult) {
+// Creates a directory if it does not exists
+LocalFS.prototype.createDirIfNotExists = function(name, showResult) {
+
 	if (!fs.existsSync(name)){
-		if (type === 'dir') {
-			fs.mkdirSync(name);
-		} else if (type === 'file') {
-			
-		}
+		fs.mkdirSync(name);
 		if (showResult) {
-			logger.showResult(name + ' ' + type + ' created.');	
+			logger.showResult(name + ' directory created.');	
 		}
 	} else {
 		if (showResult) {
-			logger.showResult(name + ' ' + type + ' already exists.');
+			logger.showResult(name + ' directory already exists.');
 		}
 	}
+
 };
 
 LocalFS.prototype.readFile = function(name, showOnError) {
