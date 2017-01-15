@@ -12,16 +12,6 @@ var orgsDir = 'orgs';
 
 function Orgs() {}
 
-// creates orgs directory if it does not exist
-Orgs.prototype.createIfNotExists = function(showOutput) {
-	localfs.createIfNotExists(orgsDir, 'dir', showOutput);
-};
-
-// checks dir status for the datasources
-Orgs.prototype.checkDirStatus = function(showOutput) {
-	return localfs.checkExists(orgsDir, 'orgs directory', showOutput);
-};
-
 // summarize the orgs
 Orgs.prototype.summarize = function() {
 
@@ -45,7 +35,7 @@ Orgs.prototype.summarize = function() {
 
 // Saves an org file under orgs directory on disk
 Orgs.prototype.saveOrg = function(id, org, showResult) {
-
+	localfs.createDirIfNotExists(orgsDir, showResult);
 	localfs.writeFile(getOrgFile(id), logger.stringify(org, null, 2));
 	if (showResult) {
 		logger.showResult('Org ' + id + ' saved successfully under orgs directory.');

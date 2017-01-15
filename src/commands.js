@@ -25,9 +25,9 @@ var dashlist;
 function Commands() {
 	config = new Config();
 	if (config.statusCheck()) {
-		components = new Components(config.getConfig('config'));
-		grafana = new Grafana(config.getConfig('config'), components);
-		s3 = new S3(config.getConfig('config'), components);
+		components = new Components(config.getProperty('config'));
+		grafana = new Grafana(config.getProperty('config'), components);
+		s3 = new S3(config.getProperty('config'), components);
 	}
 	gnet = new GNet(components);
 	dashlist = new Dashlist();
@@ -57,93 +57,93 @@ Commands.prototype.instructions = function() {
 			status();
 			break;
 		case 'conf':
-			self.config.showConfig('config');
+			config.showProperty('config');
 			break;
 		case 'set':
-			self.config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
+			config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
 			break;
 		case 'import':
-			self.grafana.import(_.drop(commands));
+			grafana.import(_.drop(commands));
 			break;
 		case 'export':
-			self.grafana.export(_.drop(commands));
+			grafana.export(_.drop(commands));
 			break;
 		case 'create':
 			if (commands[1] === 'dash-list') {
-				self.dashlist.createList(_.drop(commands, 2));
+				dashlist.createList(_.drop(commands, 2));
 			} else {
-				self.grafana.create(_.drop(commands));
+				grafana.create(_.drop(commands));
 			}
 			break;
 		case 'delete':
 			if (commands[1] === 'dash-list') {
-				self.dashlist.deleteList(_.drop(commands, 2));
+				dashlist.deleteList(_.drop(commands, 2));
 			} else {
-				self.grafana.delete(_.drop(commands));
+				grafana.delete(_.drop(commands));
 			}
 			break;
 		case 'show':
 			if (commands[1] === 'dash-list') {
-				self.dashlist.showList(_.drop(commands, 2));
+				dashlist.showList(_.drop(commands, 2));
 			} else {
-				self.grafana.show(_.drop(commands));
+				grafana.show(_.drop(commands));
 			}
 			break;
 		case 'list':
 			if (commands[1] === 'gnet') {
-				self.gnet.list(_.drop(commands,2));
+				gnet.list(_.drop(commands,2));
 			} else {
-				self.grafana.list(_.drop(commands));
+				grafana.list(_.drop(commands));
 			}
 			break;
 		case 'clip':
-			self.grafana.clip(_.drop(commands));
+			grafana.clip(_.drop(commands));
 			break;
 		case 'summarize':
-			self.components.summarize(_.drop(commands));
+			components.summarize(_.drop(commands));
 			break;
 		case 'change':
-      		self.components.change(_.drop(commands));
+      		components.change(_.drop(commands));
       		break;
 		case 'move':
-			self.components.moveCopyOrRemove(commands);
+			components.moveCopyOrRemove(commands);
 			break;
 		case 'copy':
-			self.components.moveCopyOrRemove(commands);
+			components.moveCopyOrRemove(commands);
 			break;
 		case 'remove':
 			if (commands[1] === 'from-dash-list') {
-				self.dashlist.removeDashboard(_.drop(commands, 2));
+				dashlist.removeDashboard(_.drop(commands, 2));
 			} else {
-				self.components.moveCopyOrRemove(commands);
+				components.moveCopyOrRemove(commands);
 			}
 			break;
 		case 'extract':
-			self.components.extract(_.drop(commands));
+			components.extract(_.drop(commands));
 			break;
 		case 'insert':
-			self.components.insert(_.drop(commands));
+			components.insert(_.drop(commands));
 			break;
 		case 'download':
 			if (commands[1] === 'from-gnet') {
-				self.gnet.download(_.drop(commands, 2));
+				gnet.download(_.drop(commands, 2));
 			} else if (commands[1] === 'from-s3') {
-				self.s3.download(_.drop(commands, 2));
+				s3.download(_.drop(commands, 2));
 			}
 			break;
 		case 'upload':
 			if (commands[1] === 'to-s3') {
-				self.s3.upload(_.drop(commands, 2));
+				s3.upload(_.drop(commands, 2));
 			}
 			break;
 		case 'add':
 			if (commands[1] === 'to-dash-list') {
-				self.dashlist.addDashboard(_.drop(commands, 2));
+				dashlist.addDashboard(_.drop(commands, 2));
 			}
 			break;
 		case 'clear':
 			if (commands[1] === 'dash-list') {
-				self.dashlist.clearList(_.drop(commands, 2));
+				dashlist.clearList(_.drop(commands, 2));
 			}
 			break;
 		default:

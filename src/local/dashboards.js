@@ -24,30 +24,8 @@ function Dashboards() {
 	this.dashTags = new DashTags();
 }
 
-// creates dashboards and other directories if they do not exist
-Dashboards.prototype.createIfNotExists = function(showOutput) {
-	localfs.createIfNotExists(dashDir, 'dir', showOutput);
-	this.rows.createIfNotExists(showOutput);
-	this.panels.createIfNotExists(showOutput);
-	this.tempVars.createIfNotExists(showOutput);
-	this.dashTags.createIfNotExists(showOutput);
-};
-
-// checks dir status for the dashboards
-Dashboards.prototype.checkDirStatus = function(showOutput) {
-	return localfs.checkExists(dashDir, 'dashboards directory', showOutput) &&
-		this.tempVars.checkDirStatus(showOutput) && 
-		this.panels.checkDirStatus(showOutput) &&
-		this.rows.checkDirStatus(showOutput) &&
-		this.dashTags.checkDirStatus(showOutput);
-};
-
 // summarize dashboard
 Dashboards.prototype.summarize = function(dashboardSlug) {
-
-	if (dashboardSlug === undefined) {
-
-	}
 
 	var dashboard = this.readDashboard(dashboardSlug);
 	var arch = {};
@@ -83,6 +61,7 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 
 // Saving a dashboard file on disk
 Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
+	localfs.createDirIfNotExists(dashDir, showResult);
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
 	localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));

@@ -12,19 +12,9 @@ var rowsDir = 'rows';
 
 function Rows() {}
 
-// creates rows directory if it does not exist
-Rows.prototype.createIfNotExists = function(showOutput) {
-	localfs.createIfNotExists(rowsDir, 'dir', showOutput);
-};
-
-// checks dir status for the rows
-Rows.prototype.checkDirStatus = function(showOutput) {
-	return localfs.checkExists(rowsDir, 'rows directory', showOutput);
-};
-
 // Save a row under rows directory on disk
 Rows.prototype.saveRow = function(rowName, content, showResult) {
-
+	localfs.createDirIfNotExists(rowsDir, showResult);
 	localfs.writeFile(getRowsFile(rowName), logger.stringify(content, null, 2));
 	if (showResult) {
 		logger.showResult('Row ' + rowName + ' saved successfully under rows directory.');
