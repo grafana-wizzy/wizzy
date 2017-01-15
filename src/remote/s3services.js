@@ -7,6 +7,7 @@ var logger = new Logger();
 var AWS = require('aws-sdk');
 var _ = require('lodash');
 
+/*
 var successMessage;
 var failureMessage;
 
@@ -14,18 +15,19 @@ var components;
 var body = {};
 var s3;
 var params = {};
-
+*/
 
 //Create the s3 bucket and required directories
 function S3(conf, comps) {
 
-	failureMessage = 'Connection to S3 failed.';
+/*	failureMessage = 'Connection to S3 failed.';
 	params.Bucket = conf.bucket_name;
 	if(conf.path) {
 		params.Key = conf.path;
-	}
-	components = comps;
-	s3 = new AWS.S3({params: {Bucket: params.Bucket}});
+	}*/
+	this.components = comps;
+	this.config = conf;
+	//s3 = new AWS.S3({params: {Bucket: params.Bucket}});
 }
 
 S3.prototype.upload = function(commands) {

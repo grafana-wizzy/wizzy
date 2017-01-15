@@ -15,24 +15,22 @@ var localfs = new LocalFS();
 var logger = new Logger('Commands');
 var help = new Help();
 
-/*
 var config;
 var components;
 var gnet;
 var grafana;
 var s3;
 var dashlist;
-*/
 
 function Commands() {
-	this.config = new Config();
-	if (this.config.statusCheck()) {
-		this.components = new Components(this.config.getConfig());
-		this.grafana = new Grafana(this.config.getConfig(), this.components);
-		this.s3 = new S3(this.config.getConfig(), this.components);
+	config = new Config();
+	if (config.statusCheck()) {
+		components = new Components(config.getConfig('config'));
+		grafana = new Grafana(config.getConfig('config'), components);
+		s3 = new S3(config.getConfig('config'), components);
 	}
-	this.gnet = new GNet(this.components);
-	this.dashlist = new Dashlist();
+	gnet = new GNet(components);
+	dashlist = new Dashlist();
 }
 
 // Creates an entity in wizzy or Grafana
@@ -44,7 +42,6 @@ Commands.prototype.instructions = function() {
 		3. process.argv[1] - reserverd for `wizzy` or `index.js`
 	*/
 
-	var self = this;
 	var commands = _.drop(process.argv, 2);
 	var command = commands[0];
 
@@ -54,8 +51,7 @@ Commands.prototype.instructions = function() {
 			help.showHelp();
 			break;
 		case 'init':
-			self.config.initialize();
-			logger.showResult('wizzy successfully initialized.');
+			config.initialize();
 			break;
 		case 'status':
 			status();

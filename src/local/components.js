@@ -9,11 +9,6 @@ var Table = require('cli-table');
 
 var _ = require('lodash');
 
-var nconf = require('nconf');
-
-var successMessage;
-var failureMessage;
-
 var Datasources = require('../local/datasources.js');
 var Orgs = require('../local/orgs.js');
 var Dashboards = require('../local/dashboards.js');

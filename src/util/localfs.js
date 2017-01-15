@@ -8,24 +8,10 @@ var logger = new Logger('localfs');
 
 function LocalFS() {}
 
-LocalFS.prototype.checkExists = function(name, output, showOutput) {
-	if (fs.existsSync(name)){
-		if (showOutput) {
-			logger.showResult(output + ' exists.');
-		}
-    return true;
-	} else {
-		if (showOutput) {
-			logger.justShow(output + ' does not exists.');
-		}
-		return false;
-	}
-};
-
 // Creates a directory if it does not exists
 LocalFS.prototype.createDirIfNotExists = function(name, showResult) {
 
-	if (!fs.existsSync(name)){
+	if (!fs.existsSync(name)) {
 		fs.mkdirSync(name);
 		if (showResult) {
 			logger.showResult(name + ' directory created.');	
@@ -36,6 +22,21 @@ LocalFS.prototype.createDirIfNotExists = function(name, showResult) {
 		}
 	}
 
+};
+
+// Checks if a file or a dir exists
+LocalFS.prototype.checkExists = function(name, output, showOutput) {
+	if (fs.existsSync(name)){
+		if (showOutput) {
+			logger.showResult(output + ' exists.');
+		}
+    	return true;
+	} else {
+		if (showOutput) {
+			logger.justShow(output + ' does not exists.');
+		}
+		return false;
+	}
 };
 
 LocalFS.prototype.readFile = function(name, showOnError) {

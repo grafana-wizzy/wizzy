@@ -31,23 +31,8 @@ var body = {};
 */
 
 function Grafana(conf, comps) {
-	console.log(conf);
-	this.grafana_url = conf.grafana.url;
-	this.auth = {};
-	if (conf.grafana.username && conf.grafana.password) {
-		this.auth.username = conf.grafana.username;
-		this.auth.password = conf.grafana.password;
-	} else {
-		this.auth = null;
-	}
-	this.request = {};
-	if (conf.grafana.debug_api === true || conf.grafana.debug_api === 'true') {
-		this.request.debug = true;
-	} else {
-		this.request.debug = false;
-	}
-	this.components = comps;
 	this.config = conf;
+	this.components = comps;
 }
 
 // creates an org

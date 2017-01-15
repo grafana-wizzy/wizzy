@@ -33,20 +33,14 @@ var confFile = 'conf/wizzy.json';
 
 // Constructor
 function Config() {
-	this.nconf = require('nconf');
-	this.nconf.argv().env().file({ file: confFile });
+	this.conf = require('nconf');
 }
 
 // Initialize wizzy configuration
 Config.prototype.initialize = function() {
 	var self = this;
 	localfs.createDirIfNotExists(confDir, true);
-	if(!localfs.checkExists(confFile)) {
-		self.saveConfig(false);
-		logger.showResult('conf file created.');
-	} else {
-		logger.showResult('conf file already exists.');
-	}
+	self.saveConfig(false);
 }
 
 // Check wizzy configuration for status command
@@ -78,7 +72,7 @@ Config.prototype.addProperty = function(key, value) {
 	var self = this;
 	self.checkConfigPrereq();
 	if (_.includes(configs, key)) {
-		self.nconf.set(key, value);
+		self.conf.set(key, value);
 		self.saveConfig(true);
 		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
 	} else {
@@ -90,27 +84,35 @@ Config.prototype.addProperty = function(key, value) {
 Config.prototype.showConfig = function(config) {
 	var self = this;
 	self.checkConfigPrereq();
-	logger.showOutput(logger.stringify(nconf.get(config)));
+	logger.showOutput(logger.stringify(conf.get(config)));
 };
 
 // Gets a config property from wizzy configuration file
 Config.prototype.getConfig = function(config) {
 	var self = this;
 	self.checkConfigPrereq();
-	return(self.nconf.get(config));
+	return(self.conf.get(config));
 };
 
 // Save wizzy config file
-Config.prototype.saveConfig = function(showResult) {
+Config.prototype.saveConfig = function(showOutput) {
 	var self = this;
-	self.nconf.save(function (err) {
+	var configExists = localfs.checkExists(confFile, 'conf file', showOutput);
+	self.conf.use('file', {file: confFile});
+	self.conf.save('wizzy.conf', function (err) {
 		if (err) {
-			logger.showError('Error in saving wizzy config.');
+			if (showOutput) {
+				logger.showError('Error in saving wizzy config.');
+			}
 		} else {
-			localfs.readFile(confFile, false );
-	  		if (showResult) {
-	  			logger.showResult('wizzy configuration saved.');
-	  		}
+			if (configExists) {
+				if (showOutput) {
+					logger.showResult('wizzy configuration file saved.');
+				}
+			} else {
+				logger.showResult('wizzy configuration file created.');
+				logger.showResult('wizzy successfully initialized.');
+			}
 		}
 	});
 }

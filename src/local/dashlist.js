@@ -13,8 +13,7 @@ var confDir = 'conf';
 var dashListFile = 'conf/dash-list.json';
 
 function DashList() {
-	this.nconf = require('nconf');
-	this.nconf.argv().env().file({ file: dashListFile });
+	this.dashListConf = require('nconf');
 }
 
 DashList.prototype.createIfNotExists = function(showResult) {
@@ -42,17 +41,17 @@ DashList.prototype.createList = function(commands) {
 	var listName = commands[0];
 	var self = this;
 	self.createIfNotExists(false);
-	if (!self.nconf.get('dashlists')) {
-		self.nconf.set('dashlists', []);
-		self.saveConfig(false);
+	if (!self.dashListConf.get('dashlists')) {
+		self.dashListConf.set('dashlists', []);
+		self.saveDashListConf(false);
 	}
 	if (_.includes(self.getListNames(),listName)) {
 		logger.showOutput('Dashboard list ' + listName + ' already exists. Please choose another name.');
 	} else {
-		var lists = self.nconf.get('dashlists');
+		var lists = self.dashListConf.get('dashlists');
 		lists.push({name: listName, dashboards: []});
-		self.nconf.set('dashlists',lists);
-		self.saveConfig(false);
+		self.dashListConf.set('dashlists',lists);
+		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' created successfully.');
 	}
 
@@ -62,14 +61,14 @@ DashList.prototype.addDashboard = function(commands) {
 	var listName = commands[0];
 	var self = this;
 	var dashboardName = commands[1];
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards.push(dashboardName);
-		self.nconf.set('dashlists',lists);
-		self.saveConfig(false);
+		self.dashListConf.set('dashlists',lists);
+		self.saveDashListConf(false);
 		logger.showResult('Dashboard ' + dashboardName + ' added to Dashboard list ' + listName + ' successfully.');
 	}
 };
@@ -78,14 +77,14 @@ DashList.prototype.removeDashboard = function(commands) {
 	var listName = commands[0];
 	var self = this;
 	var dashboardName = commands[1];
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		_.pull(lists[listIndex].dashboards, dashboardName);
-		self.nconf.set('dashlists',lists);
-		self.saveConfig(false);
+		self.dashListConf.set('dashlists',lists);
+		self.saveDashListConf(false);
 		logger.showResult('Dashboard ' + dashboardName + ' deleted from Dashboard list ' + listName + ' successfully.');
 	}
 };
@@ -94,7 +93,7 @@ DashList.prototype.removeDashboard = function(commands) {
 DashList.prototype.showList = function(commands) {
 	var listName = commands[0];
 	var self = this;
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
@@ -107,14 +106,14 @@ DashList.prototype.showList = function(commands) {
 DashList.prototype.clearList = function(commands) {
 	var listName = commands[0];
 	var self = this;
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards = [];
-		self.nconf.set('dashlists',lists);
-		self.saveConfig(false);
+		self.dashListConf.set('dashlists',lists);
+		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' cleared successfully.');
 	}
 };
@@ -122,21 +121,21 @@ DashList.prototype.clearList = function(commands) {
 DashList.prototype.deleteList = function(commands) {
 	var listName = commands[0];
 	var self = this;
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists.splice(listIndex, 1);
-		self.nconf.set('dashlists',lists);
-		self.saveConfig(false);
+		self.dashListConf.set('dashlists',lists);
+		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' deleted successfully.');
 	}
 };
 
 DashList.prototype.getList = function(listName) {
 	var self = this;
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		return [];
@@ -155,7 +154,7 @@ function getListIndex(listName, lists) {
 
 DashList.prototype.getListNames = function() {
 	var self = this;
-	var lists = self.nconf.get('dashlists');
+	var lists = self.dashListConf.get('dashlists');
 	if (lists && lists.length > 0) {
 		return _.map(lists, function (list) {
 			return list.name;
@@ -167,13 +166,15 @@ DashList.prototype.getListNames = function() {
 };
 
 // Save dashlist config
-DashList.prototype.saveConfig = function(showResult) {
+DashList.prototype.saveDashListConf = function(showResult) {
 	var self = this;
-	self.nconf.save(function (err) {
-  	localfs.readFile(dashListFile, false );
-  	if (showResult) {
-  		logger.showResult('Dashboard list saved.');
-  	}
+	self.dashListConf.use('file', {file: dashListFile});
+	self.dashListConf.save('dash-list.conf', function (err) {
+		if (err) {
+			logger.showError('Error in saving dash-list config.');
+		} else {
+	  		logger.showResult('dash-list configuration saved.');
+		}
 	});
 };
 
