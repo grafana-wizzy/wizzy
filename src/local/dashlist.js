@@ -14,7 +14,6 @@ var dashListFile = 'conf/dash-list.json';
 
 function DashList() {
 	this.dashlistConf = require('nconf');
-	this.dashlistConf.add('dashlist.conf', {type: 'file', file: dashListFile});
 }
 
 
@@ -34,7 +33,7 @@ DashList.prototype.createList = function(commands) {
 	var self = this;
 	var listName = commands[0];
 	self.createIfNotExists(false);
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	if (!self.dashlistConf.get('dashlists')) {
 		self.dashlistConf.set('dashlists', []);
 		self.saveDashListConf(false);
@@ -55,7 +54,7 @@ DashList.prototype.addDashboard = function(commands) {
 	var self = this;
 	var listName = commands[0];
 	var dashboardName = commands[1];
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -72,7 +71,7 @@ DashList.prototype.removeDashboard = function(commands) {
 	var self = this;
 	var listName = commands[0];
 	var dashboardName = commands[1];
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -89,7 +88,7 @@ DashList.prototype.removeDashboard = function(commands) {
 DashList.prototype.showList = function(commands) {
 	var self = this;
 	var listName = commands[0];
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -103,7 +102,7 @@ DashList.prototype.showList = function(commands) {
 DashList.prototype.clearList = function(commands) {
 	var self = this;
 	var listName = commands[0];
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -119,7 +118,7 @@ DashList.prototype.clearList = function(commands) {
 DashList.prototype.deleteList = function(commands) {
 	var self = this;
 	var listName = commands[0];
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -134,7 +133,7 @@ DashList.prototype.deleteList = function(commands) {
 
 DashList.prototype.getList = function(listName) {
 	var self = this;
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
@@ -154,7 +153,7 @@ function getListIndex(listName, lists) {
 
 DashList.prototype.getListNames = function() {
 	var self = this;
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	var lists = self.dashlistConf.get('dashlists');
 	if (lists && lists.length > 0) {
 		return _.map(lists, function (list) {
@@ -169,7 +168,7 @@ DashList.prototype.getListNames = function() {
 // Save dashlist config
 DashList.prototype.saveDashListConf = function(showOutput) {
 	var self = this;
-	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.use('file', {file: dashListFile});
 	self.dashlistConf.save(function (err) {
 		if (err) {
 			if (showOutput) {

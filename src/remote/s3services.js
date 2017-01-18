@@ -10,10 +10,10 @@ var _ = require('lodash');
 //Create the s3 bucket and required directories
 function S3(conf, comps) {
 	this.params = {};
-	if (conf.s3 && conf.s3.bucket_name) {
+	if (conf && conf.s3 && conf.s3.bucket_name) {
 		this.params.Bucket = conf.s3.bucket_name;
 	}
-	if (conf.s3 && conf.s3.path) {
+	if (conf && conf.s3 && conf.s3.path) {
 		this.params.Key = conf.s3.path;
 	}
 	this.components = comps;

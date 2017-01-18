@@ -34,7 +34,6 @@ var confFile = 'conf/wizzy.json';
 // Constructor
 function Config() {
 	this.conf = require('nconf');
-	this.conf.add('wizzy.conf', {type: 'file', file: confFile});
 }
 
 // Initialize wizzy configuration
@@ -78,7 +77,7 @@ Config.prototype.checkConfigPrereq = function(showOutput) {
 Config.prototype.addProperty = function(key, value) {
 	var self = this;
 	self.checkConfigPrereq();
-	self.conf.use('wizzy.conf');
+	self.conf.use('file', {file: confFile});
 	if (_.includes(configs, key)) {
 		self.conf.set(key, value);
 		self.saveConfig(true);
@@ -92,7 +91,7 @@ Config.prototype.addProperty = function(key, value) {
 Config.prototype.showProperty = function(config) {
 	var self = this;
 	self.checkConfigPrereq();
-	self.conf.use('wizzy.conf');
+	self.conf.use('file', {file: confFile});
 	logger.showOutput(logger.stringify(self.conf.get(config)));
 };
 
@@ -100,14 +99,14 @@ Config.prototype.showProperty = function(config) {
 Config.prototype.getProperty = function(config) {
 	var self = this;
 	self.checkConfigPrereq();
-	self.conf.use('wizzy.conf');
+	self.conf.use('file', {file: confFile});
 	return(self.conf.get(config));
 };
 
 // Save wizzy config file
 Config.prototype.saveConfig = function(showOutput) {
 	var self = this;
-	self.conf.use('wizzy.conf');
+	self.conf.use('file', {file: confFile});
 	self.conf.save(function (err) {
 		if (err) {
 			if (showOutput) {
