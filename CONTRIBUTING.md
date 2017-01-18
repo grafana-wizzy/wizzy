@@ -1,5 +1,5 @@
 # How can you contribute to the project?
-wizzy is always open for contributions from the community. Let make it super easy to use Grafana via CLI!
+wizzy is always open for contributions from the community. Let's make it super easy to use Grafana via CLI!
 
 ## Setup Development environment:
 
