@@ -148,4 +148,11 @@ describe('Check Grafana URLs', function() {
     });
   });
 
+  describe('create URL for switching an org', function() {
+    it('should return URL /api/user/using/:orgId .', function() {
+      var url = grafana.createURL('switch', 'org', 2);
+      expect(url).to.equal('/api/user/using/2');
+    });
+  });
+
 });

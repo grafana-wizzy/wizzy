@@ -116,6 +116,33 @@ Grafana.prototype.show = function(commands) {
 
 };
 
+// Switches an org
+Grafana.prototype.switch = function(commands) {
+	var self = this;
+	var entityType = commands[0];
+	var entityValue = commands[1];
+	var successMessage = 'Org switched to ' + entityValue + ' successfully.';
+	var failureMessage = 'Org switch to ' + entityValue + ' failed.';
+	if (entityType != 'org') {
+		logger.showError('Unsupported entity type ' + entityType);
+		return;
+	}
+	var url = self.grafanaUrl + self.createURL('switch', entityType, entityValue);
+	request.post({url: url, auth: self.auth}, function saveHandler(error, response, body) {
+		if (error) {
+			logger.showOutput(error)
+			logger.showError(failureMessage);
+		} else {
+			logger.showOutput(body);
+			if (response.statusCode === 200) {
+				logger.showResult(successMessage);
+			} else {
+				logger.showError(failureMessage);
+			}
+		}
+	});
+}
+
 // imports a dashboard or all dashboards from Grafana
 Grafana.prototype.import = function(commands) {
 
@@ -660,10 +687,14 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 	// Editing URL depending on entityType
 	if (entityType === 'org') {
-		url += '/api/orgs';
-		if (command === 'show' || command === 'delete' || command === 'import' || command === 'export') {
-			 url += '/' + entityValue;
-		}
+		if (command === 'switch') {
+			url += '/api/user/using/' + entityValue;
+		} else {
+			url += '/api/orgs';
+			if (command === 'show' || command === 'delete' || command === 'import' || command === 'export') {
+				url += '/' + entityValue;
+			}
+        }
 	} else if (entityType === 'orgs') {
 		url += '/api/orgs';
 	} else if (entityType === 'dashboard') {
