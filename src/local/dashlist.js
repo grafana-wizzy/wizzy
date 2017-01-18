@@ -13,44 +13,38 @@ var confDir = 'conf';
 var dashListFile = 'conf/dash-list.json';
 
 function DashList() {
-	this.dashListConf = require('nconf');
+	this.dashlistConf = require('nconf');
+	this.dashlistConf.add('dashlist.conf', {type: 'file', file: dashListFile});
 }
 
-DashList.prototype.createIfNotExists = function(showResult) {
-	if(!localfs.checkExists(dashListFile)) {
-		localfs.createIfNotExists(dashListFile, 'file', showResult);
-		if (showResult) {
-			logger.showResult('dash-list file created under conf directory.');
-		}
-	} else {
-		if (showResult) {
-			logger.showResult('dash-list file already exists under conf directory.');
-		}
-	}
-};
 
-DashList.prototype.checkFileStatus = function(showOutput) {
-	if(!localfs.checkExists(dashListFile, 'dash-list file', showOutput)) {
-		return false;
-	} else {
-		return true;
+DashList.prototype.createIfNotExists = function(showResult) {
+	var self = this;
+	localfs.createDirIfNotExists(confDir, showResult);
+	var dashListConfigExists = localfs.checkExists(dashListFile, 'dash-list conf file', showResult);
+	if (dashListConfigExists) {
+		logger.showResult('dash-list conf file already exists.');
+	} else  {
+		self.saveDashListConf(showResult);
+		logger.showResult('dash-list conf file created.');
 	}
 };
 
 DashList.prototype.createList = function(commands) {
-	var listName = commands[0];
 	var self = this;
+	var listName = commands[0];
 	self.createIfNotExists(false);
-	if (!self.dashListConf.get('dashlists')) {
-		self.dashListConf.set('dashlists', []);
+	self.dashlistConf.use('dashlist.conf');
+	if (!self.dashlistConf.get('dashlists')) {
+		self.dashlistConf.set('dashlists', []);
 		self.saveDashListConf(false);
 	}
 	if (_.includes(self.getListNames(),listName)) {
 		logger.showOutput('Dashboard list ' + listName + ' already exists. Please choose another name.');
 	} else {
-		var lists = self.dashListConf.get('dashlists');
+		var lists = self.dashlistConf.get('dashlists');
 		lists.push({name: listName, dashboards: []});
-		self.dashListConf.set('dashlists',lists);
+		self.dashlistConf.set('dashlists',lists);
 		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' created successfully.');
 	}
@@ -58,32 +52,34 @@ DashList.prototype.createList = function(commands) {
 };
 
 DashList.prototype.addDashboard = function(commands) {
-	var listName = commands[0];
 	var self = this;
+	var listName = commands[0];
 	var dashboardName = commands[1];
-	var lists = self.dashListConf.get('dashlists');
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards.push(dashboardName);
-		self.dashListConf.set('dashlists',lists);
+		self.dashlistConf.set('dashlists',lists);
 		self.saveDashListConf(false);
 		logger.showResult('Dashboard ' + dashboardName + ' added to Dashboard list ' + listName + ' successfully.');
 	}
 };
 
 DashList.prototype.removeDashboard = function(commands) {
-	var listName = commands[0];
 	var self = this;
+	var listName = commands[0];
 	var dashboardName = commands[1];
-	var lists = self.dashListConf.get('dashlists');
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		_.pull(lists[listIndex].dashboards, dashboardName);
-		self.dashListConf.set('dashlists',lists);
+		self.dashlistConf.set('dashlists',lists);
 		self.saveDashListConf(false);
 		logger.showResult('Dashboard ' + dashboardName + ' deleted from Dashboard list ' + listName + ' successfully.');
 	}
@@ -91,9 +87,10 @@ DashList.prototype.removeDashboard = function(commands) {
 
 
 DashList.prototype.showList = function(commands) {
-	var listName = commands[0];
 	var self = this;
-	var lists = self.dashListConf.get('dashlists');
+	var listName = commands[0];
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
@@ -104,30 +101,32 @@ DashList.prototype.showList = function(commands) {
 };
 
 DashList.prototype.clearList = function(commands) {
-	var listName = commands[0];
 	var self = this;
-	var lists = self.dashListConf.get('dashlists');
+	var listName = commands[0];
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists[listIndex].dashboards = [];
-		self.dashListConf.set('dashlists',lists);
+		self.dashlistConf.set('dashlists',lists);
 		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' cleared successfully.');
 	}
 };
 
 DashList.prototype.deleteList = function(commands) {
-	var listName = commands[0];
 	var self = this;
-	var lists = self.dashListConf.get('dashlists');
+	var listName = commands[0];
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		logger.showError('Dashboard list ' + listName + ' does not exist. Please create a dashboard list first.');
 	} else {
 		lists.splice(listIndex, 1);
-		self.dashListConf.set('dashlists',lists);
+		self.dashlistConf.set('dashlists',lists);
 		self.saveDashListConf(false);
 		logger.showResult('Dashboard list ' + listName + ' deleted successfully.');
 	}
@@ -135,7 +134,8 @@ DashList.prototype.deleteList = function(commands) {
 
 DashList.prototype.getList = function(listName) {
 	var self = this;
-	var lists = self.dashListConf.get('dashlists');
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	var listIndex = getListIndex(listName, lists);
 	if (listIndex === -1) {
 		return [];
@@ -154,7 +154,8 @@ function getListIndex(listName, lists) {
 
 DashList.prototype.getListNames = function() {
 	var self = this;
-	var lists = self.dashListConf.get('dashlists');
+	self.dashlistConf.use('dashlist.conf');
+	var lists = self.dashlistConf.get('dashlists');
 	if (lists && lists.length > 0) {
 		return _.map(lists, function (list) {
 			return list.name;
@@ -166,14 +167,18 @@ DashList.prototype.getListNames = function() {
 };
 
 // Save dashlist config
-DashList.prototype.saveDashListConf = function(showResult) {
+DashList.prototype.saveDashListConf = function(showOutput) {
 	var self = this;
-	self.dashListConf.use('file', {file: dashListFile});
-	self.dashListConf.save('dash-list.conf', function (err) {
+	self.dashlistConf.use('dashlist.conf');
+	self.dashlistConf.save(function (err) {
 		if (err) {
-			logger.showError('Error in saving dash-list config.');
+			if (showOutput) {
+				logger.showError('Error in saving dash-list config.');
+			}
 		} else {
-	  		logger.showResult('dash-list configuration saved.');
+			if (showOutput) {
+				logger.showResult('dash-list configuration saved.');
+			}
 		}
 	});
 };

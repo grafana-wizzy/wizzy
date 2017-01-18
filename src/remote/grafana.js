@@ -33,6 +33,9 @@ function Grafana(conf, comps) {
 	if (comps) {
 		this.components = comps;
 	}
+	if (conf && conf.clip) {
+		this.clipConfig = conf.clip;
+	}
 }
 
 // creates an org
@@ -537,23 +540,23 @@ Grafana.prototype.list = function(commands) {
 // Creates a 8 second clip of a dashboard for last 24 hours
 Grafana.prototype.clip = function(commands) {
 
-	if (!config.clip && config.clip.length < 6) {
+	var self = this;
+	if (!self.clipConfig || self.clipConfig.length < 6) {
 		logger.showError('Clip configs not set. Please set all 6 clip config properties stated in README.');
 		return;
 	}
 
-	var self = this;
 	var entityType = commands[0];
 	var entityValue = commands[1];
 	var url;
 
-	localfs.createIfNotExists('temp', 'dir', false);
+	localfs.createDirIfNotExists('temp', true);
 
 	if (entityType === 'dashboard') {
 
 		url = self.grafanaUrl + self.createURL('clip', entityType, entityValue) +
-			'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
-			config.clip.render_timeout;
+			'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
+			self.clipConfig.render_timeout;
 
 
 		url = self.addAuth(url);
@@ -590,8 +593,8 @@ Grafana.prototype.clip = function(commands) {
 			var dashboards = _.each(responseBody, function (dashboard) {
 				var dashName = dashboard.uri.substring(3);
 				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
-					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
-					config.clip.render_timeout;
+					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
+					self.clipConfig.render_timeout;
 				dashUrl = self.addAuth(dashUrl);
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
@@ -617,8 +620,8 @@ Grafana.prototype.clip = function(commands) {
 		} else {
 			_.each(list, function(dashName) {
 				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
-					'?width=' + config.clip.render_width + '&height=' + config.clip.render_height + '&timeout=' +
-					config.clip.render_timeout;
+					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
+					self.clipConfig.render_timeout;
 				dashUrl = self.addAuth(dashUrl);
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
@@ -639,19 +642,15 @@ Grafana.prototype.clip = function(commands) {
 };
 
 Grafana.prototype.createGif = function(clipName) {
-
-	localfs.createIfNotExists('clips', 'dir', false);
-
-	encoder = new GIFEncoder(config.clip.canvas_width, config.clip.canvas_height);
-
+	var self = this;
+	localfs.createDirIfNotExists('clips', true);
+	encoder = new GIFEncoder(self.clipConfig.canvas_width, self.clipConfig.canvas_height);
 	pngFileStream('temp/*.png')
-		.pipe(encoder.createWriteStream({ repeat: -1, delay: parseInt(config.clip.delay), quality: 40 }))
+		.pipe(encoder.createWriteStream({ repeat: -1, delay: parseInt(self.clipConfig.delay), quality: 40 }))
  		.pipe(localfs.writeStream('clips/' + clipName + '.gif'));
-
  	logger.showResult('Successfully created ' + clipName + ' clip under clips directory.');
  	logger.justShow('Please delete temp directory before creating next clip.');
  	//localfs.deleteDirRecursive('temp');
-
 };
 
 // Create url for calling Grafana API

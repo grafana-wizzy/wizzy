@@ -24,7 +24,6 @@ Panels.prototype.savePanel = function(panelName, content, showResult) {
 
 // Reads panel json from file.
 Panels.prototype.readPanel = function(panelName) {
-
 	if (localfs.checkExists(getPanelsFile(panelName))) {
 		return JSON.parse(localfs.readFile(getPanelsFile(panelName)));
 	}
@@ -32,7 +31,6 @@ Panels.prototype.readPanel = function(panelName) {
 		logger.showError('Panel file ' + getPanelsFile(panelName) + ' does not exist.');
 		process.exit();
 	}
-
 };
 
 // Get panels file name from panel name

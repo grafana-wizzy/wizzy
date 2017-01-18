@@ -72,30 +72,31 @@ Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
 
 Dashboards.prototype.insert = function(type, entity, destination) {
 
+	var self = this;
 	var destArray = destination.split('.');
 	var destDashboardSlug = destArray[0];
-	var destDashboard = this.readDashboard(destDashboardSlug);
+	var destDashboard = self.readDashboard(destDashboardSlug);
 
 	if (type === 'temp-var') {
 		var destTempVarList = destDashboard.templating.list;
-		destTempVarList.push(this.tempVars.readTemplateVar(entity));
-		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		destTempVarList.push(self.tempVars.readTemplateVar(entity));
+		self.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Template variable ' + entity + ' inserted successfully.');
 	} else if (type === 'dash-tags') {
 		var dashTagsList = destDashboard.tags;
-		destDashboard.tags = destDashboard.tags.concat(this.dashTags.readDashTags(entity));
-		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		destDashboard.tags = destDashboard.tags.concat(self.dashTags.readDashTags(entity));
+		self.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Dashboard tags ' + entity + 'inserted successfully.');
 	} else if (type === 'row') {
 		var destRows = destDashboard.rows;
-		destRows.push(this.rows.readRow(entity));
-		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		destRows.push(self.rows.readRow(entity));
+		self.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Row ' + entity + ' inserted successfully.');
 	} else if (type === 'panel') {
 		var destRowNumber = parseInt(destArray[1]);
 		var destRow = destDashboard.rows[destRowNumber-1];
-		destRow.panels.push(this.panels.readPanel(entity));
-		this.saveDashboard(destDashboardSlug, destDashboard, true);
+		destRow.panels.push(self.panels.readPanel(entity));
+		self.saveDashboard(destDashboardSlug, destDashboard, true);
 		logger.showResult('Panel ' + entity + ' inserted successfully.');
 	}
 

@@ -11,21 +11,9 @@ var dashTagsDir = 'dash-tags';
 
 function DashTags() {}
 
-// creates dash-tags directory if it does not exist
-DashTags.prototype.createIfNotExists = function(showOutput) {
-	localfs.createIfNotExists(dashTagsDir, 'dir', showOutput);
-};
-
-// checks dir status for the dash-tags
-DashTags.prototype.checkDirStatus = function(showOutput) {
-
-	return localfs.checkExists(dashTagsDir, 'dash-tags directory', showOutput);
-
-};
-
 // Save dashboard tags under dash-tags directory on disk
 DashTags.prototype.saveDashTags = function(varName, content, showResult) {
-
+	localfs.createDirIfNotExists(dashTagsDir, showResult);
 	localfs.writeFile(getDashTagsFile(varName), logger.stringify(content, null, 2));
 	if (showResult) {
 		logger.showResult('Dashboard tags ' + varName + ' saved successfully under dash-tags directory.');

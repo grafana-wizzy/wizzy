@@ -49,6 +49,8 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 	var entityType = commands[1];
 	var entityValue = commands[2];
 	var destination = commands[3];
+	var successMessage;
+	var failureMessage;
 
 	var srcDashboardSlug = checkOrGetContextDashboard();
 	var srcDashboard = self.dashboards.readDashboard(srcDashboardSlug);
@@ -227,7 +229,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 			destDashboard = self.dashboards.readDashboard(entityValue);
 			destDashboard.tags = destDashboard.tags.concat(srcTagsList);
 			self.dashboards.saveDashboard(entityValue, destDashboard, true);
-			logger.showOutput(successMessage);
+			logger.showResult(successMessage);
 		}
 	}
 	else {
@@ -238,9 +240,10 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 // summarizes an entity
 Components.prototype.summarize = function(commands) {
 
+	var self = this;
 	var entityType = commands[0];
 	var entityValue = commands[1];
-	var self = this;
+	var successMessage;
 
 	if (entityType === 'dashboard') {
 		if (typeof entityValue != 'string') {
@@ -274,7 +277,8 @@ Components.prototype.change = function(commands) {
  	var entityType = commands[1];
 	var oldDatasource = commands[2];
  	var newDatasource = commands[3];
- 
+ 	var successMessage;
+
  	if (component === 'panels' && entityType === 'datasource') {
  		
  		successMessage = 'Datasource changed successfully';
@@ -377,8 +381,8 @@ Components.prototype.readEntityNamesFromDir = function(dirName) {
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {
 
-	if (config.checkConfigStatus('config:context:dashboard')) {
-		return config.getConfig('config:context:dashboard');
+	if (config.context && config.context.dashboard) {
+		return config.context.dashboard;
 	} else {
 		logger.showError('Please set dashboard context using `wizzy set ...` command.');
 		process.exit();
