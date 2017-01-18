@@ -41,12 +41,12 @@ describe('Checking show config function', function() {
   });
 
   it('should display wizzy conf', function() {
-    var configuration = config.getConfig();
+    var configuration = config.getProperty('config');
     expect(configuration).to.equal(conf);
   });
 
   it('should find configuration', function() {
-    var found = config.checkConfigStatus('grafana', false);
+    var found = config.statusCheck(false);
     expect(found).to.equal(true);
   })
 

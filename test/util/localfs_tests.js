@@ -47,11 +47,11 @@ describe('Checking output when file or dir exists', function() {
   });
 
   it('should display that directory already exists', function() {
-    localfs.createIfNotExists('dashboards','dir',true);
+    localfs.createDirIfNotExists('dashboards',true);
     assert.isTrue(console.log.called, "log should have been called.");
     assert.equal(console.log.callCount, 1);
     assert.isTrue(console.log.calledOnce);
-    expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'dashboards dir already exists.'.cyan);
+    expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'dashboards directory already exists.'.cyan);
   });
   
 
@@ -86,11 +86,11 @@ describe('Checking output when file or dir does not exists', function() {
   });
 
   it('should display that directory does not exists', function() {
-    localfs.createIfNotExists('dashboards','dir',true);
+    localfs.createDirIfNotExists('dashboards',true);
     assert.isTrue(console.log.called, "log should have been called.");
     assert.equal(console.log.callCount, 1);
     assert.isTrue(console.log.calledOnce);
-    expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'dashboards dir created.'.cyan);
+    expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'dashboards directory created.'.cyan);
   });
 
 });
