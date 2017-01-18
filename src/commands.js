@@ -147,7 +147,7 @@ Commands.prototype.instructions = function() {
 			}
 			break;
 		case 'switch':
-			grafana.switch(_.drop(commands, 2));
+			grafana.switch(_.drop(commands));
 			break;
 		default:
 			logger.showError('Unsupported command called.');
