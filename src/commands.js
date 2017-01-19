@@ -60,7 +60,7 @@ Commands.prototype.instructions = function() {
 			config.showProperty('config');
 			break;
 		case 'set':
-			config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3]);
+			config.addProperty('config:' + commands[1] + ':' + commands[2], commands[3], commands[4] );
 			break;
 		case 'import':
 			grafana.import(_.drop(commands));
