@@ -25,7 +25,8 @@ var configs = [
 	'config:clip:render_timeout',
 	'config:clip:canvas_height',
 	'config:clip:canvas_width',
-	'config:clip:delay'
+	'config:clip:delay',
+	'config:grafana:headers'
 ];
 
 var confDir = 'conf';
@@ -74,11 +75,15 @@ Config.prototype.checkConfigPrereq = function(showOutput) {
 }
 
 // Adds a new wizzy config property
-Config.prototype.addProperty = function(key, value) {
+Config.prototype.addProperty = function(key, value, sub_value) {
 	var self = this;
 	self.checkConfigPrereq();
 	self.conf.use('file', {file: confFile});
 	if (_.includes(configs, key)) {
+		if ( key === 'config:grafana:headers' && typeof sub_value !== 'undefined' ){
+			key += ':' + value;
+			value = sub_value;
+		}
 		self.conf.set(key, value);
 		self.saveConfig(true);
 		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
