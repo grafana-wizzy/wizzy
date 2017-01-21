@@ -18,7 +18,7 @@ Logger.prototype.showError = function(errorLine) {
 };
 
 Logger.prototype.showOutput = function(output) {
-	console.log('Output:\n'.cyan + output.yellow);
+	console.log('Output:\n'.cyan + output.yellow);  
 };
 
 Logger.prototype.stringify = function(obj) {

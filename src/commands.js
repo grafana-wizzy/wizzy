@@ -161,10 +161,12 @@ function status() {
 	var setupProblem = config.statusCheck(true);
 	if (setupProblem) {
 		var setupGit = localfs.checkExists('.git', '.git directory', true);
-		if(setupGit)
+		if(setupGit) {
 			logger.showResult('wizzy setup complete.');
-		else
+		}
+		else {
 			logger.showResult('wizzy setup complete without Git.');
+		}
 	} else {
 		logger.showError('wizzy setup incomplete.');
 	}

@@ -49,7 +49,7 @@ Config.prototype.initialize = function() {
 		logger.showResult('conf file created.');
 	}
 	logger.showResult('wizzy successfully initialized.');
-}
+};
 
 // Check wizzy configuration for status command
 Config.prototype.statusCheck = function(showOutput) {
@@ -72,17 +72,17 @@ Config.prototype.checkConfigPrereq = function(showOutput) {
 		logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
 		process.exit();
 	}
-}
+};
 
 // Adds a new wizzy config property
-Config.prototype.addProperty = function(key, value, sub_value) {
+Config.prototype.addProperty = function(key, value, subValue) {
 	var self = this;
 	self.checkConfigPrereq();
 	self.conf.use('file', {file: confFile});
 	if (_.includes(configs, key)) {
-		if ( key === 'config:grafana:headers' && typeof sub_value !== 'undefined' ){
+		if ( key === 'config:grafana:headers' && typeof subValue !== 'undefined' ){
 			key += ':' + value;
-			value = sub_value;
+			value = subValue;
 		}
 		self.conf.set(key, value);
 		self.saveConfig(true);
@@ -123,6 +123,6 @@ Config.prototype.saveConfig = function(showOutput) {
 			}
 		}
 	});
-}
+};
 
 module.exports = Config;

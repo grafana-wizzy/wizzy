@@ -1,10 +1,17 @@
+#!/usr/bin/env node
+"use strict";
+
 module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     jshint: {
-      all: ['src/**/*.js']
+      all: ['Gruntfile.js', 'src/**/*.js'],
+      options: {
+        jshintrc: '.jshintrc',
+        verbose: true,
+      }
     }
   });
 

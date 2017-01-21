@@ -246,7 +246,7 @@ Components.prototype.summarize = function(commands) {
 	var successMessage;
 
 	if (entityType === 'dashboard') {
-		if (typeof entityValue != 'string') {
+		if (typeof entityValue !== 'string') {
 			entityValue = checkOrGetContextDashboard();
 		}
 		successMessage = 'Showed dashboard ' + entityValue + ' summary successfully.';
@@ -268,7 +268,7 @@ Components.prototype.summarize = function(commands) {
 // Change an entity
 Components.prototype.change = function(commands) {
 
-	if (commands.length != 4) {
+	if (commands.length !== 4) {
  		logger.showError('Incorrect arguments, please read the usage.');
  		return;
  	}
@@ -283,11 +283,11 @@ Components.prototype.change = function(commands) {
  		
  		successMessage = 'Datasource changed successfully';
 
- 		if (typeof oldDatasource != 'string') {
+ 		if (typeof oldDatasource !== 'string') {
  			logger.showError('Old datasource value not supported or incorrect.');
  			return;
  		}
- 		if (typeof newDatasource != 'string') {
+ 		if (typeof newDatasource !== 'string') {
  			logger.showError('New datasource value not supported or incorrect.');
  			return;
  		}
@@ -310,14 +310,14 @@ Components.prototype.extract = function(commands) {
 	var dashboard = checkOrGetContextDashboard();
 	if (commands[0] === 'temp-var' || commands[0] === 'panel' || commands[0] === 'row') {
 		// Validating rows,panels and temp-vars commands
-		if (typeof commands[2] != 'string') {
+		if (typeof commands[2] !== 'string') {
 			logger.showError('Please provide a name for ' + commands[0] + ' ' + commands[1] + '.');
 			return;
 		}
 		this.dashboards.extract(commands[0], commands[1], commands[2], dashboard);
 	} else if (commands[0] === 'dash-tags') {
 		// Validating dash-tags commands
-		if (typeof commands[1] != 'string') {
+		if (typeof commands[1] !== 'string') {
 			logger.showError('Please provide a name for ' + commands[0] + '.');
 			return;
 		}

@@ -35,7 +35,7 @@ GNet.prototype.list = function(commands) {
 	
 	var self = this;
 
-	if (commands[0] === 'dashboards') 
+	if (commands[0] === 'dashboards') {
 		var successMessage = "Successfully searched Grafana.net.";
 		var failureMessage = "Searching Grafana.net failed.";
 		gnet_dashboards_url += '?orderBy=name';
@@ -46,31 +46,32 @@ GNet.prototype.list = function(commands) {
 			}
 		}
 		request.get({url: gnet_dashboards_url, json: true}, function saveHandler(error, response, body) {
-		var output = '';
-		if (!error && response.statusCode == 200) {
-			var table = new Table({
-    		head: ['Id', 'Title', 'Datasource', 'Downloads', 'Revision'],
-  			colWidths: [10, 50, 20, 20, 10]
-			});
-			_.each(body.items, function(dashboard){
-				table.push([dashboard.id, dashboard.name, dashboard.datasource, dashboard.downloads, dashboard.revision]); //removing db/
-			});
-			output += table.toString();
-  	 	logger.showOutput(output);
-  	  	logger.showResult('Total dashboards: ' + body.items.length);
-    	logger.showResult(successMessage);
-  	} else {
-  		output += 'Grafana API response status code = ' + response.statusCode;
-  		if (error === null) {
-  			output += '\nNo error body from Grafana.net API.';	
-  		}
-  		else {
-  			output += '\n' + error;
-  		}
-  		logger.showOutput(output);
-  		logger.showError(failureMessage);
-  	}
-	});
+			var output = '';
+			if (!error && response.statusCode === 200) {
+				var table = new Table({
+	    		head: ['Id', 'Title', 'Datasource', 'Downloads', 'Revision'],
+	  			colWidths: [10, 50, 20, 20, 10]
+				});
+				_.each(body.items, function(dashboard){
+					table.push([dashboard.id, dashboard.name, dashboard.datasource, dashboard.downloads, dashboard.revision]); //removing db/
+				});
+				output += table.toString();
+	  	 	logger.showOutput(output);
+	  	  	logger.showResult('Total dashboards: ' + body.items.length);
+	    	logger.showResult(successMessage);
+	  	} else {
+	  		output += 'Grafana API response status code = ' + response.statusCode;
+	  		if (error === null) {
+	  			output += '\nNo error body from Grafana.net API.';	
+	  		}
+	  		else {
+	  			output += '\n' + error;
+	  		}
+	  		logger.showOutput(output);
+	  		logger.showError(failureMessage);
+	  	}
+		});
+	}
 };
 
 // searches Grafana.net dashboards for dashboard list
@@ -84,7 +85,7 @@ GNet.prototype.download = function(commands) {
 		var dashboardUrl = gnet_dashboards_url + '/' + dashId + '/revisions/' + revisionId + '/download';
 		request.get({url: dashboardUrl, json: true}, function saveHandler(error, response, body) {
 			var output = '';
-			if (!error && response.statusCode == 200) {
+			if (!error && response.statusCode === 200) {
 				self.components.dashboards.saveDashboard(convertName2Slug(body.title), body, true);
 	    		logger.showResult(successMessage);
 		  	} else {
