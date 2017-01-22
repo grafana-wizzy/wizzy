@@ -3,10 +3,13 @@
 
 // Initializing logger
 var Logger = require('../util/logger.js');
-var logger = new Logger();
+var logger = new Logger('grafana');
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
 var DashList = require('../local/dashlist.js');
+
+var Import = require('./grafana/importSrv.js');
+var importSrv;
 
 var syncReq = require('sync-request');
 
@@ -29,12 +32,16 @@ function Grafana(conf, comps) {
 				password: conf.grafana.password
 			};
 		}
-		if (conf.grafana.headers){
+		if (conf.grafana.headers) {
 			this.headers = conf.grafana.headers;
+		}
+		if (conf.grafana.authorization) {
+			this.authorization = conf.grafana.authorization;
 		}
 	}
 	if (comps) {
 		this.components = comps;
+		importSrv = new Import(this.components);
 	}
 	if (conf && conf.clip) {
 		this.clipConfig = conf.clip;
@@ -159,175 +166,27 @@ Grafana.prototype.import = function(commands) {
 
 	// imports a dashboard from Grafana
 	if (entityType === 'dashboard') {
-		successMessage = 'Dashboard '+ entityValue + ' import successful.';
-		failureMessage = 'Dashboard '+ entityValue + ' import failed.';
-		url = self.grafanaUrl + self.createURL('import', entityType, entityValue);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			if (!error && response.statusCode === 200) {
-	  	  		output += body;
-				self.components.dashboards.saveDashboard(entityValue, body.dashboard, true);
-	    		logger.showResult(successMessage);
-	  		} else {
-					if (response !== null){
-	  				output += 'Grafana API response status code = ' + response.statusCode;
-					}
-
-		  		if (error === null) {
-		  			output += '\nNo error body from Grafana API.';
-		  		}
-		  		else {
-		  			output += '\n' + error;
-		  		}
-	  			logger.showOutput(output);
-	  			logger.showError(failureMessage);
-	  		}
-		});
+		importSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
 	// import all dashboards from Grafana
 	else if (entityType === 'dashboards') {
-		successMessage = 'Dashboards import successful.';
-		failureMessage = 'Dashboards import failed.';
-		url = self.grafanaUrl + self.createURL('list', entityType);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			var dashList = [];
-			if (!error && response.statusCode === 200) {
-				_.each(body, function(dashboard){
-					dashList.push(dashboard.uri.substring(3)); //removing db/
-				});
-	  	  _.each(dashList, function(dash){
-	  	  	url = self.grafanaUrl + self.createURL('import', 'dashboard', dash);
-	  	  	request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-						if (!error && response.statusCode === 200) {
-							self.components.dashboards.saveDashboard(dash, body.dashboard, false);
-				  	}
-					});
-	  	  });
-	  	  logger.showResult('Total dashboards imported: ' + dashList.length);
-	  	  logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';
-	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
-		});
+		importSrv.dashboards(self.grafanaUrl, self.setURLOptions());
 	}
-
 	// imports an org from Grafana
 	else if (entityType === 'org') {
-		successMessage = 'Org '+ entityValue + ' import successful.';
-		failureMessage = 'Org '+ entityValue + ' import failed.';
-		url = self.grafanaUrl + self.createURL('import', entityType, entityValue);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			if (!error && response.statusCode === 200) {
-	  	  output += body;
-	  	  self.components.orgs.saveOrg(entityValue, body, true);
-	  	  logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';
-	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
-		});
+		importSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
 	// imports all orgs from Grafana
 	else if (entityType === 'orgs') {
-		successMessage = 'Orgs import successful.';
-		failureMessage = 'Orgs import failed.';
-		url = self.grafanaUrl + self.createURL('import', entityType);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			var orgList = [];
-			if (!error && response.statusCode === 200) {
-				_.each(body, function(org){
-					orgList.push(org.id);
-				});
-				_.each(orgList, function(id) {
-					url = self.grafanaUrl + self.createURL('import', 'org', id);
-					request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-						if (!error && response.statusCode === 200) {
-							self.components.orgs.saveOrg(id, body, false);
-				  	}
-					});
-				});
-	  	  logger.showResult('Total orgs imported: ' + body.length);
-	  	  logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';
-	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
-		});
+		importSrv.orgs(self.grafanaUrl, self.setURLOptions());
 	}
-
 	// import a datasource from Grafana
 	else if (entityType === 'datasource') {
-		successMessage = 'Datasource '+ entityValue + ' import successful.';
-		failureMessage = 'Datasource '+ entityValue + ' import failed.';
-		url = self.grafanaUrl + self.createURL('import', entityType, entityValue);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			if (!error && response.statusCode === 200) {
-	  	  output += body;
-	  	  delete body.id;
-	  	  self.components.datasources.saveDatasource(entityValue, body, true);
-	  	  logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';
-	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
-		});
+		importSrv.datasource(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
 	// import all datasources from Grafana
 	else if (entityType === 'datasources') {
-		successMessage = 'Datasources import successful.';
-		failureMessage = 'Datasources import failed.';
-		url = self.grafanaUrl + self.createURL('import', entityType);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
-			if (!error && response.statusCode === 200) {
-				_.each(body, function(datasource){
-					delete datasource.id;
-					self.components.datasources.saveDatasource(datasource.name, datasource);
-				});
-	  	  logger.showResult('Total datasources imported: ' + body.length);
-	  	  logger.showResult(successMessage);
-	  	} else {
-	  		output += 'Grafana API response status code = ' + response.statusCode;
-	  		if (error === null) {
-	  			output += '\nNo error body from Grafana API.';
-	  		}
-	  		else {
-	  			output += '\n' + error;
-	  		}
-	  		logger.showOutput(output);
-	  		logger.showError(failureMessage);
-	  	}
-		});
+		importSrv.datasources(self.grafanaUrl, self.setURLOptions());
 	} else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
@@ -450,14 +309,14 @@ Grafana.prototype.export = function(commands) {
 				if (body.name in ids) {
 					body.id = ids[body.name];
 					url = self.grafanaUrl + self.createURL('export', 'datasource', body.id);
-					url = self.addAuth(url);
+					url = self.addAuthToSyncRequest(url);
 					method = 'PUT';
 				}
 				// otherwise we create the datasource
 				else {
   					delete body.id;
   					url = self.grafanaUrl + self.createURL('export', 'datasources', null);
-					url = self.addAuth(url);
+					url = self.addAuthToSyncRequest(url);
 					method = 'POST';
 	  			}
 		  		// Use sync-request to avoid table lockdown
@@ -586,9 +445,7 @@ Grafana.prototype.clip = function(commands) {
 		url = self.grafanaUrl + self.createURL('clip', entityType, entityValue) +
 			'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
 			self.clipConfig.render_timeout;
-
-
-		url = self.addAuth(url);
+		url = self.addAuthToSyncRequest(url);
 
 		var now = (new Date()).getTime();
 
@@ -614,7 +471,7 @@ Grafana.prototype.clip = function(commands) {
 	} else if (entityType === 'dashboards-by-tag') {
 		var tag = commands[1];
 		url = self.grafanaUrl + self.createURL('search', entityType, null) + '?tag=' + tag;
-		url = self.addAuth(url);
+		url = self.addAuthToSyncRequest(url);
 		var searchResponse = syncReq('GET', url);
 		var responseBody = JSON.parse(searchResponse.getBody('utf8'));
 		if (searchResponse.statusCode === 200 && responseBody.length > 0) {
@@ -624,7 +481,7 @@ Grafana.prototype.clip = function(commands) {
 				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
 					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
 					self.clipConfig.render_timeout;
-				dashUrl = self.addAuth(dashUrl);
+				dashUrl = self.addAuthToSyncRequest(dashUrl);
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
 				if (response.statusCode === 200) {
@@ -651,7 +508,7 @@ Grafana.prototype.clip = function(commands) {
 				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
 					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
 					self.clipConfig.render_timeout;
-				dashUrl = self.addAuth(dashUrl);
+				dashUrl = self.addAuthToSyncRequest(dashUrl);
 				var response = syncReq('GET', dashUrl);
 				var filename = 'temp/' + dashName + '.png';
 				if (response.statusCode === 200) {
@@ -729,7 +586,7 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 };
 
 // add auth to sync request
-Grafana.prototype.addAuth = function(url) {
+Grafana.prototype.addAuthToSyncRequest = function(url) {
 	var self = this;
 	// If the user didn't provide auth info, simply return the URL
 	if (!self.auth) {
@@ -738,6 +595,18 @@ Grafana.prototype.addAuth = function(url) {
 	var urlParts = url.split('://');
 	url = urlParts[0] + '://' + self.auth.username + ':' + self.auth.password + '@' + urlParts[1];
 	return url;
+};
+
+Grafana.prototype.setURLOptions = function() {
+	var self = this;
+	var options = {};
+	if (self.auth) {
+		options.auth = self.auth;
+	}
+	if (self.headers) {
+		options.headers = self.headers;
+	}
+	return options;
 };
 
 // prints HTTP response from Grafana

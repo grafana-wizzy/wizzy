@@ -195,6 +195,8 @@ function addGrafanaConfiguration() {
 	help += '\n   wizzy set grafana url GRAFANA_URL';
 	help += '\n   wizzy set grafana username GRAFANA_USERNAME';
 	help += '\n   wizzy set grafana password GRAFANA_PASSWORD';
+	help += '\n   wizzy set grafana headers HEADER_NAME HEADER_VALUE';
+	help += '\n   wizzy set grafana authorization false';
 	help += '\n   wizzy set grafana debug_api true';
 	help += '\n';
 }
