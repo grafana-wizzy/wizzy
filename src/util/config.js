@@ -13,6 +13,8 @@ var configs = [
 	'config:grafana:url',
 	'config:grafana:username',
 	'config:grafana:password',
+	'config:grafana:headers',
+	'config:grafana:authorization',
 	'config:grafana:debug_api',
 	'config:context:dashboard',
 	'config:s3:access_key',
@@ -25,8 +27,7 @@ var configs = [
 	'config:clip:render_timeout',
 	'config:clip:canvas_height',
 	'config:clip:canvas_width',
-	'config:clip:delay',
-	'config:grafana:headers'
+	'config:clip:delay'
 ];
 
 var confDir = 'conf';
