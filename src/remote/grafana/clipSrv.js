@@ -44,7 +44,7 @@ ClipSrv.prototype.dashboard = function(grafanaURL, dashboardName) {
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
 	setTimeout(createGif(dashboardName), 5000);
-}
+};
 
 ClipSrv.prototype.dashboardByTag = function(grafanaURL, tagName) {
 	var url = createURL(grafanaURL, 'search-dashboard') + '?tag=' + tagName;
@@ -71,7 +71,7 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, tagName) {
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
 	setTimeout(createGif(tagName), 5000);
-}
+};
 
 ClipSrv.prototype.dashList = function(grafanaURL, listName) {
 	var dashList = new DashList();
@@ -81,7 +81,7 @@ ClipSrv.prototype.dashList = function(grafanaURL, listName) {
 	} else {
 		_.each(list, function(dashName) {
 			var dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
-				'?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
+			dashUrl += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
 			var response = syncReq('GET', dashUrl);
 			if (response.statusCode === 200) {
 				var filename = 'temp/' + dashName + '.png';
@@ -95,7 +95,7 @@ ClipSrv.prototype.dashList = function(grafanaURL, listName) {
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
 	setTimeout(createGif(listName), 5000);
-}
+};
 
 function createGif(clipName) {
 	localfs.createDirIfNotExists('clips', false);
@@ -105,7 +105,7 @@ function createGif(clipName) {
  		.pipe(localfs.writeStream('clips/' + clipName + '.gif'));
  	logger.showResult('Successfully created ' + clipName + ' clip under clips directory.');
  	logger.justShow('Please delete temp directory before creating next clip.');
-};
+}
 
 function createURL(grafanaURL, entityType, entityValue) {
 	if (entityType === 'render-dashboard') {
