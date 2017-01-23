@@ -10,24 +10,10 @@ var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
 
 var configs = [
-	'config:grafana:url',
-	'config:grafana:username',
-	'config:grafana:password',
-	'config:grafana:headers',
-	'config:grafana:authorization',
-	'config:grafana:debug_api',
-	'config:context:dashboard',
-	'config:s3:access_key',
-	'config:s3:secret_key',
-	'config:s3:bucket_name',
-	'config:s3:path',
-	'config:s3:region',
-	'config:clip:render_height',
-	'config:clip:render_width',
-	'config:clip:render_timeout',
-	'config:clip:canvas_height',
-	'config:clip:canvas_width',
-	'config:clip:delay'
+	'grafana',
+	'context',
+	's3',
+	'clip'
 ];
 
 var confDir = 'conf';
@@ -46,6 +32,7 @@ Config.prototype.initialize = function() {
 	if (configExists) {
 		logger.showResult('conf file already exists.');
 	} else  {
+		self.conf.set('config', {});
 		self.saveConfig(false);
 		logger.showResult('conf file created.');
 	}
@@ -76,18 +63,20 @@ Config.prototype.checkConfigPrereq = function(showOutput) {
 };
 
 // Adds a new wizzy config property
-Config.prototype.addProperty = function(key, value, subValue) {
+Config.prototype.addProperty = function(parent, values) {
 	var self = this;
 	self.checkConfigPrereq();
 	self.conf.use('file', {file: confFile});
-	if (_.includes(configs, key)) {
-		if ( key === 'config:grafana:headers' && typeof subValue !== 'undefined' ){
-			key += ':' + value;
-			value = subValue;
+	if (_.includes(configs, parent)) {
+		if (values.length === 2) {
+			self.conf.set('config:' + parent + ':' + values[0], values[1]);
+			self.saveConfig(true);
+			logger.showResult(parent + ' ' + values[0] + ' updated successfully.');
+		} else if (values.length === 3) {
+			self.conf.set('config:' + parent + ':' + values[0] + ':' + values[1], values[2]);
+			self.saveConfig(true);
+			logger.showResult(parent + ' ' + values[0] + ' ' + values[1] + ' updated successfully.');
 		}
-		self.conf.set(key, value);
-		self.saveConfig(true);
-		logger.showResult(_.join(_.drop(key.split(':'), 1), ' ') + ' updated successfully.');
 	} else {
 		logger.showError('Unknown configuration property.');
 	}
