@@ -3,7 +3,7 @@
 
 var request = require('request');
 var Logger = require('../../util/logger.js');
-var logger = new Logger('import');
+var logger = new Logger('importSrv');
 var _ = require('lodash');
 var components;
 
@@ -56,7 +56,7 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
   	  	options.url = createURL(grafanaURL, 'dashboard', dash);
   	  	request.get(options, function saveHandler(error, response, body) {
 					if (!error && response.statusCode === 200) {
-						components.dashboards.saveDashboard(dash, body.dashboard, true);
+						components.dashboards.saveDashboard(dash, body.dashboard, false);
 			  	}
 				});
   	  });
@@ -117,7 +117,7 @@ ImportSrv.prototype.orgs = function(grafanaURL, options) {
 				options.url = createURL(grafanaURL, 'org', id);
 				request.get(options, function saveHandler(error, response, body) {
 					if (!error && response.statusCode === 200) {
-						components.orgs.saveOrg(id, body, true);
+						components.orgs.saveOrg(id, body, false);
 			  	}
 				});
 			});
@@ -173,7 +173,7 @@ ImportSrv.prototype.datasources = function(grafanaURL, options) {
 		if (!error && response.statusCode === 200) {
 			_.each(body, function(datasource){
 				delete datasource.id;
-				components.datasources.saveDatasource(datasource.name, datasource, true);
+				components.datasources.saveDatasource(datasource.name, datasource, false);
 			});
   	  logger.showResult('Total datasources imported: ' + body.length);
   	  logger.showResult(successMessage);

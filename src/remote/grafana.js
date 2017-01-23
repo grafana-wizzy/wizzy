@@ -10,6 +10,8 @@ var DashList = require('../local/dashlist.js');
 
 var Import = require('./grafana/importSrv.js');
 var importSrv;
+var Export = require('./grafana/exportSrv.js');
+var exportSrv;
 
 var syncReq = require('sync-request');
 
@@ -42,6 +44,7 @@ function Grafana(conf, comps) {
 	if (comps) {
 		this.components = comps;
 		importSrv = new Import(this.components);
+		exportSrv = new Export(this.components);
 	}
 	if (conf && conf.clip) {
 		this.clipConfig = conf.clip;
@@ -164,6 +167,7 @@ Grafana.prototype.import = function(commands) {
 	var url;
 	var output = '';
 
+	self.sanitizeUrl();
 	// imports a dashboard from Grafana
 	if (entityType === 'dashboard') {
 		importSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
@@ -204,145 +208,27 @@ Grafana.prototype.export = function(commands) {
 	var url;
 	var body;
 
+	self.sanitizeUrl();
 	// exporting a dashboard to Grafana
 	if (entityType === 'dashboard') {
-
-		successMessage = 'Dashboard '+ entityValue + ' export successful.';
-		failureMessage = 'Dashboard '+ entityValue + ' export failed.';
-
-		var url_check = self.grafanaUrl + self.createURL('show', 'dashboard', entityValue);
-		request.get({url: url_check, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error_check, response_check, body_check) {
-			// this means that dashboard does not exist so will create a new one
-			var dashBody = {
-				dashboard: self.components.dashboards.readDashboard(entityValue),
-				overwrite: true
-			};
-			if (response_check.statusCode === 404) {
-				dashBody.dashboard.id = null;
-			} else {
-				dashBody.dashboard.id = body_check.dashboard.id;
-			}
-			var url = self.grafanaUrl + self.createURL('export', entityType, null);
-			request.post({url: url, auth: self.auth, headers: self.headers, json: true, body: dashBody}, printResponse);
-		});
-		logger.showResult(successMessage);
-
+		exportSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
   // exporting all local dashbaords to Grafana
 	else if (entityType === 'dashboards') {
-		logger.showResult('Exporting dashboards to Grafana.');
-		var dashboards = self.components.readEntityNamesFromDir('dashboards');
-		_.forEach(dashboards,function(dashboard){
-			var url_check = self.grafanaUrl + self.createURL('show', 'dashboard', dashboard);
-			request.get({url: url_check, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error_check, response_check, body_check) {
-				var dashBody = {
-						dashboard: self.components.dashboards.readDashboard(dashboard),
-						overwrite: true
-				};
-				if (response_check.statusCode === 404) {
-					dashBody.dashboard.id = null;
-				} else {
-					dashBody.dashboard.id = body_check.dashboard.id;
-				}
-				var url = self.grafanaUrl + self.createURL('export', 'dashboard', dashboard);
-				request.post({url: url, auth: self.auth, headers: self.headers, json: true, body: dashBody}, printResponse);
-			});
-		});
+		exportSrv.dashboards(self.grafanaUrl, self.setURLOptions());
 	}
-
 	// exporting a local org to Grafana
 	else if (entityType === 'org') {
-		body = self.components.orgs.readOrg(entityValue);
-		successMessage = 'Org '+ entityValue + ' export successful.';
-		failureMessage = 'Org '+ entityValue + ' export failed.';
-		url = self.grafanaUrl + self.createURL('export', entityType, entityValue);
-		request.put({url: url, auth: self.auth, headers: self.headers, json: true, body: body}, printResponse);
-		logger.showResult(successMessage);
+		exportSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
 	// exporting a single local datasource to Grafana
 	else if (entityType === 'datasource') {
-		body = self.components.datasources.readDatasource(entityValue);
-		successMessage = 'Datasource '+ entityValue + ' export successful.';
-		failureMessage = 'Datasource '+ entityValue + ' export failed.';
-		var checkDsUrl = self.grafanaUrl + self.createURL('show', entityType, entityValue);
-		request.get({url: checkDsUrl, auth: self.auth, headers: self.headers, json:true}, function checkHandler(error_check, response_check, body_check) {
-			var url;
-			if (response_check.statusCode === 404) {
-				logger.justShow('Datasource does not exists in Grafana.');
-				logger.justShow('Trying to create a new datasource.');
-				delete body.id;
-				url = self.grafanaUrl + self.createURL('export', 'datasources', null);
-				request.post({url: url, auth: self.auth, headers: self.headers, json: true, body: body}, printResponse);
-			} else if (response_check.statusCode === 200) {
-				url = self.grafanaUrl + self.createURL('export', entityType, body_check.id);
-				request.put({url: url, auth: self.auth, headers: self.headers, json: true, body: body}, printResponse);
-			} else {
-				logger.showError('Unknown response from Grafana.');
-			}
-		});
-		logger.showResult(successMessage);
+		exportSrv.datasource(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
-
 	// exporting all local datasources to Grafana
 	else if (entityType === 'datasources') {
-
-		var dsNames = self.components.readEntityNamesFromDir('datasources');
-		url = self.grafanaUrl + self.createURL('export', 'datasources', null);
-		var failed = 0;
-		var success = 0;
-
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error_check, response_check, body_check) {
-			// Getting existing list of datasources and making a mapping of names to ids
-			var ids = {};
-			_.forEach(body_check, function(datasource) {
-				ids[datasource.name] = datasource.id;
-			});
-
-			// Here we try exporting (either updating or creating) a datasource
-			_.forEach(dsNames, function(ds) {
-				var url;
-				var method;
-				body = self.components.datasources.readDatasource(ds);
-				// if local dashboard exists in Grafana we update
-				if (body.name in ids) {
-					body.id = ids[body.name];
-					url = self.grafanaUrl + self.createURL('export', 'datasource', body.id);
-					url = self.addAuthToSyncRequest(url);
-					method = 'PUT';
-				}
-				// otherwise we create the datasource
-				else {
-  					delete body.id;
-  					url = self.grafanaUrl + self.createURL('export', 'datasources', null);
-					url = self.addAuthToSyncRequest(url);
-					method = 'POST';
-	  			}
-		  		// Use sync-request to avoid table lockdown
-		  		var response = syncReq(method, url, {json: body});
-		  		if (response.statusCode !== 200) {
-		  			logger.showOutput(response.getBody('utf8'));
-		  			logger.showError('Datasource ' + ds + ' export failed.');
-		  			failed++;
-		  		} else {
-		  			logger.showOutput(response.getBody('utf8'));
-		  			logger.showResult('Datasource ' + ds + ' exported successfully.');
-		  			success++;
-		  		}
-			});
-			if (success > 0) {
-				logger.showResult(success + ' datasources exported successfully.');
-			}
-			if (failed > 0) {
-				logger.showError(failed + ' datasources export failed.');
-				process.exit(1);
-			} else {
-				process.exit(0);
-			}
-		});
+		exportSrv.datasources(self.grafanaUrl, self.setURLOptions());
 	}
-
 	else {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
@@ -586,15 +472,13 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 };
 
 // add auth to sync request
-Grafana.prototype.addAuthToSyncRequest = function(url) {
+Grafana.prototype.sanitizeUrl = function(isSyncRequest) {
 	var self = this;
 	// If the user didn't provide auth info, simply return the URL
-	if (!self.auth) {
-		return url;
+	if (self.auth) {
+		var urlParts = self.grafanaUrl.split('://');
+		self.grafanaUrl = urlParts[0] + '://' + self.auth.username + ':' + self.auth.password + '@' + urlParts[1];
 	}
-	var urlParts = url.split('://');
-	url = urlParts[0] + '://' + self.auth.username + ':' + self.auth.password + '@' + urlParts[1];
-	return url;
 };
 
 Grafana.prototype.setURLOptions = function() {
