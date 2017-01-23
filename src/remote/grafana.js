@@ -6,22 +6,19 @@ var Logger = require('../util/logger.js');
 var logger = new Logger('grafana');
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
-var DashList = require('../local/dashlist.js');
 
-var Import = require('./grafana/importSrv.js');
+var ImportSrv = require('./grafana/importSrv.js');
 var importSrv;
-var Export = require('./grafana/exportSrv.js');
+var ExportSrv = require('./grafana/exportSrv.js');
 var exportSrv;
+var ClipSrv = require('./grafana/clipSrv.js');
+var clipSrv;
 
 var syncReq = require('sync-request');
 
 var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
-
-var GIFEncoder = require('gifencoder');
-var encoder;
-var pngFileStream = require('png-file-stream');
 
 function Grafana(conf, comps) {
 	if (conf && conf.grafana) {
@@ -43,11 +40,12 @@ function Grafana(conf, comps) {
 	}
 	if (comps) {
 		this.components = comps;
-		importSrv = new Import(this.components);
-		exportSrv = new Export(this.components);
+		importSrv = new ImportSrv(this.components);
+		exportSrv = new ExportSrv(this.components);
 	}
 	if (conf && conf.clip) {
 		this.clipConfig = conf.clip;
+		clipSrv = new ClipSrv(conf.clip);
 	}
 }
 
@@ -313,117 +311,29 @@ Grafana.prototype.list = function(commands) {
 
 // Creates a 8 second clip of a dashboard for last 24 hours
 Grafana.prototype.clip = function(commands) {
-
 	var self = this;
 	if (!self.clipConfig || self.clipConfig.length < 6) {
 		logger.showError('Clip configs not set. Please set all 6 clip config properties stated in README.');
 		return;
 	}
-
 	var entityType = commands[0];
 	var entityValue = commands[1];
 	var url;
-
 	localfs.createDirIfNotExists('temp', true);
-
+	self.sanitizeUrl();
+	// creating a gif of a dashboard
 	if (entityType === 'dashboard') {
-
-		url = self.grafanaUrl + self.createURL('clip', entityType, entityValue) +
-			'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
-			self.clipConfig.render_timeout;
-		url = self.addAuthToSyncRequest(url);
-
-		var now = (new Date()).getTime();
-
-		// Taking 24 screenshots
-		logger.justShow('Taking 24 snapshots.');
-
-		var i = 0;
-		while(i < 24) {
-			var from = now - ((i + 1) * 60 * 60000);
-			var to = now - (i * 60 * 60000);
-			var completeUrl = url + '&from=' + from + '&to=' + to;
-			var response = syncReq('GET', completeUrl);
-			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png';
-			localfs.writeFile(filename, response.getBody());
-			i++;
-			logger.showResult('Took snapshot ' + i + '.');
-		}
-
-		logger.showResult('Snapshots rendering completed.');
-		logger.justShow('Waiting 5 seconds before generating clip.');
-		setTimeout(self.createGif(entityValue), 5000);
-
+		clipSrv.dashboard(self.grafanaUrl, entityValue);
 	} else if (entityType === 'dashboards-by-tag') {
-		var tag = commands[1];
-		url = self.grafanaUrl + self.createURL('search', entityType, null) + '?tag=' + tag;
-		url = self.addAuthToSyncRequest(url);
-		var searchResponse = syncReq('GET', url);
-		var responseBody = JSON.parse(searchResponse.getBody('utf8'));
-		if (searchResponse.statusCode === 200 && responseBody.length > 0) {
-			logger.showOutput('Taking dashboard snapshots.');
-			var dashboards = _.each(responseBody, function (dashboard) {
-				var dashName = dashboard.uri.substring(3);
-				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
-					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
-					self.clipConfig.render_timeout;
-				dashUrl = self.addAuthToSyncRequest(dashUrl);
-				var response = syncReq('GET', dashUrl);
-				var filename = 'temp/' + dashName + '.png';
-				if (response.statusCode === 200) {
-					localfs.writeFile(filename, response.getBody());
-					logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
-				} else {
-					logger.showError('Snapshot of ' + dashName + ' dashbaord failed. Please increase timeout.');
-				}
-			});
-		} else {
-			logger.showError('No content available to make clip.');
-		}
-		logger.showResult('Snapshots rendering completed.');
-		logger.justShow('Waiting 5 seconds before generating clip.');
-		setTimeout(self.createGif(tag), 5000);
+		clipSrv.dashboardByTag(self.grafanaUrl, entityValue);
 	} else if (entityType === 'dash-list') {
-		var listName = commands[1];
-		var dashList = new DashList();
-		var list = dashList.getList(listName);
-		if (list.length < 1) {
-			logger.showOutput('No dashboard found in dashboard list ' + listName);
-		} else {
-			_.each(list, function(dashName) {
-				var dashUrl = self.grafanaUrl + self.createURL('clip', 'dashboard', dashName) +
-					'?width=' + self.clipConfig.render_width + '&height=' + self.clipConfig.render_height + '&timeout=' +
-					self.clipConfig.render_timeout;
-				dashUrl = self.addAuthToSyncRequest(dashUrl);
-				var response = syncReq('GET', dashUrl);
-				var filename = 'temp/' + dashName + '.png';
-				if (response.statusCode === 200) {
-					localfs.writeFile(filename, response.getBody());
-					logger.showResult('Took snapshot of ' + dashName + ' dashbaord.');
-				} else {
-					logger.showError('Snapshot of ' + dashName + ' dashbaord failed. Please increase timeout.');
-				}
-			});
-		}
-		logger.showResult('Snapshots rendering completed.');
-		logger.justShow('Waiting 5 seconds before generating clip.');
-		setTimeout(self.createGif(listName), 5000);
+		clipSrv.dashList(self.grafanaUrl, entityValue);
 	} else {
 		logger.showError('Unsupported set of commands ' + commands + '.');
 	}
 };
 
-Grafana.prototype.createGif = function(clipName) {
-	var self = this;
-	localfs.createDirIfNotExists('clips', true);
-	encoder = new GIFEncoder(self.clipConfig.canvas_width, self.clipConfig.canvas_height);
-	pngFileStream('temp/*.png')
-		.pipe(encoder.createWriteStream({ repeat: -1, delay: parseInt(self.clipConfig.delay), quality: 40 }))
- 		.pipe(localfs.writeStream('clips/' + clipName + '.gif'));
- 	logger.showResult('Successfully created ' + clipName + ' clip under clips directory.');
- 	logger.justShow('Please delete temp directory before creating next clip.');
- 	//localfs.deleteDirRecursive('temp');
-};
+
 
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
