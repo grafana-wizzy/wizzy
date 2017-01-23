@@ -110,6 +110,7 @@ function addLocalDashboardCommands() {
 	help += '\n  Dashboard Commands:\n';
 	help += '\n   wizzy summarize dashboard <DASHBOARD_SLUG>';
 	help += '\n   wizzy change panels datasource OLD_DATASOURCE NEW_DATASOURCE';
+	help += '\n   wizzy list panels datasource DATASOURCE';
 	help += '\n';
 }
 

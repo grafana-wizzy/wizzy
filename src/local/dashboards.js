@@ -136,13 +136,7 @@ Dashboards.prototype.extract = function(type, entity, entityName, dashboard) {
 };
 
 Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource) {
-
 	var dashboard = this.readDashboard(entityValue);
-	var arch = {};
-	// Extracting row information
-	arch.title = dashboard.title;
-	arch.rowCount = _.size(dashboard.rows);
-	arch.rows = [];
 	_.forEach(dashboard.rows, function(row) {
 		_.forEach(row.panels,function(panel){
 			if(panel.datasource === oldDatasource){
@@ -151,7 +145,19 @@ Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource
 		});
 	});
 	this.saveDashboard(entityValue, dashboard, true);
+};
 
+Dashboards.prototype.list = function(entityValue, datasource) {
+	var dashboard = this.readDashboard(entityValue);
+	var panelCount = 0;
+	_.forEach(dashboard.rows, function(row) {
+		_.forEach(row.panels,function(panel){
+			if(panel.datasource === datasource){
+				panelCount ++;
+			}
+		});
+	});
+	logger.showOutput('Total panels with datasource ' + datasource + ': ' + panelCount);
 };
 
 // Reads dashboard json from file.

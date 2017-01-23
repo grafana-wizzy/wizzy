@@ -300,7 +300,30 @@ Components.prototype.change = function(commands) {
  	else {
  		logger.showError('Unsupported command ' + commands + '. Please try `wizzy help`.');
  	}
+};
 
+Components.prototype.list = function(commands) {
+	if (commands.length !== 3) {
+ 		logger.showError('Incorrect arguments, please read the usage.');
+ 		return;
+ 	}
+ 	var component = commands[0];
+ 	var entityType = commands[1];
+	var datasource = commands[2];
+ 	var successMessage;
+ 	if (component === 'panels' && entityType === 'datasource') {
+ 		successMessage = 'Panels with datasource ' + datasource + ' listed successfully';
+ 		if (typeof datasource !== 'string') {
+ 			logger.showError('Datasource value not supported or incorrect.');
+ 			return;
+ 		}
+ 		var entityValue = checkOrGetContextDashboard();
+ 		this.dashboards.list(entityValue, datasource);
+ 		logger.showResult(successMessage);
+ 	}
+ 	else {
+ 		logger.showError('Unsupported command ' + commands + '. Please try `wizzy help`.');
+ 	}
  };
 
 // Extracts entities from dashboard json to local independent json

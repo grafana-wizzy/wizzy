@@ -92,6 +92,8 @@ Commands.prototype.instructions = function() {
 		case 'list':
 			if (commands[1] === 'gnet') {
 				gnet.list(_.drop(commands,2));
+			} else if (commands[1] === 'panels') {
+				components.list(_.drop(commands, 1));
 			} else {
 				grafana.list(_.drop(commands));
 			}
@@ -103,8 +105,8 @@ Commands.prototype.instructions = function() {
 			components.summarize(_.drop(commands));
 			break;
 		case 'change':
-      		components.change(_.drop(commands));
-      		break;
+      components.change(_.drop(commands));
+      break;
 		case 'move':
 			components.moveCopyOrRemove(commands);
 			break;
