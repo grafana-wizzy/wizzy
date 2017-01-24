@@ -6,7 +6,6 @@ var Logger = require('../util/logger.js');
 var logger = new Logger('grafana');
 var LocalFS = require('../util/localfs.js');
 var localfs = new LocalFS();
-
 var ImportSrv = require('./grafana/importSrv.js');
 var importSrv;
 var ExportSrv = require('./grafana/exportSrv.js');
@@ -15,13 +14,15 @@ var ClipSrv = require('./grafana/clipSrv.js');
 var clipSrv;
 
 var syncReq = require('sync-request');
-
 var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
 
 function Grafana(conf, comps) {
 	if (conf && conf.grafana) {
+		if (conf.context && conf.context.grafana) {
+			conf.grafana = conf.grafana.installations[conf.context.grafana];
+		}
 		if (conf.grafana.url) {
 			this.grafanaUrl = conf.grafana.url;
 		}
@@ -36,6 +37,9 @@ function Grafana(conf, comps) {
 		}
 		if (conf.grafana.authorization) {
 			this.authorization = conf.grafana.authorization;
+		}
+		if (conf.grafana.installations) {
+			this.installations = conf.grafana.installations;
 		}
 	}
 	if (comps) {

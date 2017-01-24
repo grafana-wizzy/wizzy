@@ -199,12 +199,14 @@ function addGrafanaConfiguration() {
 	help += '\n   wizzy set grafana headers HEADER_NAME HEADER_VALUE';
 	help += '\n   wizzy set grafana authorization false';
 	help += '\n   wizzy set grafana debug_api true';
+	help += '\n   wizzy add grafana GRAFANA_INSTALLATION';
 	help += '\n';
 }
 
 function addContextConfiguration() {
 	help += '\n  Context Configuration Commands:\n';
 	help += '\n   wizzy set context dashboard DASHBOARD_SLUG';
+	help += '\n   wizzy set context grafana GRAFANA_INSTALLATION';
 	help += '\n';
 }
 

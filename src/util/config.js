@@ -68,6 +68,9 @@ Config.prototype.addProperty = function(parent, values) {
 	self.checkConfigPrereq();
 	self.conf.use('file', {file: confFile});
 	if (_.includes(configs, parent)) {
+		if (parent === 'grafana' && self.getProperty('config:context:grafana')) {
+			parent = 'grafana:installations:' + self.getProperty('config:context:grafana');
+		}
 		if (values.length === 2) {
 			self.conf.set('config:' + parent + ':' + values[0], values[1]);
 			self.saveConfig(true);
@@ -80,6 +83,21 @@ Config.prototype.addProperty = function(parent, values) {
 	} else {
 		logger.showError('Unknown configuration property.');
 	}
+};
+
+// Adds a grafana installation
+Config.prototype.addGrafanaInstallation = function(name) {
+	var self = this;
+	self.checkConfigPrereq();
+	self.conf.use('file', {file: confFile});
+	var installations = {};
+	if (self.conf.get('config:grafana:installations')) {
+		installations = self.conf.get('config:grafana:installations');
+	}
+	installations[name] = {};
+	self.conf.set('config:grafana:installations', installations);
+	self.saveConfig(true);
+	logger.showResult('Grafana installation ' + name + ' added.');
 };
 
 // Shows all wizzy configuration properties

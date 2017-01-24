@@ -150,14 +150,17 @@ Dashboards.prototype.change = function(entityValue, oldDatasource, newDatasource
 Dashboards.prototype.list = function(entityValue, datasource) {
 	var dashboard = this.readDashboard(entityValue);
 	var panelCount = 0;
+	var output = 'Panels:';
 	_.forEach(dashboard.rows, function(row) {
 		_.forEach(row.panels,function(panel){
 			if(panel.datasource === datasource){
+				output += '\n ' + panel.title;
 				panelCount ++;
 			}
 		});
 	});
-	logger.showOutput('Total panels with datasource ' + datasource + ': ' + panelCount);
+	logger.showOutput(output);
+	logger.showResult('Total panels with datasource ' + datasource + ': ' + panelCount);
 };
 
 // Reads dashboard json from file.

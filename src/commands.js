@@ -141,6 +141,8 @@ Commands.prototype.instructions = function() {
 		case 'add':
 			if (commands[1] === 'to-dash-list') {
 				dashlist.addDashboard(_.drop(commands, 2));
+			} else if (commands[1] === 'grafana') {
+				config.addGrafanaInstallation(commands[2]);
 			}
 			break;
 		case 'clear':
