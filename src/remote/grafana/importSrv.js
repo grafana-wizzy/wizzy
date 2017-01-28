@@ -5,7 +5,6 @@ var request = require('request');
 var Logger = require('../../util/logger.js');
 var logger = new Logger('importSrv');
 var _ = require('lodash');
-var syncReq = require('sync-request');
 var components;
 
 function ImportSrv(comps) {
@@ -45,38 +44,32 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
 	var successMessage = 'Dashboards import successful.';
 	var failureMessage = 'Dashboards import failed.';
 	var output = '';
-	var success = 0;
-	var failed = 0;
 	options.url = createURL(grafanaURL, 'dashboards');
 	options.json = true;
 	request.get(options, function saveHandler(error, response, body) {
 		var dashList = [];
 		if (!error && response.statusCode === 200) {
-			_.each(body, function(dashboard){
+			_.each(body, function(dashboard) {
 				dashList.push(dashboard.uri.substring(3)); //removing db/
 			});
 			logger.justShow('Importing ' + dashList.length + ' dashboards:');
-  	  _.each(dashList, function(dash){
+			var batchSize = 100, i = 0 ;
+  	  _.each(dashList, function(dash) {
   	  	options.url = createURL(grafanaURL, 'dashboard', dash);
-  	  	var response = syncReq('GET', options.url);
-  	  	var body = JSON.parse(response.getBody('utf8'));
-	  		if (response.statusCode === 200) {
-	  			components.dashboards.saveDashboard(dash, body.dashboard, false);
-	  			success++;
-	  		} else {
-	  			logger.showError(body);
-	  			logger.showOutput('Dashboard ' + dash + ' imported failed.');
-	  			failed++;
-	  		}
+  	  	request.get(options, function saveHandler(error, response, body) {
+ 					if (!error && response.statusCode === 200) {
+ 						components.dashboards.saveDashboard(dash, body.dashboard, false);
+ 					}
+ 					i++;
+ 					if (i === batchSize) {
+ 						i = 0;
+ 						setTimeout(function(){}, 1000); // waits for 1 second before firing another 100 import requests
+ 					}
+ 				});
   	  });
-  	  logger.showResult('Total dashboards imported successfully: ' + success);
-  	  if (failed !== 0) {
-  	  	logger.showResult('Total dashboards import failed: ' + failed);
-  	  }
-  	  if (success >= 0) {
-  	  	logger.showResult(successMessage);
-  	  }
-  	} else {
+			logger.showResult('Total dashboards imported: ' + dashList.length);
+ 			logger.showResult(successMessage);
+   	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
   			output += '\nNo error body from Grafana API.';

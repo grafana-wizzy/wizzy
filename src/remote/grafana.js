@@ -35,9 +35,6 @@ function Grafana(conf, comps) {
 		if (conf.grafana.headers) {
 			this.headers = conf.grafana.headers;
 		}
-		if (conf.grafana.authorization) {
-			this.authorization = conf.grafana.authorization;
-		}
 		if (conf.grafana.installations) {
 			this.installations = conf.grafana.installations;
 		}
@@ -394,9 +391,6 @@ Grafana.prototype.setURLOptions = function() {
 	}
 	if (self.headers) {
 		options.headers = self.headers;
-	}
-	if (self.authorization) {
-		options.rejectUnauthorized = self.authorization;
 	}
 	return options;
 };
