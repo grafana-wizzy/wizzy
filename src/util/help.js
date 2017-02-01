@@ -200,6 +200,7 @@ function addGrafanaConfiguration() {
 	help += '\n   wizzy set grafana authorization false';
 	help += '\n   wizzy set grafana debug_api true';
 	help += '\n   wizzy add grafana GRAFANA_INSTALLATION';
+	help += '\n   wizzy remove grafana GRAFANA_INSTALLATION';
 	help += '\n';
 }
 

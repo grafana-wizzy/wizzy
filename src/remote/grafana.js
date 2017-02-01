@@ -325,8 +325,6 @@ Grafana.prototype.clip = function(commands) {
 	}
 };
 
-
-
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
@@ -368,13 +366,11 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 			url += '/api/datasources/' + entityValue;
 		}
 	}
-
-	return url;  			
-
+	return url;
 };
 
 // add auth to sync request
-Grafana.prototype.sanitizeUrl = function(isSyncRequest) {
+Grafana.prototype.sanitizeUrl = function() {
 	var self = this;
 	// If the user didn't provide auth info, simply return the URL
 	if (self.auth) {
@@ -383,6 +379,7 @@ Grafana.prototype.sanitizeUrl = function(isSyncRequest) {
 	}
 };
 
+// add options to request
 Grafana.prototype.setURLOptions = function() {
 	var self = this;
 	var options = {};

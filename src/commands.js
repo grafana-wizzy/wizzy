@@ -60,7 +60,10 @@ Commands.prototype.instructions = function() {
 			config.showProperty('config');
 			break;
 		case 'set':
-			config.addProperty(commands[1], _.drop(commands,2));
+			config.addProperty(_.drop(commands,1));
+			break;
+		case 'unset':
+			config.removeProperty(_.drop(commands,1));
 			break;
 		case 'import':
 			grafana.import(_.drop(commands));
@@ -116,6 +119,8 @@ Commands.prototype.instructions = function() {
 		case 'remove':
 			if (commands[1] === 'from-dash-list') {
 				dashlist.removeDashboard(_.drop(commands, 2));
+			} else if (commands[1] === 'grafana') {
+				config.removeGrafanaInstallation(commands[2]);
 			} else {
 				components.moveCopyOrRemove(commands);
 			}

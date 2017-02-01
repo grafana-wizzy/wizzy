@@ -26,7 +26,6 @@ afterEach(function() {
   grafana = null;
 })
 
-
 describe('Check Grafana URLs', function() {
 
   describe('create URL for listing all dashboards', function() {
@@ -152,6 +151,21 @@ describe('Check Grafana URLs', function() {
     it('should return URL /api/user/using/:orgId .', function() {
       var url = grafana.createURL('switch', 'org', 2);
       expect(url).to.equal('/api/user/using/2');
+    });
+  });
+
+  describe('sanitize URL for auth', function() {
+    it('add username and password in url.', function() {
+      grafana.sanitizeUrl();
+      expect(grafana.grafanaUrl).to.equal('http://admin:password@localhost:3000');
+    });
+  });
+
+  describe('set URL options', function() {
+    it('with auth.', function() {
+      grafana.auth = {username: 'admin', password: 'admin'};
+      var options = grafana.setURLOptions();
+      expect(options.auth.username).to.equal('admin');
     });
   });
 

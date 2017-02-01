@@ -9,13 +9,6 @@ var _ = require('lodash');
 var LocalFS = require('./localfs.js');
 var localfs = new LocalFS();
 
-var configs = [
-	'grafana',
-	'context',
-	's3',
-	'clip'
-];
-
 var confDir = 'conf';
 var confFile = 'conf/wizzy.json';
 
@@ -63,7 +56,30 @@ Config.prototype.checkConfigPrereq = function(showOutput) {
 };
 
 // Adds a new wizzy config property
-Config.prototype.addProperty = function(parent, values) {
+Config.prototype.addProperty = function(commands) {
+	var self = this;
+	self.checkConfigPrereq();
+	self.conf.use('file', {file: confFile});
+	if (_.includes(configs, commands[0])) {
+		if (commands[0] === 'grafana' && self.getProperty('config:context:grafana')) {
+			commands[0] = 'grafana:installations:' + self.getProperty('config:context:grafana');
+		}
+		if (values.length === 2) {
+			self.conf.set('config:' + commands[0] + ':' + commands1, values[1]);
+			self.saveConfig(true);
+			logger.showResult(parent + ' ' + values[0] + ' updated successfully.');
+		} else if (values.length === 3) {
+			self.conf.set('config:' + parent + ':' + values[0] + ':' + values[1], values[2]);
+			self.saveConfig(true);
+			logger.showResult(parent + ' ' + values[0] + ' ' + values[1] + ' updated successfully.');
+		}
+	} else {
+		logger.showError('Unknown configuration property.');
+	}
+};
+
+// Removes an existing wizzy config property
+Config.prototype.removeProperty = function(commands) {
 	var self = this;
 	self.checkConfigPrereq();
 	self.conf.use('file', {file: confFile});
@@ -72,13 +88,18 @@ Config.prototype.addProperty = function(parent, values) {
 			parent = 'grafana:installations:' + self.getProperty('config:context:grafana');
 		}
 		if (values.length === 2) {
-			self.conf.set('config:' + parent + ':' + values[0], values[1]);
+			var config = self.conf.get('config:' + parent);
+			console.log(values[0]);
+			delete config[values[0]];
+			self.conf.set('config:' + parent, config);
 			self.saveConfig(true);
-			logger.showResult(parent + ' ' + values[0] + ' updated successfully.');
+			logger.showResult(parent + ' ' + values[0] + ' removed successfully.');
 		} else if (values.length === 3) {
+			var config = self.conf.get('config:' + parent + ':' + values[0]);
+			delete config[values[1]];
 			self.conf.set('config:' + parent + ':' + values[0] + ':' + values[1], values[2]);
 			self.saveConfig(true);
-			logger.showResult(parent + ' ' + values[0] + ' ' + values[1] + ' updated successfully.');
+			logger.showResult(parent + ' ' + values[0] + ' ' + values[1] + ' removed successfully.');
 		}
 	} else {
 		logger.showError('Unknown configuration property.');
@@ -98,6 +119,26 @@ Config.prototype.addGrafanaInstallation = function(name) {
 	self.conf.set('config:grafana:installations', installations);
 	self.saveConfig(true);
 	logger.showResult('Grafana installation ' + name + ' added.');
+};
+
+// Removes a grafana installation
+Config.prototype.removeGrafanaInstallation = function(name) {
+	var self = this;
+	self.checkConfigPrereq();
+	self.conf.use('file', {file: confFile});
+	var installations = {};
+	if (self.conf.get('config:grafana:installations')) {
+		installations = self.conf.get('config:grafana:installations');
+	}
+	if (installations[name]) {
+		delete installations[name];
+	} else {
+		logger.justShow('Grafana installation ' + name + ' does not exists.');
+		return;
+	}
+	self.conf.set('config:grafana:installations', installations);
+	self.saveConfig(true);
+	logger.showResult('Grafana installation ' + name + ' removed.');
 };
 
 // Shows all wizzy configuration properties
