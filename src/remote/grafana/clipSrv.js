@@ -20,7 +20,7 @@ function ClipSrv(config) {
 	clipConfig = config;
 }
 
-ClipSrv.prototype.dashboard = function(grafanaURL, dashboardName) {
+ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 	var url = createURL(grafanaURL, 'render-dashboard', dashboardName);
 	url += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
 	var now = (new Date()).getTime();
@@ -31,6 +31,7 @@ ClipSrv.prototype.dashboard = function(grafanaURL, dashboardName) {
 		var from = now - ((i + 1) * 60 * 60000);
 		var to = now - (i * 60 * 60000);
 		var completeUrl = url + '&from=' + from + '&to=' + to;
+		completeUrl = sanitizeUrl(completeUrl, options.auth);
 		var response = syncReq('GET', completeUrl);
 		if (response.statusCode === 200) {
 			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png';
@@ -46,8 +47,9 @@ ClipSrv.prototype.dashboard = function(grafanaURL, dashboardName) {
 	setTimeout(createGif(dashboardName), 5000);
 };
 
-ClipSrv.prototype.dashboardByTag = function(grafanaURL, tagName) {
+ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
 	var url = createURL(grafanaURL, 'search-dashboard') + '?tag=' + tagName;
+	url = sanitizeUrl(url, options.auth);
 	var searchResponse = syncReq('GET', url);
 	var responseBody = JSON.parse(searchResponse.getBody('utf8'));
 	if (searchResponse.statusCode === 200 && responseBody.length > 0) {
@@ -56,6 +58,7 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, tagName) {
 			var dashName = dashboard.uri.substring(3);
 			var dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
 			dashUrl += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
+			dashUrl = sanitizeUrl(dashUrl, options.auth);
 			var response = syncReq('GET', dashUrl);
 			if (response.statusCode === 200) {
 				var filename = 'temp/' + dashName + '.png';
@@ -73,7 +76,7 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, tagName) {
 	setTimeout(createGif(tagName), 5000);
 };
 
-ClipSrv.prototype.dashList = function(grafanaURL, listName) {
+ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
 	var dashList = new DashList();
 	var list = dashList.getList(listName);
 	if (list.length < 1) {
@@ -82,6 +85,7 @@ ClipSrv.prototype.dashList = function(grafanaURL, listName) {
 		_.each(list, function(dashName) {
 			var dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
 			dashUrl += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
+			dashUrl = sanitizeUrl(dashUrl, options.auth);
 			var response = syncReq('GET', dashUrl);
 			if (response.statusCode === 200) {
 				var filename = 'temp/' + dashName + '.png';
@@ -115,5 +119,15 @@ function createURL(grafanaURL, entityType, entityValue) {
 	}
 	return grafanaURL;
 }
+
+// add auth to sync request
+function sanitizeUrl(url, auth) {
+	if (auth && auth.username && auth.password) {
+		var urlParts = url.split('://');
+		return urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+	} else {
+		return url;
+	}
+};
 
 module.exports = ClipSrv;

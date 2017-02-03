@@ -13,7 +13,6 @@ var exportSrv;
 var ClipSrv = require('./grafana/clipSrv.js');
 var clipSrv;
 
-var syncReq = require('sync-request');
 var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
@@ -68,9 +67,10 @@ Grafana.prototype.create = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	self.sanitizeUrl();
-	var url = self.grafanaUrl + self.createURL('create', entityType, entityValue);
-	request.post({url: url, auth: self.auth, headers: self.headers, json: true, body: body}, function printResponse(error, response, body) {
+	var options = self.setURLOptions();
+	options.url = self.grafanaUrl + self.createURL('create', entityType, entityValue);
+	options.body = body;
+	request.post(options, function printResponse(error, response, body) {
 		var output = '';
 		if (!error && response.statusCode === 200) {
   			output += logger.stringify(body);
@@ -107,9 +107,9 @@ Grafana.prototype.delete = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	self.sanitizeUrl();
-	var url = self.grafanaUrl + self.createURL('delete', entityType, entityValue);
-	request.delete({url: url, auth: self.auth, headers: self.headers, json: true}, printResponse);
+	var options = self.setURLOptions();
+	options.url = self.grafanaUrl + self.createURL('delete', entityType, entityValue);
+	request.delete(options, printResponse);
 	logger.showResult(successMessage);
 };
 
@@ -118,9 +118,9 @@ Grafana.prototype.show = function(commands) {
 	var self = this;
 	var entityType = commands[0];
 	var entityValue = commands[1];
-	self.sanitizeUrl();
-	var url = self.grafanaUrl + self.createURL('show', entityType, entityValue);
-	request.get({url: url, auth: self.auth, headers: self.headers, json: true}, printResponse);
+	var options = self.setURLOptions();
+	options.url = self.grafanaUrl + self.createURL('show', entityType, entityValue);
+	request.get(options, printResponse);
 };
 
 // Switches an org
@@ -134,9 +134,9 @@ Grafana.prototype.switch = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-	self.sanitizeUrl();
-	var url = self.grafanaUrl + self.createURL('switch', entityType, entityValue);
-	request.post({url: url, auth: self.auth, headers: self.headers}, function saveHandler(error, response, body) {
+	var options = self.setURLOptions();
+	options.url = self.grafanaUrl + self.createURL('switch', entityType, entityValue);
+	request.post(options, function saveHandler(error, response, body) {
 		if (error) {
 			logger.showOutput(error);
 			logger.showError(failureMessage);
@@ -160,7 +160,6 @@ Grafana.prototype.import = function(commands) {
 	var entityValue = commands[1];
 	var url;
 	var output = '';
-	self.sanitizeUrl();
 	// imports a dashboard from Grafana
 	if (entityType === 'dashboard') {
 		importSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
@@ -199,7 +198,6 @@ Grafana.prototype.export = function(commands) {
 	var entityValue = commands[1];
 	var url;
 	var body;
-	self.sanitizeUrl();
 	// exporting a dashboard to Grafana
 	if (entityType === 'dashboard') {
 		exportSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
@@ -224,7 +222,6 @@ Grafana.prototype.export = function(commands) {
 		logger.showError('Unsupported entity type ' + entityType);
 		return;
 	}
-
 };
 
 // list all dashboards
@@ -235,12 +232,12 @@ Grafana.prototype.list = function(commands) {
 	var failureMessage;
 	var entityType = commands[0];
 	var url;
-	self.sanitizeUrl();
+	var options = self.setURLOptions();
 	if (entityType === 'dashboards') {
 		successMessage = 'Displayed dashboards list successfully.';
 		failureMessage = 'Dashboards list display failed';
-		url = self.grafanaUrl + self.createURL('list', entityType);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
+		options.url = self.grafanaUrl + self.createURL('list', entityType);
+		request.get(options, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode === 200) {
 				var table = new Table({
@@ -269,8 +266,8 @@ Grafana.prototype.list = function(commands) {
 	} else if (entityType === 'dash-tags') {
 		successMessage = 'Displayed dashboard tags list successfully.';
 		failureMessage = 'Dashboard tags list display failed';
-		url = self.grafanaUrl + this.createURL('list', entityType);
-		request.get({url: url, auth: self.auth, headers: self.headers, json: true}, function saveHandler(error, response, body) {
+		options.url = self.grafanaUrl + this.createURL('list', entityType);
+		request.get(options, function saveHandler(error, response, body) {
 			var output = '';
 			if (!error && response.statusCode === 200) {
 				var table = new Table({
@@ -314,14 +311,13 @@ Grafana.prototype.clip = function(commands) {
 	var entityValue = commands[1];
 	var url;
 	localfs.createDirIfNotExists('temp', true);
-	self.sanitizeUrl();
 	// creating a gif of a dashboard
 	if (entityType === 'dashboard') {
-		clipSrv.dashboard(self.grafanaUrl, entityValue);
+		clipSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
 	} else if (entityType === 'dashboards-by-tag') {
-		clipSrv.dashboardByTag(self.grafanaUrl, entityValue);
+		clipSrv.dashboardByTag(self.grafanaUrl, self.setURLOptions(), entityValue);
 	} else if (entityType === 'dash-list') {
-		clipSrv.dashList(self.grafanaUrl, entityValue);
+		clipSrv.dashList(self.grafanaUrl, self.setURLOptions(), entityValue);
 	} else {
 		logger.showError('Unsupported set of commands ' + commands + '.');
 	}
@@ -371,16 +367,6 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 	return url;
 };
 
-// add auth to sync request
-Grafana.prototype.sanitizeUrl = function() {
-	var self = this;
-	// If the user didn't provide auth info, simply return the URL
-	if (self.auth) {
-		var urlParts = self.grafanaUrl.split('://');
-		self.grafanaUrl = urlParts[0] + '://' + self.auth.username + ':' + self.auth.password + '@' + urlParts[1];
-	}
-};
-
 // add options to request
 Grafana.prototype.setURLOptions = function() {
 	var self = this;
@@ -391,6 +377,7 @@ Grafana.prototype.setURLOptions = function() {
 	if (self.headers) {
 		options.headers = self.headers;
 	}
+	options.json = true;
 	return options;
 };
 
