@@ -21,7 +21,9 @@ var Table = require('cli-table');
 function Grafana(conf, comps) {
 	if (conf && conf.grafana) {
 		if (conf.context && conf.context.grafana) {
-			conf.grafana = conf.grafana.installations[conf.context.grafana];
+			if (conf.context.grafana in conf.grafana.envs) {
+				conf.grafana = conf.grafana.envs[conf.context.grafana];
+			}
 		}
 		if (conf.grafana.url) {
 			this.grafanaUrl = conf.grafana.url;
@@ -325,8 +327,6 @@ Grafana.prototype.clip = function(commands) {
 	}
 };
 
-
-
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
@@ -368,13 +368,11 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 			url += '/api/datasources/' + entityValue;
 		}
 	}
-
-	return url;  			
-
+	return url;
 };
 
 // add auth to sync request
-Grafana.prototype.sanitizeUrl = function(isSyncRequest) {
+Grafana.prototype.sanitizeUrl = function() {
 	var self = this;
 	// If the user didn't provide auth info, simply return the URL
 	if (self.auth) {
@@ -383,6 +381,7 @@ Grafana.prototype.sanitizeUrl = function(isSyncRequest) {
 	}
 };
 
+// add options to request
 Grafana.prototype.setURLOptions = function() {
 	var self = this;
 	var options = {};
