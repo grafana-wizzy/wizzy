@@ -21,7 +21,9 @@ var Table = require('cli-table');
 function Grafana(conf, comps) {
 	if (conf && conf.grafana) {
 		if (conf.context && conf.context.grafana) {
-			conf.grafana = conf.grafana.installations[conf.context.grafana];
+			if (conf.context.grafana in conf.grafana.envs) {
+				conf.grafana = conf.grafana.envs[conf.context.grafana];
+			}
 		}
 		if (conf.grafana.url) {
 			this.grafanaUrl = conf.grafana.url;
