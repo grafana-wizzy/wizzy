@@ -128,6 +128,6 @@ function sanitizeUrl(url, auth) {
 	} else {
 		return url;
 	}
-};
+}
 
 module.exports = ClipSrv;

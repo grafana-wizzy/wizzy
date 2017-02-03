@@ -237,7 +237,7 @@ function sanitizeUrl(url, auth) {
 	} else {
 		return url;
 	}
-};
+}
 
 function createURL(grafanaURL, entityType, entityValue) {
 	if (entityType === 'dashboard') {

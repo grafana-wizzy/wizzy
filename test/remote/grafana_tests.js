@@ -154,13 +154,6 @@ describe('Check Grafana URLs', function() {
     });
   });
 
-  describe('sanitize URL for auth', function() {
-    it('add username and password in url.', function() {
-      grafana.sanitizeUrl();
-      expect(grafana.grafanaUrl).to.equal('http://admin:password@localhost:3000');
-    });
-  });
-
   describe('set URL options', function() {
     it('with auth.', function() {
       grafana.auth = {username: 'admin', password: 'admin'};
