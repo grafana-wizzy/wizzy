@@ -59,7 +59,7 @@ Grafana.prototype.create = function(commands) {
 	var failureMessage;
 	var entityType = commands[0];
 	var entityValue = commands[1];
-	var body;
+	var body = {};
 	if (entityType === 'org') {
 		body.name = entityValue;
 		successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
