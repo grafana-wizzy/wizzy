@@ -29,7 +29,7 @@ var validConfigs = [
 	'clip:canvas_width',
 	'clip:canvas_height',
 	'clip:delay'
-]
+];
 
 // Constructor
 function Config() {
