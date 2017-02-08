@@ -27,12 +27,11 @@ function Grafana(conf, comps) {
 		if (conf.grafana.url) {
 			this.grafanaUrl = conf.grafana.url;
 		}
-		if (conf.grafana.apikey) {
+		if (conf.grafana.api_key) {
 			this.auth = {
-				bearer: conf.grafana.apikey
+				bearer: conf.grafana.api_key
 			};
-		}		
-		if (conf.grafana.username && conf.grafana.password) {
+		}	else if (conf.grafana.username && conf.grafana.password) {
 			this.auth = {
 				username: conf.grafana.username,
 				password: conf.grafana.password

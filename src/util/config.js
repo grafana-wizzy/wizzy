@@ -18,6 +18,7 @@ var validConfigs = [
 	'grafana:password',
 	'grafana:debug_api',
 	'grafana:headers',
+	'grafana:api_key',
 	'grafana:envs',
 	'context:dashboard',
 	'context:grafana',
