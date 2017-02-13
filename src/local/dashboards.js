@@ -167,7 +167,7 @@ Dashboards.prototype.list = function(entityValue, datasource) {
 Dashboards.prototype.readDashboard = function(slug) {
 
 	if (localfs.checkExists(getDashboardFile(slug))) {
-		return JSON.parse(localfs.readFile(getDashboardFile(slug)));
+		return sanitizePanels(JSON.parse(localfs.readFile(getDashboardFile(slug))));
 	}
 	else {
 		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
@@ -175,6 +175,20 @@ Dashboards.prototype.readDashboard = function(slug) {
 	}
 	
 };
+
+function sanitizePanels(dashboard) {
+
+	var panelId = 1;
+	_.forEach(dashboard.rows, function(row) {
+		_.forEach(row.panels, function(panel) {
+			panel.id = panelId;
+			panelId++;
+		});
+	});
+
+	return dashboard;
+
+}
 
 // Get dashboard file name from slug
 function getDashboardFile(slug) {
