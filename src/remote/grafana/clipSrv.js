@@ -44,7 +44,9 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 	}
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
-	setTimeout(createGif(dashboardName), 5000);
+	interval(function() {
+		createGif(dashboardName);
+	}, 5000, 1);
 };
 
 ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
@@ -73,7 +75,9 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
 	}
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
-	setTimeout(createGif(tagName), 5000);
+	interval(function() {
+		createGif(tagName);
+	}, 5000, 1); 
 };
 
 ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
@@ -98,7 +102,9 @@ ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
 	}
 	logger.showResult('Snapshots rendering completed.');
 	logger.justShow('Waiting 5 seconds before generating clip.');
-	setTimeout(createGif(listName), 5000);
+	interval(function() {
+		createGif(listName);
+	}, 5000, 1); 
 };
 
 function createGif(clipName) {
@@ -128,6 +134,25 @@ function sanitizeUrl(url, auth) {
 	} else {
 		return url;
 	}
+}
+
+// interval function for delay
+function interval(func, wait, times){
+    var interv = function(w, t){
+        return function(){
+            if(typeof t === "undefined" || t-- > 0){
+                setTimeout(interv, w);
+                try{
+                    func.call(null);
+                }
+                catch(e){
+                    t = 0;
+                    throw e.toString();
+                }
+            }
+        };
+    }(wait, times);
+    setTimeout(interv, wait);
 }
 
 module.exports = ClipSrv;
