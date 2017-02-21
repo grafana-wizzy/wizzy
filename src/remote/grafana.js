@@ -145,7 +145,9 @@ Grafana.prototype.switch = function(commands) {
 			logger.showOutput(error);
 			logger.showError(failureMessage);
 		} else {
-			logger.showOutput(body);
+			if (body !== undefined) {
+				logger.showOutput(logger.stringify(body));
+			}
 			if (response.statusCode === 200) {
 				logger.showResult(successMessage);
 			} else {
