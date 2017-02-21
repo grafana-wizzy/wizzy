@@ -52,43 +52,57 @@ ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 };
 
 ExportSrv.prototype.dashboards = function(grafanaURL, options) {
-	logger.justShow('Exporting dashboards to Grafana.');
-	var dashboards = components.readEntityNamesFromDir('dashboards');
-	_.forEach(dashboards,function(dashboard) {
-		options.url = createURL(grafanaURL, 'dashboard');
-		request.get(options, function responseHandler(error_check, response_check, body_check) {
-			var dashBody = {
-					dashboard: components.dashboards.readDashboard(dashboard),
-					overwrite: true
-			};
-			if (response_check.statusCode === 404) {
-				dashBody.dashboard.id = null;
-			} else {
-				dashBody.dashboard.id = body_check.dashboard.id;
+	var dashNames = components.readEntityNamesFromDir('dashboards');
+	options.url = createURL(grafanaURL, 'dashboard-search');
+	var failed = 0;
+	var success = 0;
+	var method = 'POST';
+	request.get(options, function saveHandler(error_check, response_check, body_check) {
+		// Getting existing list of datasources and making a mapping of names to ids
+		var dashSlugs = {};
+		_.forEach(body_check, function(dashboard) {
+			if (dashboard.type === 'dash-db') {
+				//Removing "db/" from the uri
+				dashSlugs[dashboard.uri.substring(3)] = dashboard.id;
 			}
-			options.url = createURL(grafanaURL, 'dashboards', dashboard);
-			options.body = dashBody;
-			var successMessage = 'Dashboard '+ dashboard + ' export successful.';
-			var failureMessage = 'Dashboard '+ dashboard + ' export failed.';
-			request.post(options, function responseHandler(error, response, body) {
-				var output = '';
-				if (!error && response.statusCode === 200) {
-		  		output += logger.stringify(body);
-		  		logger.showOutput(output);
-		  		logger.showResult(successMessage);
-				} else {
-		  		output += 'Grafana API response status code = ' + response.statusCode;
-		  		if (error === null) {
-		  			output += '\nNo error body from Grafana API.';
-		  		}
-		  		else {
-		  			output += '\n' + error;
-		  		}
-		  		logger.showOutput(output);
-		  		logger.showResult(failureMessage);
-		  	}
-			});
 		});
+		// Here we try exporting (either updating or creating) a dashboard
+		_.forEach(dashNames, function(dashboard) {
+			var url = createURL(grafanaURL, 'dashboards');
+			url = sanitizeUrl(url, options.auth);
+			var body = {
+				dashboard: components.dashboards.readDashboard(dashboard),
+			};
+			// Updating an existing dashboard
+			if (dashboard in dashSlugs) {
+				body.dashboard.id = dashSlugs[dashboard];
+				body.overwrite = true;
+  		} else {
+  			// Creating a new dashboard
+  			body.dashboard.id = null;
+  			body.overwrite = false;
+  		}
+  		// Use sync-request to avoid table lockdown
+  		var response = syncReq(method, url, {json: body});
+  		if (response.statusCode !== 200) {
+  			logger.showOutput(response.getBody('utf8'));
+  			logger.showError('Dashboard ' + dashboard + ' export failed.');
+  			failed++;
+  		} else {
+  			logger.showOutput(response.getBody('utf8'));
+  			logger.showResult('Dashboard ' + dashboard + ' exported successfully.');
+  			success++;
+  		}
+		});
+		if (success > 0) {
+			logger.showResult(success + ' dashboards exported successfully.');
+		}
+		if (failed > 0) {
+			logger.showError(failed + ' dashboards export failed.');
+			process.exit(1);
+		} else {
+			process.exit(0);
+		}
 	});
 };
 
@@ -203,19 +217,19 @@ ExportSrv.prototype.datasources = function(grafanaURL, options) {
 				delete body.id;
 				url = createURL(grafanaURL, 'datasources');
 				method = 'POST';
-  			}
-	  		// Use sync-request to avoid table lockdown
-	  		url = sanitizeUrl(url, options.auth);
-	  		var response = syncReq(method, url, {json: body});
-	  		if (response.statusCode !== 200) {
-	  			logger.showOutput(response.getBody('utf8'));
-	  			logger.showError('Datasource ' + ds + ' export failed.');
-	  			failed++;
-	  		} else {
-	  			logger.showOutput(response.getBody('utf8'));
-	  			logger.showResult('Datasource ' + ds + ' exported successfully.');
-	  			success++;
-	  		}
+  		}
+  		// Use sync-request to avoid table lockdown
+  		url = sanitizeUrl(url, options.auth);
+  		var response = syncReq(method, url, {json: body});
+  		if (response.statusCode !== 200) {
+  			logger.showOutput(response.getBody('utf8'));
+  			logger.showError('Datasource ' + ds + ' export failed.');
+  			failed++;
+  		} else {
+  			logger.showOutput(response.getBody('utf8'));
+  			logger.showResult('Datasource ' + ds + ' exported successfully.');
+  			success++;
+  		}
 		});
 		if (success > 0) {
 			logger.showResult(success + ' datasources exported successfully.');
@@ -244,6 +258,8 @@ function createURL(grafanaURL, entityType, entityValue) {
 		grafanaURL += '/api/dashboards/db/' + entityValue;
 	} else if (entityType === 'dashboards') {
 		grafanaURL += '/api/dashboards/db/';
+	} else if (entityType === 'dashboard-search') {
+		grafanaURL += '/api/search';
 	} else if (entityType === 'org') {
 		grafanaURL += '/api/orgs/' + entityValue;
 	} else if (entityType === 'orgs') {

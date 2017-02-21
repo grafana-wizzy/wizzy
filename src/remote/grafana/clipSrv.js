@@ -36,9 +36,9 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 		if (response.statusCode === 200) {
 			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png';
 			localfs.writeFile(filename, response.getBody());
-			logger.showResult('Took snapshot ' + i + '.');
+			logger.showResult('Took snapshot ' + (i+1) + '.');
 		} else {
-			logger.showError('Snapshot ' + i + ' failed. Please increase timeout.');
+			logger.showError('Snapshot ' + (i+1) + ' failed. Please increase timeout.');
 		}
 		i++;
 	}
