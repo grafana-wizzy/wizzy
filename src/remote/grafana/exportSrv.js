@@ -84,15 +84,18 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
   		}
   		// Use sync-request to avoid table lockdown
   		var response = syncReq(method, url, {json: body});
-  		if (response.statusCode !== 200) {
+  		try {
   			logger.showOutput(response.getBody('utf8'));
+  		} catch (error) {
+  			logger.showOutput(response.body.toString('utf8'));
+  		}
+			if (response.statusCode !== 200) {
   			logger.showError('Dashboard ' + dashboard + ' export failed.');
   			failed++;
-  		} else {
-  			logger.showOutput(response.getBody('utf8'));
+			} else {
   			logger.showResult('Dashboard ' + dashboard + ' exported successfully.');
   			success++;
-  		}
+			}
 		});
 		if (success > 0) {
 			logger.showResult(success + ' dashboards exported successfully.');
