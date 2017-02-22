@@ -37,7 +37,11 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 	_.forEach(dashboard.rows, function(row) {
 
 		var panelInfo = _.map(row.panels, function(panel) {
-			return panel.title + '(' + panel.datasource + ')';
+			if (panel.datasource === null) {
+				return panel.title + '(default)';
+			} else {
+				return panel.title + '(' + panel.datasource + ')';
+			}
 		});
 
 		arch.rows.push({

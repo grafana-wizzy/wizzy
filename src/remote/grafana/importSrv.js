@@ -5,6 +5,7 @@ var request = require('request');
 var Logger = require('../../util/logger.js');
 var logger = new Logger('importSrv');
 var _ = require('lodash');
+var syncReq = require('sync-request');
 var components;
 
 function ImportSrv(comps) {
@@ -26,7 +27,6 @@ ImportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 			if (response !== null){
 				output += 'Grafana API response status code = ' + response.statusCode;
 			}
-
   		if (error === null) {
   			output += '\nNo error body from Grafana API.';
   		}
@@ -44,6 +44,9 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
 	var successMessage = 'Dashboards import successful.';
 	var failureMessage = 'Dashboards import failed.';
 	var output = '';
+	var failed = 0;
+	var success = 0;
+	var method = 'GET';
 	options.url = createURL(grafanaURL, 'dashboards');
 	options.json = true;
 	request.get(options, function saveHandler(error, response, body) {
@@ -53,22 +56,32 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
 				dashList.push(dashboard.uri.substring(3)); //removing db/
 			});
 			logger.justShow('Importing ' + dashList.length + ' dashboards:');
-			var batchSize = 100, i = 0 ;
   	  _.each(dashList, function(dash) {
-  	  	options.url = createURL(grafanaURL, 'dashboard', dash);
-  	  	request.get(options, function saveHandler(error, response, body) {
- 					if (!error && response.statusCode === 200) {
- 						components.dashboards.saveDashboard(dash, body.dashboard, false);
- 					}
- 					i++;
- 					if (i === batchSize) {
- 						i = 0;
- 						interval(function() {}, 1000, 1); // waits for 1 second before firing another 100 import requests
- 					}
- 				});
-  	  });
-			logger.showResult('Total dashboards imported: ' + dashList.length);
- 			logger.showResult(successMessage);
+	  	  var url = createURL(grafanaURL, 'dashboard', dash);
+				url = sanitizeUrl(url, options.auth);
+				var response = syncReq(method, url);
+	  	  try {
+	  	  	if (response.statusCode === 200) {
+	  	  		var dashResponse = JSON.parse(response.getBody('utf8'));
+	  	  		components.dashboards.saveDashboard(dash, dashResponse.dashboard, false);
+	  	  		logger.showResult(dash + ' imported successfully.');
+	  	  		success++;
+	  	  	}
+	  		} catch (error) {
+	  			logger.showResult(dash + ' import failed.');
+	  			failed++;
+	  			throw new Error();
+	  		}
+	  	});
+			if (success > 0) {
+				logger.showResult(success + ' dashboards imported successfully.');
+			}
+			if (failed > 0) {
+				logger.showError(failed + ' dashboards import failed.');
+				process.exit(1);
+			} else {
+				process.exit(0);
+			}
    	} else {
   		output += 'Grafana API response status code = ' + response.statusCode;
   		if (error === null) {
@@ -198,6 +211,16 @@ ImportSrv.prototype.datasources = function(grafanaURL, options) {
 	});
 };
 
+// add auth to sync request
+function sanitizeUrl(url, auth) {
+	if (auth && auth.username && auth.password) {
+		var urlParts = url.split('://');
+		return urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+	} else {
+		return url;
+	}
+}
+
 function createURL(grafanaURL, entityType, entityValue) {
 
 	if (entityType === 'dashboard') {
@@ -216,25 +239,6 @@ function createURL(grafanaURL, entityType, entityValue) {
 
 	return grafanaURL;
 
-}
-
-// interval function for delay
-function interval(func, wait, times){
-    var interv = function(w, t){
-        return function(){
-            if(typeof t === "undefined" || t-- > 0){
-                setTimeout(interv, w);
-                try{
-                    func.call(null);
-                }
-                catch(e){
-                    t = 0;
-                    throw e.toString();
-                }
-            }
-        };
-    }(wait, times);
-    setTimeout(interv, wait);
 }
 
 module.exports = ImportSrv;
