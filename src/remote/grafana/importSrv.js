@@ -59,7 +59,7 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
   	  _.each(dashList, function(dash) {
 	  	  var url = createURL(grafanaURL, 'dashboard', dash);
 				url = sanitizeUrl(url, options.auth);
-				var response = syncReq(method, url);
+				var response = syncReq(method, url, { headers: options.headers });
 	  	  try {
 	  	  	if (response.statusCode === 200) {
 	  	  		var dashResponse = JSON.parse(response.getBody('utf8'));

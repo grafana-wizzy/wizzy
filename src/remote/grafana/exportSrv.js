@@ -83,7 +83,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
   			body.overwrite = false;
   		}
   		// Use sync-request to avoid table lockdown
-  		var response = syncReq(method, url, {json: body});
+  		var response = syncReq(method, url, {json: body, headers: options.headers });
   		try {
   			logger.showOutput(response.getBody('utf8'));
   		} catch (error) {
@@ -223,7 +223,7 @@ ExportSrv.prototype.datasources = function(grafanaURL, options) {
   		}
   		// Use sync-request to avoid table lockdown
   		url = sanitizeUrl(url, options.auth);
-  		var response = syncReq(method, url, {json: body});
+  		var response = syncReq(method, url, {json: body, headers: options.headers });
   		if (response.statusCode !== 200) {
   			logger.showOutput(response.getBody('utf8'));
   			logger.showError('Datasource ' + ds + ' export failed.');
@@ -273,7 +273,7 @@ function createURL(grafanaURL, entityType, entityValue) {
 		grafanaURL += '/api/datasources/' + entityValue;
 	} else if (entityType === 'datasources') {
 		grafanaURL += '/api/datasources';
-	} 
+	}
 	return grafanaURL;
 }
 
