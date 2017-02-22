@@ -32,7 +32,7 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 		var to = now - (i * 60 * 60000);
 		var completeUrl = url + '&from=' + from + '&to=' + to;
 		completeUrl = sanitizeUrl(completeUrl, options.auth);
-		var response = syncReq('GET', completeUrl);
+		var response = syncReq('GET', completeUrl, { headers: options.headers });
 		if (response.statusCode === 200) {
 			var filename = 'temp/' + String.fromCharCode(120 - i) + '.png';
 			localfs.writeFile(filename, response.getBody());
@@ -52,7 +52,7 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
 	var url = createURL(grafanaURL, 'search-dashboard') + '?tag=' + tagName;
 	url = sanitizeUrl(url, options.auth);
-	var searchResponse = syncReq('GET', url);
+	var searchResponse = syncReq('GET', url, { headers: options.headers });
 	var responseBody = JSON.parse(searchResponse.getBody('utf8'));
 	if (searchResponse.statusCode === 200 && responseBody.length > 0) {
 		logger.showOutput('Taking dashboard snapshots.');
@@ -61,7 +61,7 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
 			var dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
 			dashUrl += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
 			dashUrl = sanitizeUrl(dashUrl, options.auth);
-			var response = syncReq('GET', dashUrl);
+			var response = syncReq('GET', dashUrl, { headers: options.headers });
 			if (response.statusCode === 200) {
 				var filename = 'temp/' + dashName + '.png';
 				localfs.writeFile(filename, response.getBody());
@@ -77,7 +77,7 @@ ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
 	logger.justShow('Waiting 5 seconds before generating clip.');
 	interval(function() {
 		createGif(tagName);
-	}, 5000, 1); 
+	}, 5000, 1);
 };
 
 ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
@@ -90,7 +90,7 @@ ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
 			var dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
 			dashUrl += '?width=' + clipConfig.render_width + '&height=' + clipConfig.render_height + '&timeout=' + clipConfig.render_timeout;
 			dashUrl = sanitizeUrl(dashUrl, options.auth);
-			var response = syncReq('GET', dashUrl);
+			var response = syncReq('GET', dashUrl, { headers: options.headers });
 			if (response.statusCode === 200) {
 				var filename = 'temp/' + dashName + '.png';
 				localfs.writeFile(filename, response.getBody());
@@ -104,7 +104,7 @@ ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
 	logger.justShow('Waiting 5 seconds before generating clip.');
 	interval(function() {
 		createGif(listName);
-	}, 5000, 1); 
+	}, 5000, 1);
 };
 
 function createGif(clipName) {
