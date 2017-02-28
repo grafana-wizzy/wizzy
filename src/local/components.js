@@ -9,6 +9,7 @@ var Table = require('cli-table');
 
 var _ = require('lodash');
 
+var Alerts = require('../local/alerts.js');
 var Datasources = require('../local/datasources.js');
 var Orgs = require('../local/orgs.js');
 var Dashboards = require('../local/dashboards.js');
@@ -18,6 +19,7 @@ var config;
 
 function Components(conf) {
 	config = conf;
+	this.alerts = new Alerts();
 	this.dashboards = new Dashboards();
 	this.orgs = new Orgs();
 	this.datasources = new Datasources();
@@ -25,6 +27,7 @@ function Components(conf) {
 }
 
 Components.prototype.createIfNotExists = function(showOutput) {
+	this.alerts.createIfNotExists(showOutput);
 	this.dashboards.createIfNotExists(showOutput);
 	this.orgs.createIfNotExists(showOutput);
 	this.datasources.createIfNotExists(showOutput);
@@ -33,9 +36,10 @@ Components.prototype.createIfNotExists = function(showOutput) {
 
 Components.prototype.checkDirsStatus = function(showOutput) {
 
-	return this.dashboards.checkDirStatus(showOutput) && 
-		this.orgs.checkDirStatus(showOutput) && 
-		this.datasources.checkDirStatus(showOutput) && 
+	return this.alerts.checkDirStatus(showOutput) &&
+		this.dashboards.checkDirStatus(showOutput) &&
+		this.orgs.checkDirStatus(showOutput) &&
+		this.datasources.checkDirStatus(showOutput) &&
 		this.dashlist.checkFileStatus(showOutput);
 
 };
@@ -117,7 +121,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 				destRows.splice(destRowNumber-1, 0, srcRow);
 				self.dashboards.saveDashboard(destDashboardSlug, destDashboard, true);
 				logger.showResult(successMessage);
-			} 
+			}
 
 			// something else happened
 			else {
@@ -141,13 +145,13 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 				self.dashboards.saveDashboard(srcDashboardSlug, srcDashboard, true);
 				logger.showResult(successMessage);
 			}
-			
+
 			// when destination is just a single number which makes no sense in panels
 			else if (destinationArray.length === 1) {
 				logger.showError('Unsupported destination ' + destinationArray + '.');
 			}
 
-			// when destination is another panel on the same dashboard 
+			// when destination is another panel on the same dashboard
 			else if (destinationArray.length === 2) {
 				destRowNumber = parseInt(destinationArray[0]);
 				destPanels = srcRows[destRowNumber-1].panels;
@@ -200,7 +204,7 @@ Components.prototype.moveCopyOrRemove = function(commands) {
 
 		// valid destination
 		else if (destinationArray.length === 2) {
-			
+
 			destDashboardSlug = destinationArray[0];
 			destDashboard = self.dashboards.readDashboard(destDashboardSlug);
 			var destTempVarList = destDashboard.templating.list;
@@ -257,6 +261,9 @@ Components.prototype.summarize = function(commands) {
 	} else if (entityType === 'datasources') {
 		self.datasources.summarize();
 		successMessage = 'Showed datasources summary successfully.';
+	} else if (entityType === 'alerts') {
+		self.alerts.summarize();
+		successMessage = 'Showed alerts summary successfully.';
 	} else {
 		logger.showError('Unsupported command. Please try `wizzy help`.');
 		return;
@@ -280,7 +287,7 @@ Components.prototype.change = function(commands) {
  	var successMessage;
 
  	if (component === 'panels' && entityType === 'datasource') {
- 		
+
  		successMessage = 'Datasource changed successfully';
 
  		if (typeof oldDatasource !== 'string') {

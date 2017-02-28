@@ -11,6 +11,117 @@ var components;
 function ExportSrv(comps) {
 	components = comps;
 }
+ExportSrv.prototype.alert = function(grafanaURL, options, name) {
+    var body = components.alerts.read(name);
+    var successMessage = 'Alert ' + name + ' export successful.';
+    var failureMessage = 'Alert ' + name + ' export failed.';
+    options.url = createURL(grafanaURL, 'show-alert', name);
+    request.get(options, function checkHandler(error_check, response_check, body_check) {
+        if (response_check.statusCode === 404) {
+            logger.justShow('Alert does not exists in Grafana.');
+            logger.justShow('Trying to create a new alert.');
+            delete body.id;
+            options.url = createURL(grafanaURL, 'alerts');
+            options.body = body;
+            request.post(options, function responseHandler(error, response, body) {
+                var output = '';
+                if (!error && response.statusCode === 200) {
+                    output += logger.stringify(body);
+                    logger.showOutput(output);
+                    logger.showResult(successMessage);
+                } else {
+                    output += 'Grafana API response status code = ' + response.statusCode;
+                    if (error === null) {
+                        output += '\nNo error body from Grafana API.';
+                    } else {
+                        output += '\n' + error;
+                    }
+                    logger.showOutput(output);
+                    logger.showResult(failureMessage);
+                }
+            });
+        } else if (response_check.statusCode === 200) {
+            options.url = createURL(grafanaURL, 'alert', body_check.id);
+            options.body = body;
+            request.put(options, function responseHandler(error, response, body) {
+                var output = '';
+                if (!error && response.statusCode === 200) {
+                    output += logger.stringify(body);
+                    logger.showOutput(output);
+                    logger.showResult(successMessage);
+                } else {
+                    output += 'Grafana API response status code = ' + response.statusCode;
+                    if (error === null) {
+                        output += '\nNo error body from Grafana API.';
+                    } else {
+                        output += '\n' + error;
+                    }
+                    logger.showOutput(output);
+                    logger.showResult(failureMessage);
+                }
+            });
+        } else {
+            logger.showError('Unknown response from Grafana.');
+        }
+    });
+};
+
+ExportSrv.prototype.alerts = function(grafanaURL, options) {
+    var names = components.readEntityNamesFromDir('alerts');
+    options.url = createURL(grafanaURL, 'alerts');
+    var failed = 0;
+    var success = 0;
+    request.get(options, function saveHandler(error_check, response_check, body_check) {
+        // Getting existing list of alerts and making a mapping of names to ids
+        var ids = {};
+        _.forEach(body_check, function(alert) {
+            ids[alert.name] = alert.id;
+        });
+
+        // Here we try exporting (either updating or creating) a alert
+        _.forEach(names, function(name) {
+            var url;
+            var method;
+            var body = components.alerts.read(name);
+            // if local dashboard exists in Grafana we update
+            if (body.name in ids) {
+                body.id = ids[body.name];
+                url = createURL(grafanaURL, 'alert', body.id);
+                method = 'PUT';
+            }
+            // otherwise we create the alert
+            else {
+                delete body.id;
+                url = createURL(grafanaURL, 'alerts');
+                method = 'POST';
+            }
+            // Use sync-request to avoid table lockdown
+            url = sanitizeUrl(url, options.auth);
+            var response = syncReq(method, url, {
+                json: body,
+                headers: options.headers
+            });
+            if (response.statusCode !== 200) {
+                logger.showOutput(response.getBody('utf8'));
+                logger.showError('Alert ' + name + ' export failed.');
+                failed++;
+            } else {
+                logger.showOutput(response.getBody('utf8'));
+                logger.showResult('Alert ' + name + ' exported successfully.');
+                success++;
+            }
+        });
+        if (success > 0) {
+            logger.showResult(success + ' alerts exported successfully.');
+        }
+        if (failed > 0) {
+            logger.showError(failed + ' alerts export failed.');
+            process.exit(1);
+        } else {
+            process.exit(0);
+        }
+    });
+};
 
 ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 	var successMessage = 'Dashboard '+ dashboardName + ' export successful.';
@@ -273,6 +384,10 @@ function createURL(grafanaURL, entityType, entityValue) {
 		grafanaURL += '/api/datasources/' + entityValue;
 	} else if (entityType === 'datasources') {
 		grafanaURL += '/api/datasources';
+	} else if (entityType === 'alert') {
+		grafanaURL += '/api/alert-notifications/' + entityValue;
+	} else if (entityType === 'alerts') {
+		grafanaURL += '/api/alert-notifications';
 	}
 	return grafanaURL;
 }
