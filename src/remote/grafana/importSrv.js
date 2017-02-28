@@ -211,6 +211,57 @@ ImportSrv.prototype.datasources = function(grafanaURL, options) {
 	});
 };
 
+ImportSrv.prototype.alert = function(grafanaURL, options, name) {
+
+	options.url = createURL(grafanaURL, 'alert', name);
+	options.json = true;
+	request.get(options, function saveHandler(error, response, body) {
+		var output = '';
+		if (!error && response.statusCode === 200) {
+  	  output += body;
+  	  delete body.id;
+  	  components.alerts.save(body.name, body, true);
+  	  logger.showResult('Alert '+ name + ' import successful.');
+  	} else {
+  		output += 'Grafana API response status code = ' + response.statusCode;
+  		if (error === null) {
+  			output += '\nNo error body from Grafana API.';
+  		}
+  		else {
+  			output += '\n' + error;
+  		}
+  		logger.showOutput(output);
+  		logger.showError('Alert '+ name + ' import failed.');
+  	}
+	});
+};
+
+ImportSrv.prototype.alerts = function(grafanaURL, options) {
+	var self = this;
+	var output = '';
+	options.url = createURL(grafanaURL, 'alerts');
+	options.json = true;
+	request.get(options, function saveHandler(error, response, body) {
+		if (!error && response.statusCode === 200) {
+			_.each(body, function(alert){
+				self.alert(grafanaURL, options, alert.id)
+			});
+  	  logger.showResult('Total alerts imported: ' + body.length);
+  	  logger.showResult('Alerts import successful.');
+  	} else {
+  		output += 'Grafana API response status code = ' + response.statusCode;
+  		if (error === null) {
+  			output += '\nNo error body from Grafana API.';
+  		}
+  		else {
+  			output += '\n' + error;
+  		}
+  		logger.showOutput(output);
+  		logger.showError('Alerts import failed.');
+  	}
+	});
+};
+
 // add auth to sync request
 function sanitizeUrl(url, auth) {
 	if (auth && auth.username && auth.password) {
@@ -235,6 +286,10 @@ function createURL(grafanaURL, entityType, entityValue) {
 		grafanaURL += '/api/datasources';
 	} else if (entityType === 'datasource') {
 		grafanaURL += '/api/datasources/name/' + entityValue;
+	} else if (entityType === 'alerts') {
+		grafanaURL += '/api/alert-notifications'
+	} else if (entityType === 'alert') {
+		grafanaURL += '/api/alert-notifications/' + entityValue;
 	}
 
 	return grafanaURL;

@@ -182,6 +182,14 @@ Grafana.prototype.import = function(commands) {
 	else if (entityType === 'orgs') {
 		importSrv.orgs(self.grafanaUrl, self.setURLOptions());
 	}
+	// import a alert from Grafana
+	else if (entityType === 'alert') {
+		importSrv.alert(self.grafanaUrl, self.setURLOptions(), entityValue);
+	}
+	// import all alerts from Grafana
+	else if (entityType === 'alerts') {
+		importSrv.alerts(self.grafanaUrl, self.setURLOptions());
+	}
 	// import a datasource from Grafana
 	else if (entityType === 'datasource') {
 		importSrv.datasource(self.grafanaUrl, self.setURLOptions(), entityValue);
@@ -215,6 +223,14 @@ Grafana.prototype.export = function(commands) {
 	// exporting a local org to Grafana
 	else if (entityType === 'org') {
 		exportSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
+	}
+	// exporting a single local alert notification to Grafana
+	else if (entityType === 'alert') {
+		exportSrv.alert(self.grafanaUrl, self.setURLOptions(), entityValue);
+	}
+	// exporting all local alert notifications to Grafana
+	else if (entityType === 'alerts') {
+		exportSrv.alerts(self.grafanaUrl, self.setURLOptions());
 	}
 	// exporting a single local datasource to Grafana
 	else if (entityType === 'datasource') {
