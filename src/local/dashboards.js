@@ -65,6 +65,7 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 
 // Saving a dashboard file on disk
 Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
+	delete dashboard.id;
 	localfs.createDirIfNotExists(dashDir, showResult);
 	// we delete version when we import the dashboard... as version is maintained by Grafana
 	delete dashboard.version;
@@ -177,7 +178,7 @@ Dashboards.prototype.readDashboard = function(slug) {
 		logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
 		process.exit();
 	}
-	
+
 };
 
 function sanitizePanels(dashboard) {
