@@ -243,7 +243,7 @@ ImportSrv.prototype.alerts = function(grafanaURL, options) {
     request.get(options, function saveHandler(error, response, body) {
         if (!error && response.statusCode === 200) {
             _.each(body, function(alert) {
-                self.alert(grafanaURL, options, alert.id)
+                self.alert(grafanaURL, options, alert.id);
             });
             logger.showResult('Total alerts imported: ' + body.length);
             logger.showResult('Alerts import successful.');
@@ -285,7 +285,7 @@ function createURL(grafanaURL, entityType, entityValue) {
 	} else if (entityType === 'datasource') {
 		grafanaURL += '/api/datasources/name/' + entityValue;
 	} else if (entityType === 'alerts') {
-		grafanaURL += '/api/alert-notifications'
+		grafanaURL += '/api/alert-notifications';
 	} else if (entityType === 'alert') {
 		grafanaURL += '/api/alert-notifications/' + entityValue;
 	}
