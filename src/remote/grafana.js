@@ -224,6 +224,10 @@ Grafana.prototype.export = function(commands) {
 	else if (entityType === 'org') {
 		exportSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
 	}
+	// exporting a local org to Grafana
+	else if (entityType === 'orgs') {
+		exportSrv.orgs(self.grafanaUrl, self.setURLOptions());
+	}
 	// exporting a single local alert notification to Grafana
 	else if (entityType === 'alert') {
 		exportSrv.alert(self.grafanaUrl, self.setURLOptions(), entityValue);

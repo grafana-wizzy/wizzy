@@ -246,6 +246,57 @@ ExportSrv.prototype.org = function(grafanaURL, options, orgName) {
 	});
 };
 
+ExportSrv.prototype.orgs = function(grafanaURL, options) {
+	var names = components.readEntityNamesFromDir('orgs');
+	options.url = createURL(grafanaURL, 'orgs');
+	var failed = 0;
+	var success = 0;
+	request.get(options, function saveHandler(error_check, response_check, body_check) {
+		var ids = {};
+		_.forEach(body_check, function(org) {
+			ids[org.name] = org.id;
+		});
+
+		_.forEach(names, function(name) {
+			var url;
+			var method;
+			var body = components.orgs.readOrg(name);
+			// if local dashboard exists in Grafana we update
+			if (body.name in ids) {
+				body.id = ids[body.name];
+				url = createURL(grafanaURL, 'org', body.id);
+				method = 'PUT';
+			}
+			// otherwise we create the datasource
+			else {
+				delete body.id;
+				url = createURL(grafanaURL, 'orgs');
+				method = 'POST';
+  		}
+  		// Use sync-request to avoid table lockdown
+  		url = sanitizeUrl(url, options.auth);
+  		var response = syncReq(method, url, {json: body, headers: options.headers });
+			logger.showOutput(response.getBody('utf8'));
+  		if (response.statusCode === 200) {
+				logger.showResult('Org ' + name + ' exported successfully.');
+  			success++;
+  		} else {
+				logger.showError('Org ' + name + ' export failed.');
+  			failed++;
+  		}
+		});
+		if (success > 0) {
+			logger.showResult(success + ' orgs exported successfully.');
+		}
+		if (failed > 0) {
+			logger.showError(failed + ' orgs export failed.');
+			process.exit(1);
+		} else {
+			process.exit(0);
+		}
+	});
+};
+
 ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
 	var body = components.datasources.readDatasource(datasourceName);
 	var successMessage = 'Datasource '+ datasourceName + ' export successful.';
