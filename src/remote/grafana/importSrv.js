@@ -264,7 +264,7 @@ ImportSrv.prototype.alerts = function(grafanaURL, options) {
 function sanitizeUrl(url, auth) {
 	if (auth && auth.username && auth.password) {
 		var urlParts = url.split('://');
-		return urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
+		return urlParts[0] + '://' + encodeURIComponent(auth.username) + ':' + encodeURIComponent(auth.password) + '@' + urlParts[1];
 	} else {
 		return url;
 	}
