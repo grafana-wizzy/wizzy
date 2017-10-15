@@ -2,7 +2,7 @@
 "use strict";
 
 // Setting up cli version and commands
-var program = require('commander').version('0.5.9');
+var program = require('commander');
 
 var Commands = require('./commands.js');
 var commands = new Commands();

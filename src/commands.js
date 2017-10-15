@@ -37,16 +37,17 @@ function Commands() {
 Commands.prototype.instructions = function() {
 
 	/* Key points before editing the cases:
-		1. case 'version' does not have to be defined as it comes from commander.js
-		2. process.argv[0] - reserverd for `node`
-		3. process.argv[1] - reserverd for `wizzy` or `index.js`
+		1. process.argv[0] - reserverd for `node`
+		2. process.argv[1] - reserverd for `wizzy` or `index.js`
 	*/
 
 	var commands = _.drop(process.argv, 2);
 	var command = commands[0];
 
 	switch(command) {
-		
+		case 'version':
+			console.log('0.6.0');
+			break;
 		case 'help':
 			help.showHelp();
 			break;

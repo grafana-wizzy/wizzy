@@ -25,6 +25,9 @@ function Grafana(conf, comps) {
 			}
 		}
 		if (conf.grafana.url) {
+			if (conf.grafana.url.slice(-1) == "/") {
+				conf.grafana.url = conf.grafana.url.slice(0,-1);
+			}
 			this.grafanaUrl = conf.grafana.url;
 		}
 		if (conf.grafana.api_key) {
