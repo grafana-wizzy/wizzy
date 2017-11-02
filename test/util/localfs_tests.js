@@ -11,7 +11,7 @@ var LocalFS = require('../../src/util/localfs.js');
 var localfs;
 
 beforeEach(function() {
-	localfs = new LocalFS();
+  localfs = new LocalFS();
 });
 
 afterEach(function() {
@@ -38,9 +38,9 @@ describe('Checking output when file or dir exists', function() {
   });
 
   it('should display that file or dir exists', function() {
-  	var result = localfs.checkExists('dashboards', 'Dashboards', true);
-  	expect(result).to.equal(true);
-  	assert.isTrue(console.log.called, "log should have been called.");
+    var result = localfs.checkExists('dashboards', 'Dashboards', true);
+    expect(result).to.equal(true);
+    assert.isTrue(console.log.called, "log should have been called.");
     assert.equal(console.log.callCount, 1);
     assert.isTrue(console.log.calledOnce);
     expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'Dashboards exists.'.cyan);
@@ -53,7 +53,6 @@ describe('Checking output when file or dir exists', function() {
     assert.isTrue(console.log.calledOnce);
     expect(console.log.getCall(0).args[0]).to.equal('\u2714 '.green + 'dashboards directory already exists.'.cyan);
   });
-  
 
 });
 
@@ -77,9 +76,9 @@ describe('Checking output when file or dir does not exists', function() {
   });
 
   it('should display that file or dir exists', function() {
-  	var result = localfs.checkExists('dashboards', 'Dashboards', true);
-  	expect(result).to.equal(false);
-  	assert.isTrue(console.log.called, "log should have been called.");
+    var result = localfs.checkExists('dashboards', 'Dashboards', true);
+    expect(result).to.equal(false);
+    assert.isTrue(console.log.called, "log should have been called.");
     assert.equal(console.log.callCount, 1);
     assert.isTrue(console.log.calledOnce);
     expect(console.log.getCall(0).args[0]).to.equal('Dashboards does not exists.'.yellow);

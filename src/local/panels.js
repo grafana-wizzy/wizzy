@@ -14,30 +14,27 @@ function Panels() {}
 
 // Save a panel under panels directory on disk
 Panels.prototype.savePanel = function(panelName, content, showResult) {
-	localfs.createDirIfNotExists(panelsDir, showResult);
-	localfs.writeFile(getPanelsFile(panelName), logger.stringify(content, null, 2));
-	if (showResult) {
-		logger.showResult('Panel ' + panelName + ' saved successfully under panels directory.');
-	}
-
+  localfs.createDirIfNotExists(panelsDir, showResult);
+  localfs.writeFile(getPanelsFile(panelName), logger.stringify(content, null, 2));
+  if (showResult) {
+    logger.showResult('Panel ' + panelName + ' saved successfully under panels directory.');
+  }
 };
 
 // Reads panel json from file.
 Panels.prototype.readPanel = function(panelName) {
-	if (localfs.checkExists(getPanelsFile(panelName))) {
-		return JSON.parse(localfs.readFile(getPanelsFile(panelName)));
-	}
-	else {
-		logger.showError('Panel file ' + getPanelsFile(panelName) + ' does not exist.');
-		process.exit();
-	}
+  if (localfs.checkExists(getPanelsFile(panelName))) {
+    return JSON.parse(localfs.readFile(getPanelsFile(panelName)));
+  }
+  else {
+    logger.showError('Panel file ' + getPanelsFile(panelName) + ' does not exist.');
+    process.exit();
+  }
 };
 
 // Get panels file name from panel name
 function getPanelsFile(panelName) {
-
-	return panelsDir + '/' + panelName + '.json';
-
+  return panelsDir + '/' + panelName + '.json';
 }
 
 module.exports = Panels;
