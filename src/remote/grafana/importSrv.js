@@ -37,52 +37,18 @@ ImportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
       logger.showError(failureMessage);
     }
   });
-
 };
 
 ImportSrv.prototype.dashboards = function(grafanaURL, options) {
-  var successMessage = 'Dashboards import successful.';
-  var failureMessage = 'Dashboards import failed.';
   var output = '';
   var failed = 0;
   var success = 0;
-  var method = 'GET';
+
   options.url = createURL(grafanaURL, 'dashboards');
   options.json = true;
+
   request.get(options, function saveHandler(error, response, body) {
-    var dashList = [];
-    if (!error && response.statusCode === 200) {
-      _.each(body, function(dashboard) {
-        dashList.push(dashboard.uri.substring(3)); //removing db/
-      });
-      logger.justShow('Importing ' + dashList.length + ' dashboards:');
-      _.each(dashList, function(dash) {
-        var url = createURL(grafanaURL, 'dashboard', dash);
-        url = sanitizeUrl(url, options.auth);
-        var response = syncReq(method, url, { headers: options.headers });
-        try {
-          if (response.statusCode === 200) {
-            var dashResponse = JSON.parse(response.getBody('utf8'));
-            components.dashboards.saveDashboard(dash, dashResponse.dashboard, false);
-            logger.showResult(dash + ' imported successfully.');
-            success++;
-          }
-        } catch (error) {
-          logger.showResult(dash + ' import failed.');
-          failed++;
-          throw new Error();
-        }
-      });
-      if (success > 0) {
-        logger.showResult(success + ' dashboards imported successfully.');
-      }
-      if (failed > 0) {
-        logger.showError(failed + ' dashboards import failed.');
-        process.exit(1);
-      } else {
-        process.exit(0);
-      }
-    } else {
+    if (error || response.statusCode !== 200) {
       output += 'Grafana API response status code = ' + response.statusCode;
       if (error === null) {
         output += '\nNo error body from Grafana API.';
@@ -91,14 +57,56 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
         output += '\n' + error;
       }
       logger.showOutput(output);
-      logger.showError(failureMessage);
+      logger.showError('Error getting list of dashboards from Grafana');
+      process.exit(1);
+    }
+
+    var dashList = [];
+    _.forEach(body, function(dashboard) {
+      dashList.push(dashboard.uri.substring(3)); //removing db/
+    });
+    logger.justShow('Importing ' + dashList.length + ' dashboards:');
+
+    var headers = options.headers || {};
+    if (options.auth.bearer) {
+      headers.Authorization = 'Bearer ' + options.auth.bearer;
+    }
+
+    // Here we try importing a dashboard
+    _.forEach(dashList, function(dashboard) {
+      var url = createURL(grafanaURL, 'dashboard', dashboard);
+      url = sanitizeUrl(url, options.auth);
+      try {
+        var response = syncReq('GET', url, { headers: headers});
+        if (response.statusCode !== 200) {
+          logger.showError('Dashboard ' + dashboard + ' import failed: ' + response.getBody('utf8'));
+          failed++;
+        } else {
+          var dashResponse = JSON.parse(response.getBody('utf8'));
+          components.dashboards.saveDashboard(dashboard, dashResponse.dashboard, false);
+          logger.showResult('Dashboard ' + dashboard + ' imported successfully.');
+          success++;
+        }
+      } catch (error) {
+        logger.showError('Dashboard ' + dashboard + ' import failed: ' + error);
+        failed++;
+      }
+    });
+
+    if (success > 0) {
+      logger.showResult(success + ' dashboards imported successfully.');
+    }
+
+    if (failed > 0) {
+      logger.showError(failed + ' dashboards import failed.');
+      process.exit(1);
     }
   });
 };
 
 ImportSrv.prototype.org = function(grafanaURL, options, orgName) {
   var successMessage = 'Org '+ orgName + ' import successful.';
-  var  failureMessage = 'Org '+ orgName + ' import failed.';
+  var failureMessage = 'Org '+ orgName + ' import failed.';
   var output = '';
   options.url = createURL(grafanaURL, 'org', orgName);
   options.json = true;
@@ -123,7 +131,7 @@ ImportSrv.prototype.org = function(grafanaURL, options, orgName) {
 
 ImportSrv.prototype.orgs = function(grafanaURL, options) {
   var successMessage = 'Orgs import successful.';
-  var  failureMessage = 'Orgs import failed.';
+  var failureMessage = 'Orgs import failed.';
   var output = '';
   options.url = createURL(grafanaURL, 'orgs');
   options.json = true;
@@ -185,7 +193,7 @@ ImportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
 
 ImportSrv.prototype.datasources = function(grafanaURL, options) {
   var successMessage = 'Datasources import successful.';
-  var  failureMessage = 'Datasources import failed.';
+  var failureMessage = 'Datasources import failed.';
   var output = '';
   options.url = createURL(grafanaURL, 'datasources');
   options.json = true;
