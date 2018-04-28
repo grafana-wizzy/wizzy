@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 "use strict";
 
 var fs = require('fs');
@@ -38,11 +39,10 @@ LocalFS.prototype.checkExists = function(name, output, showOutput) {
 };
 
 LocalFS.prototype.readFile = function(name, showOnError) {
-  return fs.readFileSync(name, 'utf8', function (error, data) {
+  return fs.readFileSync(name, 'utf8', function(error, data) {
     if (!error) {
       logger.showResult('Read file ' + name + ' successfully.');
-    }
-    else {
+    } else {
       logger.showError('Error in reading file ' + name);
     }
   });
@@ -54,6 +54,12 @@ LocalFS.prototype.writeFile = function(name, content) {
 
 LocalFS.prototype.readFilesFromDir = function(dirName) {
   return fs.readdirSync(dirName);
+};
+
+LocalFS.prototype.getDirListInside = function(path) {
+  return fs.readdirSync(path).filter(function(file) {
+    return fs.statSync(path + '/' + file).isDirectory();
+  });
 };
 
 LocalFS.prototype.createDir = function(name, output) {

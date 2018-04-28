@@ -124,13 +124,20 @@ ExportSrv.prototype.alerts = function(grafanaURL, options) {
 };
 
 ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
+
+  var folder = "";
+  if (dashboardName.includes("/")){
+    folder = dashboardName.split("/")[0];
+    dashboardName = dashboardName.split("/")[1];
+  }
+
   var successMessage = 'Dashboard '+ dashboardName + ' export successful.';
   var failureMessage = 'Dashboard '+ dashboardName + ' export failed.';
   options.url = createURL(grafanaURL, 'dashboard', dashboardName);
   request.get(options, function responseHandler(error_check, response_check, body_check) {
     // this means that dashboard does not exist so will create a new one
     var dashBody = {
-      dashboard: components.dashboards.readDashboard(dashboardName),
+      dashboard: components.dashboards.readDashboard(dashboardName, folder),
       overwrite: true
     };
     if (response_check.statusCode === 404) {
@@ -192,59 +199,63 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
       }
     });
 
-    var dashList = components.readEntityNamesFromDir('dashboards');
-    logger.justShow('Exporting ' + dashList.length + ' dashboards:');
+    var folderList = components.getDashboardFolders('dashboards');
+    _.forEach(folderList, function(folder) {
+      var dashList = components.readEntityNamesFromDir('dashboards/' + folder);
+      logger.justShow('Exporting ' + dashList.length + 'dashboards/' + folder);
 
-    var headers = options.headers || {};
-    if (options.auth.bearer) {
-      headers.Authorization = 'Bearer ' + options.auth.bearer;
-    }
-
-    // Here we try exporting (either updating or creating) a dashboard
-    _.forEach(dashList, function(dashboard) {
-      var url = createURL(grafanaURL, 'dashboards');
-      url = sanitizeUrl(url, options.auth);
-      var body = {
-        dashboard: components.dashboards.readDashboard(dashboard),
-      };
-      // Updating an existing dashboard
-      if (dashboard in dashSlugs) {
-        body.dashboard.id = dashSlugs[dashboard];
-        body.overwrite = true;
-      } else {
-        // Creating a new dashboard
-        body.dashboard.id = null;
-        body.overwrite = false;
+      var headers = options.headers || {};
+      if (options.auth.bearer) {
+        headers.Authorization = 'Bearer ' + options.auth.bearer;
       }
-      // Use sync-request to avoid table lockdown
-      try {
-        var response = syncReq('POST', url, {json: body, headers: headers});
-        try {
-          logger.showOutput(response.getBody('utf8'));
-        } catch (error) {
-          logger.showOutput(response.body.toString('utf8'));
-        }
-        if (response.statusCode !== 200) {
-          logger.showError('Dashboard ' + dashboard + ' export failed.');
-          failed++;
+
+      // Here we try exporting (either updating or creating) a dashboard
+      _.forEach(dashList, function(dashboard) {
+        var url = createURL(grafanaURL, 'dashboards');
+        url = sanitizeUrl(url, options.auth);
+        var body = {
+          dashboard: components.dashboards.readDashboard(dashboard, folder),
+        };
+        // Updating an existing dashboard
+        if (dashboard in dashSlugs) {
+          body.dashboard.id = dashSlugs[dashboard];
+          body.overwrite = true;
         } else {
-          logger.showResult('Dashboard ' + dashboard + ' exported successfully.');
-          success++;
+          // Creating a new dashboard
+          body.dashboard.id = null;
+          body.overwrite = false;
         }
-      } catch (error) {
-        logger.showError('Dashboard ' + dashboard + ' export failed: ' + error);
-        failed++;
+        // Use sync-request to avoid table lockdown
+        try {
+          var response = syncReq('POST', url, {json: body, headers: headers});
+          try {
+            logger.showOutput(response.getBody('utf8'));
+          } catch (error) {
+            logger.showOutput(response.body.toString('utf8'));
+          }
+          if (response.statusCode !== 200) {
+            logger.showError('Dashboard ' + dashboard + ' export failed.');
+            failed++;
+          } else {
+            logger.showResult('Dashboard ' + dashboard + ' exported successfully.');
+            success++;
+          }
+        } catch (error) {
+          logger.showError('Dashboard ' + dashboard + ' export failed: ' + error);
+          failed++;
+        }
+      });
+
+      if (success > 0) {
+        logger.showResult(success + ' dashboards exported successfully.');
+      }
+
+      if (failed > 0) {
+        logger.showError(failed + ' dashboards export failed.');
+        process.exit(1);
       }
     });
 
-    if (success > 0) {
-      logger.showResult(success + ' dashboards exported successfully.');
-    }
-
-    if (failed > 0) {
-      logger.showError(failed + ' dashboards export failed.');
-      process.exit(1);
-    }
   });
 };
 
