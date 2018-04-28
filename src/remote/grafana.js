@@ -269,12 +269,12 @@ Grafana.prototype.list = function(commands) {
       var output = '';
       if (!error && response.statusCode === 200) {
         var table = new Table({
-            head: ['Title', 'Slug'],
-            colWidths: [50, 50]
-        });
-        _.each(body, function(dashboard) {
-          table.push([dashboard.title, dashboard.uri.substring(3)]); //removing db/
-        });
+	    			head: ['Title', 'Slug', 'ID / UID', 'Type', 'folderTitle'],
+	  				colWidths: [30, 30, 30, 30, 30]
+				});
+				_.each(body, function(dashboard){
+					table.push([dashboard.title, dashboard.uri.substring(3), dashboard.id + " / " + dashboard.uid, dashboard.type, dashboard.folderTitle || ""]); //removing db/
+				});
         output += table.toString();
         logger.showOutput(output);
         logger.showResult('Total dashboards: ' + body.length);

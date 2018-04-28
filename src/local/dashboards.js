@@ -62,13 +62,20 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
   logger.showOutput(logger.stringify(arch));
 };
 
+
 // Saving a dashboard file on disk
-Dashboards.prototype.saveDashboard = function(slug, dashboard, showResult) {
+Dashboards.prototype.saveDashboard = function(slug, dashboard, meta, showResult) {
   delete dashboard.id;
+  var folder = meta.folderTitle || "";
+  if (folder.length > 0 ) {
+    folder = "/" + folder;
+  }
   localfs.createDirIfNotExists(dashDir, showResult);
+  localfs.createDirIfNotExists(dashDir + folder, showResult);
+
   // we delete version when we import the dashboard... as version is maintained by Grafana
   delete dashboard.version;
-  localfs.writeFile(getDashboardFile(slug), logger.stringify(dashboard, null, 2));
+  localfs.writeFile(getDashboardFile(slug, folder), logger.stringify(dashboard, null, 2));
   if (showResult) {
     logger.showResult(slug + ' dashboard saved successfully under dashboards directory.');
   }
@@ -165,12 +172,12 @@ Dashboards.prototype.list = function(entityValue, datasource) {
 };
 
 // Reads dashboard json from file.
-Dashboards.prototype.readDashboard = function(slug) {
-  if (localfs.checkExists(getDashboardFile(slug))) {
-    return sanitizePanels(JSON.parse(localfs.readFile(getDashboardFile(slug))));
+Dashboards.prototype.readDashboard = function(slug, folder) {
+  if (localfs.checkExists(getDashboardFile(slug, folder))) {
+    return sanitizePanels(JSON.parse(localfs.readFile(getDashboardFile(slug, folder))));
   }
   else {
-    logger.showError('Dashboard file ' + getDashboardFile(slug) + ' does not exist.');
+    logger.showError('Dashboard file ' + getDashboardFile(slug, folder) + ' does not exist.');
     process.exit();
   }
 };
@@ -188,8 +195,8 @@ function sanitizePanels(dashboard) {
 }
 
 // Get dashboard file name from slug
-function getDashboardFile(slug) {
-  return dashDir + '/' + slug + '.json';
+function getDashboardFile(slug, folder) {
+  return dashDir + "/" + folder + '/' + slug + '.json';
 }
 
 module.exports = Dashboards;

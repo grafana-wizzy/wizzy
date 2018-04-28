@@ -396,6 +396,13 @@ Components.prototype.readEntityNamesFromDir = function(dirName) {
   return entities;
 };
 
+// Reads all entities from a directory and removes
+Components.prototype.getDashboardFolders = function(dirName) {
+  var entities = [];
+  entities = localfs.getDirListInside('./' + dirName);
+  return entities;
+};
+
 // Checking context dashboard setting
 function checkOrGetContextDashboard() {
   if (config.context && config.context.dashboard) {

@@ -21,7 +21,7 @@ ImportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
   request.get(options, function saveHandler(error, response, body) {
     if (!error && response.statusCode === 200) {
       output += body;
-      components.dashboards.saveDashboard(dashboardName, body.dashboard, true);
+      components.dashboards.saveDashboard(dashboardName, body.dashboard, body.meta, true);
       logger.showResult(successMessage);
     } else {
       if (response !== null) {
@@ -43,6 +43,8 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
   var output = '';
   var failed = 0;
   var success = 0;
+
+  // Getting Dashboards and put them into folders / main
 
   options.url = createURL(grafanaURL, 'dashboards');
   options.json = true;
@@ -83,7 +85,7 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
           failed++;
         } else {
           var dashResponse = JSON.parse(response.getBody('utf8'));
-          components.dashboards.saveDashboard(dashboard, dashResponse.dashboard, false);
+          components.dashboards.saveDashboard(dashboard, dashResponse.dashboard, dashResponse.meta, false);
           logger.showResult('Dashboard ' + dashboard + ' imported successfully.');
           success++;
         }
@@ -280,8 +282,12 @@ function sanitizeUrl(url, auth) {
 function createURL(grafanaURL, entityType, entityValue) {
   if (entityType === 'dashboard') {
     grafanaURL += '/api/dashboards/db/' + entityValue;
+  // } else if (entityType === 'dashboard-uid') {              -> For the future
+  //   grafanaURL += '/api/dashboards/uid/' + entityValue;
+  } else if (entityType === 'folders') {
+    grafanaURL += '/api/search?type=dash-folder';
   } else if (entityType === 'dashboards') {
-    grafanaURL += '/api/search';
+    grafanaURL += '/api/search?type=dash-db';
   } else if (entityType === 'org') {
     grafanaURL += '/api/orgs/' + entityValue;
   } else if (entityType === 'orgs') {
