@@ -199,15 +199,45 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
       }
     });
 
+    var folderSlugs = {
+      'General': { id: null },
+    };
+
+    _.forEach(body, function(entity) {
+      if (entity.type === 'dash-folder') {
+        folderSlugs[entity.title] = entity
+      }
+    })
+
     var folderList = components.getDashboardFolders('dashboards');
     _.forEach(folderList, function(folder) {
       var dashList = components.readEntityNamesFromDir('dashboards/' + folder);
-      logger.justShow('Exporting ' + dashList.length + 'dashboards/' + folder);
 
       var headers = options.headers || {};
       if (options.auth.bearer) {
         headers.Authorization = 'Bearer ' + options.auth.bearer;
       }
+
+      if (!(folder in folderSlugs)) {
+        logger.justShow('Exporting ' + folder);
+        var url = createURL(grafanaURL, "folders");
+        url = sanitizeUrl(url, options.auth);
+        var body = {
+          title: folder
+        };
+        try {
+          var response = syncReq('POST', url, {json: body, headers: headers});
+          logger.showOutput(response.getBody('utf8'));
+          folderSlugs[folder] = JSON.parse(response.getBody('utf8'));
+        } catch(error) {
+          logger.showError('Folder ' + folder + ' export failed.');
+          failed += dashList.length;
+          return;
+        }
+        logger.showResult('Folder ' + folder + ' exported successfully.');
+      }
+
+      logger.justShow('Exporting ' + dashList.length + ' dashboards/' + folder);
 
       // Here we try exporting (either updating or creating) a dashboard
       _.forEach(dashList, function(dashboard) {
@@ -215,6 +245,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
         url = sanitizeUrl(url, options.auth);
         var body = {
           dashboard: components.dashboards.readDashboard(dashboard, folder),
+          folderId: folderSlugs[folder]['id'],
         };
         // Updating an existing dashboard
         if (dashboard in dashSlugs) {
@@ -225,6 +256,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
           body.dashboard.id = null;
           body.overwrite = false;
         }
+
         // Use sync-request to avoid table lockdown
         try {
           var response = syncReq('POST', url, {json: body, headers: headers});
@@ -252,6 +284,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
       if (failed > 0) {
         logger.showError(failed + ' dashboards export failed.');
+          logger.showOutput(response.getBody('utf8'));
         process.exit(1);
       }
     });
@@ -478,6 +511,8 @@ function createURL(grafanaURL, entityType, entityValue) {
     grafanaURL += '/api/alert-notifications/' + entityValue;
   } else if (entityType === 'alerts') {
     grafanaURL += '/api/alert-notifications';
+  } else if (entityType == 'folders') {
+    grafanaURL += '/api/folders'
   }
 
   return grafanaURL;
