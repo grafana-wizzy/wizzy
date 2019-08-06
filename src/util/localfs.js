@@ -4,6 +4,8 @@ const fs = require('fs');
 const Logger = require('./logger.js');
 
 const logger = new Logger('localfs');
+const Handlebars = require("handlebars");
+
 
 function LocalFS() {}
 
@@ -34,13 +36,19 @@ LocalFS.prototype.checkExists = function(name, output, showOutput) {
 };
 
 LocalFS.prototype.readFile = function(name, _showOnError) {
-  return fs.readFileSync(name, 'utf8', (error, _data) => {
+  let templateSrc = fs.readFileSync(name, 'utf8', function(error, data) {
     if (!error) {
       logger.showResult(`Read file ${name} successfully.`);
     } else {
       logger.showError(`Error in reading file ${name}`);
     }
   });
+  if(templateSrc === null) {
+    return null
+  }
+
+  var template = Handlebars.compile(templateSrc)
+  return template(process.env)
 };
 
 LocalFS.prototype.writeFile = function(name, content) {

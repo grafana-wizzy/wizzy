@@ -30,6 +30,7 @@
     "commander": "2.11.0",
     "fs": "0.0.1-security",
     "gifencoder": "^1.1.0",
+    "handlebars": "^4.1.2",
     "lodash": "^4.17.15",
     "nconf": "^0.8.5",
     "png-file-stream": "^1.2.1",
