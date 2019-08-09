@@ -161,6 +161,10 @@ Commands.prototype.instructions = function() {
   }
 };
 
+Commands.prototype.help = function() {
+  help.showHelp();
+}
+
 // Shows wizzy status
 function status() {
 
