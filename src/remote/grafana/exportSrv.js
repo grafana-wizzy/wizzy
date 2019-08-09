@@ -284,7 +284,6 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
       if (failed > 0) {
         logger.showError(failed + ' dashboards export failed.');
-          logger.showOutput(response.getBody('utf8'));
         process.exit(1);
       }
     });
