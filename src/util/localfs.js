@@ -91,7 +91,7 @@ LocalFS.prototype.writeStream = function(name) {
 };
 
 LocalFS.prototype.getFileName = function(fileNameWithExtension) {
-  return fileNameWithExtension.split('.')[0];
+  return fileNameWithExtension.replace(/\.[^/.]+$/, "");
 };
 
 module.exports = LocalFS;
