@@ -6,6 +6,8 @@ var Logger = require('../../util/logger.js');
 var logger = new Logger('importSrv');
 var _ = require('lodash');
 var syncReq = require('sync-request');
+const formatter = require('../../util/formatter')
+
 var components;
 
 function ImportSrv(comps) {
@@ -24,15 +26,7 @@ ImportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
       components.dashboards.saveDashboard(dashboardName, body.dashboard, body.meta, true);
       logger.showResult(successMessage);
     } else {
-      if (response !== null) {
-        output += 'Grafana API response status code = ' + response.statusCode;
-      }
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -51,13 +45,7 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
 
   request.get(options, function saveHandler(error, response, body) {
     if (error || response.statusCode !== 200) {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError('Error getting list of dashboards from Grafana');
       process.exit(1);
@@ -118,13 +106,7 @@ ImportSrv.prototype.org = function(grafanaURL, options, orgName) {
       components.orgs.saveOrg(orgName, body, true);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -154,13 +136,7 @@ ImportSrv.prototype.orgs = function(grafanaURL, options) {
       logger.showResult('Total orgs imported: ' + body.length);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -180,13 +156,7 @@ ImportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
       components.datasources.saveDatasource(datasourceName, body, true);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -208,13 +178,7 @@ ImportSrv.prototype.datasources = function(grafanaURL, options) {
       logger.showResult('Total datasources imported: ' + body.length);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -232,12 +196,7 @@ ImportSrv.prototype.alert = function(grafanaURL, options, name) {
       components.alerts.save(body.name, body, true);
       logger.showResult('Alert ' + name + ' import successful.');
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      } else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError('Alert ' + name + ' import failed.');
     }
@@ -257,12 +216,7 @@ ImportSrv.prototype.alerts = function(grafanaURL, options) {
       logger.showResult('Total alerts imported: ' + body.length);
       logger.showResult('Alerts import successful.');
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      } else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError('Alerts import failed.');
     }

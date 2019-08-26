@@ -12,6 +12,7 @@ var ExportSrv = require('./grafana/exportSrv.js');
 var exportSrv;
 var ClipSrv = require('./grafana/clipSrv.js');
 var clipSrv;
+const formatter = require('../util/formatter');
 
 var _ = require('lodash');
 var request = require('request');
@@ -84,13 +85,7 @@ Grafana.prototype.create = function(commands) {
       logger.showOutput(output);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError(failureMessage);
     }
@@ -280,13 +275,7 @@ Grafana.prototype.list = function(commands) {
         logger.showResult('Total dashboards: ' + body.length);
         logger.showResult(successMessage);
       } else {
-        output += 'Grafana API response status code = ' + response.statusCode;
-        if (error === null) {
-          output += '\nNo error body from Grafana API.';
-        }
-        else {
-          output += '\n' + error;
-        }
+        output += formatter.formatError(error, response);
         logger.showOutput(output);
         logger.showError(failureMessage);
       }
@@ -310,13 +299,7 @@ Grafana.prototype.list = function(commands) {
         logger.showResult('Total dashboard tags: ' + body.length);
         logger.showResult(successMessage);
       } else {
-        output += 'Grafana API response status code = ' + response.statusCode;
-        if (error === null) {
-          output += '\nNo error body from Grafana API.';
-        }
-        else {
-          output += '\n' + error;
-        }
+        output += formatter.formatError(error, response);
         logger.showOutput(output);
         logger.showError(failureMessage);
       }
@@ -414,13 +397,7 @@ function printResponse(error, response, body) {
     output += logger.stringify(body);
     logger.showOutput(output);
   } else {
-    output += 'Grafana API response status code = ' + response.statusCode;
-    if (error === null) {
-      output += '\nNo error body from Grafana API.';
-    }
-    else {
-      output += '\n' + error;
-    }
+    output += formatter.formatError(error, response);
     logger.showOutput(output);
   }
 }

@@ -8,6 +8,7 @@ var logger = new Logger('Grafana.net');
 var _ = require('lodash');
 var request = require('request');
 var Table = require('cli-table');
+const formatter = require('../util/formatter');
 
 var gnet_dashboards_url = 'https://grafana.net/api/dashboards';
 
@@ -57,13 +58,7 @@ GNet.prototype.list = function(commands) {
           logger.showResult('Total dashboards: ' + body.items.length);
         logger.showResult(successMessage);
       } else {
-        output += 'Grafana API response status code = ' + response.statusCode;
-        if (error === null) {
-          output += '\nNo error body from Grafana.net API.';
-        }
-        else {
-          output += '\n' + error;
-        }
+        output += formatter.formatError(error, response);
         logger.showOutput(output);
         logger.showError(failureMessage);
       }

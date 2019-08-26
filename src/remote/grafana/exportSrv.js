@@ -30,12 +30,7 @@ ExportSrv.prototype.alert = function(grafanaURL, options, name) {
           logger.showOutput(output);
           logger.showResult(successMessage);
         } else {
-          output += 'Grafana API response status code = ' + response.statusCode;
-          if (error === null) {
-            output += '\nNo error body from Grafana API.';
-          } else {
-            output += '\n' + error;
-          }
+          output += formatter.formatError(error, response);
           logger.showOutput(output);
           logger.showResult(failureMessage);
         }
@@ -50,12 +45,7 @@ ExportSrv.prototype.alert = function(grafanaURL, options, name) {
           logger.showOutput(output);
           logger.showResult(successMessage);
         } else {
-          output += 'Grafana API response status code = ' + response.statusCode;
-          if (error === null) {
-            output += '\nNo error body from Grafana API.';
-          } else {
-            output += '\n' + error;
-          }
+          output += formatter.formatError(error, response);
           logger.showOutput(output);
           logger.showResult(failureMessage);
         }
@@ -155,13 +145,7 @@ ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
         logger.showOutput(output);
         logger.showResult(successMessage);
       } else {
-        output += 'Grafana API response status code = ' + response.statusCode;
-        if (error === null) {
-          output += '\nNo error body from Grafana API.';
-        }
-        else {
-          output += '\n' + error;
-        }
+        output += formatter.formatError(error, response);
         logger.showOutput(output);
         logger.showResult(failureMessage);
       }
@@ -178,13 +162,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
   request.get(options, function saveHandler(error, response, body) {
     if (error || response.statusCode !== 200) {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showError('Error getting list of dashboards from Grafana');
       process.exit(1);
@@ -304,13 +282,7 @@ ExportSrv.prototype.org = function(grafanaURL, options, orgName) {
       logger.showOutput(output);
       logger.showResult(successMessage);
     } else {
-      output += 'Grafana API response status code = ' + response.statusCode;
-      if (error === null) {
-        output += '\nNo error body from Grafana API.';
-      }
-      else {
-        output += '\n' + error;
-      }
+      output += formatter.formatError(error, response);
       logger.showOutput(output);
       logger.showResult(failureMessage);
     }
@@ -387,13 +359,7 @@ ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
           logger.showOutput(output);
           logger.showResult(successMessage);
         } else {
-          output += 'Grafana API response status code = ' + response.statusCode;
-          if (error === null) {
-            output += '\nNo error body from Grafana API.';
-          }
-          else {
-            output += '\n' + error;
-          }
+          output += formatter.formatError(error, response);
           logger.showOutput(output);
           logger.showResult(failureMessage);
         }
@@ -408,13 +374,7 @@ ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
           logger.showOutput(output);
           logger.showResult(successMessage);
         } else {
-          output += 'Grafana API response status code = ' + response.statusCode;
-          if (error === null) {
-            output += '\nNo error body from Grafana API.';
-          }
-          else {
-            output += '\n' + error;
-          }
+          output += formatter.formatError(error, response);
           logger.showOutput(output);
           logger.showResult(failureMessage);
         }
