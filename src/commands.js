@@ -1,26 +1,25 @@
-#!/usr/bin/env node
-"use strict";
+const _ = require('lodash');
 
-var _ = require('lodash');
-var Components = require('./local/components.js');
-var Grafana = require('./remote/grafana.js');
-var GNet = require('./remote/gnet.js');
-var S3 = require('./remote/s3services.js');
-var Config = require('./util/config.js');
-var Dashlist = require('./local/dashlist.js');
-var Logger = require('./util/logger.js');
-var Help = require('./util/help.js');
-var LocalFS = require('./util/localfs.js');
-var localfs = new LocalFS();
-var logger = new Logger('Commands');
-var help = new Help();
+const Components = require('./local/components.js');
+const Grafana = require('./remote/grafana.js');
+const GNet = require('./remote/gnet.js');
+const S3 = require('./remote/s3services.js');
+const Config = require('./util/config.js');
+const Dashlist = require('./local/dashlist.js');
+const Logger = require('./util/logger.js');
+const Help = require('./util/help.js');
+const LocalFS = require('./util/localfs.js');
 
-var config;
-var components;
-var gnet;
-var grafana;
-var s3;
-var dashlist;
+const localfs = new LocalFS();
+const logger = new Logger('Commands');
+const help = new Help();
+
+let config;
+let components;
+let gnet;
+let grafana;
+let s3;
+let dashlist;
 
 function Commands() {
   config = new Config();
@@ -35,18 +34,17 @@ function Commands() {
 
 // Creates an entity in wizzy or Grafana
 Commands.prototype.instructions = function() {
-
   /* Key points before editing the cases:
     1. process.argv[0] - reserverd for `node`
     2. process.argv[1] - reserverd for `wizzy` or `index.js`
   */
 
-  var commands = _.drop(process.argv, 2);
-  var command = commands[0];
+  const commands = _.drop(process.argv, 2);
+  const command = commands[0];
 
-  switch(command) {
+  switch (command) {
     case 'version':
-      console.log('0.6.0');
+      logger.justShow('0.6.0');
       break;
     case 'help':
       help.showHelp();
@@ -61,10 +59,10 @@ Commands.prototype.instructions = function() {
       config.showProperty('config');
       break;
     case 'set':
-      config.addProperty(_.drop(commands,1));
+      config.addProperty(_.drop(commands, 1));
       break;
     case 'unset':
-      config.removeProperty(_.drop(commands,1));
+      config.removeProperty(_.drop(commands, 1));
       break;
     case 'import':
       grafana.import(_.drop(commands));
@@ -95,7 +93,7 @@ Commands.prototype.instructions = function() {
       break;
     case 'list':
       if (commands[1] === 'gnet') {
-        gnet.list(_.drop(commands,2));
+        gnet.list(_.drop(commands, 2));
       } else if (commands[1] === 'panels') {
         components.list(_.drop(commands, 1));
       } else {
@@ -163,24 +161,21 @@ Commands.prototype.instructions = function() {
 
 Commands.prototype.help = function() {
   help.showHelp();
-}
+};
 
 // Shows wizzy status
 function status() {
-
-  var setupProblem = config.statusCheck(true);
+  const setupProblem = config.statusCheck(true);
   if (setupProblem) {
-    var setupGit = localfs.checkExists('.git', '.git directory', true);
+    const setupGit = localfs.checkExists('.git', '.git directory', true);
     if (setupGit) {
       logger.showResult('wizzy setup complete.');
-    }
-    else {
+    } else {
       logger.showResult('wizzy setup complete without Git.');
     }
   } else {
     logger.showError('wizzy setup incomplete.');
   }
-
 }
 
 module.exports = Commands;

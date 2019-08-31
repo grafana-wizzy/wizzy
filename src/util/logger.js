@@ -1,9 +1,7 @@
-#!/usr/bin/env node
-"use strict";
+/* eslint-disable no-console */
+require('colors');
 
-var colors = require('colors');
-
-var loggerName;
+let loggerName;
 
 function Logger(name) {
   loggerName = name;
@@ -26,11 +24,15 @@ Logger.prototype.stringify = function(obj) {
 };
 
 Logger.prototype.debug = function(resultLine) {
-  console.log('\u2714 ' + loggerName + ': ' + resultLine);
+  console.log(`\u2714 ${loggerName}: ${resultLine}`);
 };
 
 Logger.prototype.justShow = function(line) {
   console.log(line.yellow);
+};
+
+Logger.prototype.log = function(line) {
+  console.log(line);
 };
 
 module.exports = Logger;

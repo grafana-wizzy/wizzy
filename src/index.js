@@ -1,11 +1,10 @@
 #!/usr/bin/env node
-"use strict";
 
-// Setting up cli version and commands
-var program = require('commander');
+const program = require('commander');
 
-var Commands = require('./commands.js');
-var commands = new Commands();
+const Commands = require('./commands.js');
+
+const commands = new Commands();
 
 // For any unsupported command wizzy will show help
 program.command('*').action(commands.instructions);

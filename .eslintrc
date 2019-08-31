@@ -1,0 +1,35 @@
+{
+  "extends": [
+    "airbnb-base"
+  ],
+  "rules": {
+    "space-before-function-paren": ["error", {
+      "anonymous": "never",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "func-names": "off", // FIX ME
+    "radix": ["error", "as-needed"],
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
+    "max-len": [1, 140, 2, { "ignoreComments": true }],
+    "no-param-reassign": "off",
+    "no-shadow": "off",
+    "no-use-before-define": ["error", { "functions": false }],
+    "no-plusplus": "off",
+    "prefer-destructuring": ["error", {
+      "VariableDeclarator": {
+        "array": false,
+        "object": true
+      },
+      "AssignmentExpression": {
+        "array": false,
+        "object": true
+      }
+    }, {
+      "enforceForRenamedProperties": false
+    }]
+  },
+  "env": {
+    "mocha": true
+  }
+}

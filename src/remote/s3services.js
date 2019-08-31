@@ -1,13 +1,11 @@
-#!/usr/bin/env node
-"use strict";
+const _ = require('lodash');
+const AWS = require('aws-sdk');
 
-// Initializing logger
-var Logger = require('../util/logger.js');
-var logger = new Logger();
-var AWS = require('aws-sdk');
-var _ = require('lodash');
+const Logger = require('../util/logger.js');
 
-//Create the s3 bucket and required directories
+const logger = new Logger();
+
+// Create the s3 bucket and required directories
 function S3(conf, comps) {
   this.params = {};
   if (conf && conf.s3 && conf.s3.bucket_name) {
@@ -17,142 +15,131 @@ function S3(conf, comps) {
     this.params.Key = conf.s3.path;
   }
   this.components = comps;
-  this.s3 = new AWS.S3({params: {Bucket: this.params.Bucket}});
+  this.s3 = new AWS.S3({ params: { Bucket: this.params.Bucket } });
 }
 
-S3.prototype.upload = function(commands) {
-
-  var self = this;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var successMessage;
-  var failureMessage;
+S3.prototype.upload = function upload(commands) {
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  let successMessage;
+  let failureMessage;
 
   if (entityType === 'dashboard') {
-    successMessage = 'Dashboard '+ entityValue + ' upload successful to AWS S3.';
-    failureMessage = 'Dashboard '+ entityValue + ' upload failed to AWS S3.';
-    var dashboard_data = self.components.dashboards.readDashboard(entityValue);
-    var key = '';
-    if (self.params.Key) {
-      key = self.params.Key + 'dashboards/' + entityValue + '.json';
+    successMessage = `Dashboard ${entityValue} upload successful to AWS S3.`;
+    failureMessage = `Dashboard ${entityValue} upload failed to AWS S3.`;
+    const dashboardData = this.components.dashboards.readDashboard(entityValue);
+    let key = '';
+    if (this.params.Key) {
+      key = `${this.params.Key}dashboards/${entityValue}.json`;
+    } else {
+      key = `dashboards/${entityValue}.json`;
     }
-    else {
-      key = 'dashboards/' + entityValue + '.json';
-    }
-    self.s3.putObject({
+    this.s3.putObject({
       Key: key,
-      Body: JSON.stringify(dashboard_data)
-    }, function (err,data) {
+      Body: JSON.stringify(dashboardData),
+    }, (err, _data) => {
       if (err) {
         logger.showError(failureMessage);
-        logger.showError('Dashboard ' + entityValue + ' cannot be stored in location s3://' + self.params.Bucket + "/" + key + '.');
-      }
-      else {
+        logger.showError(`Dashboard ${entityValue} cannot be stored in location s3://${this.params.Bucket}/${key}.`);
+      } else {
         logger.showResult(successMessage);
       }
     });
-  }
-  else if (entityType === 'dashboards') {
+  } else if (entityType === 'dashboards') {
     successMessage = 'Dashboards are being uploaded. Command will exit once all dashboards are uploaded.';
-    var dashboards = self.components.readEntityNamesFromDir('dashboards');
-    _.forEach(dashboards,function(dashboard) {
-      var dashboard_data = self.components.dashboards.readDashboard(dashboard);
-      var key = '';
-      if (self.params.Key) {
-        key = self.params.Key + 'dashboards/' + dashboard + '.json';
+    const dashboards = this.components.readEntityNamesFromDir('dashboards');
+    _.forEach(dashboards, (dashboard) => {
+      const dashboardData = this.components.dashboards.readDashboard(dashboard);
+      let key = '';
+      if (this.params.Key) {
+        key = `${this.params.Key}dashboards/${dashboard}.json`;
+      } else {
+        key = `dashboards/${dashboard}.json`;
       }
-      else {
-        key = 'dashboards/'+ dashboard + '.json';
-      }
-      self.s3.putObject({
+      this.s3.putObject({
         Key: key,
-        Body: JSON.stringify(dashboard_data)
-      }, function (err,data) {
+        Body: JSON.stringify(dashboardData),
+      }, (err, _data) => {
         if (err) {
           logger.showError(err);
-          logger.showError('Dashboard ' + entityValue + ' cannot be stored in location s3://' + self.params.Bucket + '/' + key + '.');
+          logger.showError(`Dashboard ${entityValue} cannot be stored in location s3://${this.params.Bucket}/${key}.`);
         }
       });
     });
     logger.showResult(successMessage);
-  }
-  else {
-    logger.showError('Unsupported entity type ' + entityType);
-    return;
+  } else {
+    logger.showError(`Unsupported entity type ${entityType}`);
   }
 };
 
-S3.prototype.download = function(commands) {
-  var self = this;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var successMessage;
-  var failureMessage;
+S3.prototype.download = function download(commands) {
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  let successMessage;
+  let failureMessage;
 
   if (entityType === 'dashboard') {
-    successMessage = 'Downloaded dashboard ' + entityValue + ' successfully.';
-    failureMessage = 'Error in downloading dashboard ' + entityValue + '.';
-    var key = '';
-      if (self.params.Key) {
-        key = self.params.Key + 'dashboards/'+entityValue+'.json';
-      }
-      else {
-        key = 'dashboards/'+entityValue+'.json';
-      }
-      self.s3.getObject({
-        Key: key,
-      }, function (err,data) {
+    successMessage = `Downloaded dashboard ${entityValue} successfully.`;
+    failureMessage = `Error in downloading dashboard ${entityValue}.`;
+    let key = '';
+    if (this.params.Key) {
+      key = `${this.params.Key}dashboards/${entityValue}.json`;
+    } else {
+      key = `dashboards/${entityValue}.json`;
+    }
+    this.s3.getObject({
+      Key: key,
+    }, (err, data) => {
       if (err) {
         logger.showError(failureMessage);
-        logger.showError('Dashboard '+entityValue+' not present in location s3://'+self.params.Bucket+"/"+key+'.');
-      }
-      else {
-        self.components.dashboards.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
+        logger.showError(`Dashboard ${entityValue} not present in location s3://${this.params.Bucket}/${key}.`);
+      } else {
+        this.components.dashboards.saveDashboard(entityValue, JSON.parse(data.Body.toString()), true);
         logger.showResult(successMessage);
       }
     });
-  }
-  else if (entityType === 'dashboards') {
+  } else if (entityType === 'dashboards') {
     successMessage = 'Dashboards are being downloaded. Command will exit once all dashboards are downloaded.';
-    var dashboards = self.components.readEntityNamesFromDir('dashboards');
-    var bucket_key = '';
-    if (self.params.Key) {
-      bucket_key = self.params.Key + 'dashboards/';
+    // eslint-disable-next-line no-unused-vars
+    const dashboards = this.components.readEntityNamesFromDir('dashboards');
+    let bucketKey = '';
+    if (this.params.Key) {
+      bucketKey = `${this.params.Key}dashboards/`;
+    } else {
+      bucketKey = 'dashboards/';
     }
-    else {
-      bucket_key = 'dashboards/';
-    }
-    delete self.params.Key;
-    self.s3.listObjects(self.params, function(err, data) {
+    delete this.params.Key;
+    this.s3.listObjects(this.params, (err, data) => {
       if (err) {
-        console.log(err);
+        logger.showError(err);
         return;
       }
-      else {
-        var dashboards = data.Contents;
-        _.forEach(dashboards,function(dashboard) {
-          if (dashboard.Key.indexOf(bucket_key) > -1) {
-            var key = dashboard.Key;
-            self.s3.getObject({
-              Bucket: self.params.Bucket,
-              Key: key,
-            }, function (err,data) {
-              if (err) {
-                logger.showError('Dashboard '+dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0]+' not present in location s3://'+ self.params.Bucket+"/"+key+'.');
-              }
-              else {
-                self.components.dashboards.saveDashboard(dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0], JSON.parse(data.Body.toString()), false);
-              }
-            });
-          }
-        });
-        logger.showResult(successMessage);
-      }
+
+      const dashboards = data.Contents;
+      _.forEach(dashboards, (dashboard) => {
+        if (dashboard.Key.indexOf(bucketKey) > -1) {
+          const key = dashboard.Key;
+          this.s3.getObject({
+            Bucket: this.params.Bucket,
+            Key: key,
+          }, (err, data) => {
+            if (err) {
+              // eslint-disable-next-line max-len
+              logger.showError(`Dashboard ${dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0]} not present in location s3://${this.params.Bucket}/${key}.`);
+            } else {
+              this.components.dashboards.saveDashboard(
+                dashboard.Key.split('/')[dashboard.Key.split('/').length - 1].split('.')[0],
+                JSON.parse(data.Body.toString()),
+                false,
+              );
+            }
+          });
+        }
+      });
+      logger.showResult(successMessage);
     });
-  }
-  else {
-    logger.showError('Unsupported entity type ' + entityType);
-    return;
+  } else {
+    logger.showError(`Unsupported entity type ${entityType}`);
   }
 };
 

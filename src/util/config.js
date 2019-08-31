@@ -1,14 +1,10 @@
-#!/usr/bin/env node
-"use strict";
-
-// Initializing logger
-var Logger = require('./logger.js');
-var logger = new Logger('Config');
-
 const _ = require('lodash');
-const LocalFS = require('./localfs.js');
 const nconf = require('nconf');
 
+const LocalFS = require('./localfs.js');
+const Logger = require('./logger.js');
+
+const logger = new Logger('Config');
 const confDir = 'conf';
 const confFile = 'conf/wizzy.json';
 
@@ -29,7 +25,7 @@ const validConfigs = [
   'clip:render_timeout',
   'clip:canvas_width',
   'clip:canvas_height',
-  'clip:delay'
+  'clip:delay',
 ];
 
 // Constructor
@@ -38,12 +34,12 @@ function Config() {
 }
 
 // Initialize wizzy configuration
-Config.prototype.initialize = function() {
+Config.prototype.initialize = function initialize() {
   this.localfs.createDirIfNotExists(confDir, true);
-  var configExists = this.localfs.checkExists(confFile, 'conf file', false);
+  const configExists = this.localfs.checkExists(confFile, 'conf file', false);
   if (configExists) {
     logger.showResult('conf file already exists.');
-  } else  {
+  } else {
     nconf.set('config', {});
     this.saveConfig(false);
     logger.showResult('conf file created.');
@@ -52,80 +48,79 @@ Config.prototype.initialize = function() {
 };
 
 // Check wizzy configuration for status command
-Config.prototype.statusCheck = function(showOutput) {
-  var check = true;
+Config.prototype.statusCheck = function statusCheck(showOutput) {
+  let check = true;
   check = check && this.localfs.checkExists(confDir, 'conf directory', showOutput);
   check = check && this.localfs.checkExists(confFile, 'conf file', showOutput);
   return check;
 };
 
 // Check if wizzy config dir, file and config field is initialized
-Config.prototype.checkConfigPrereq = function(showOutput) {
-  var check = this.statusCheck(false);
+Config.prototype.checkConfigPrereq = function checkConfigPrereq(showOutput) {
+  const check = this.statusCheck(false);
   if (check) {
     if (showOutput) {
       logger.showResult('wizzy configuration is initialized.');
     }
     return;
-  } else {
-    logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
-    process.exit();
   }
+  logger.showError('wizzy configuration not initialized. Please run `wizzy init`.');
+  process.exit();
 };
 
 // Adds a new wizzy config property
-Config.prototype.addProperty = function(commands) {
+Config.prototype.addProperty = function addProperty(commands) {
   this.checkConfigPrereq();
-  nconf.use('file', {file: confFile});
-  var config = commands[0] + ':' + commands[1];
+  nconf.use('file', { file: confFile });
+  let config = `${commands[0]}:${commands[1]}`;
   if (_.includes(validConfigs, config)) {
-    var values = commands.splice(2);
-    var value;
+    const values = commands.splice(2);
+    let value;
     if (values.length === 0) {
       logger.showError('Missing configuration property value.');
       return;
-    } else if (values.length === 1) {
+    } if (values.length === 1) {
       value = values[0];
     } else if (values.length === 2) {
-      config = config + ':' + values[0];
+      config = `${config}:${values[0]}`;
       value = values[1];
     } else if (values.length === 3) {
-      config = config + ':' + values[0] + ':' + values[1];
+      config = `${config}:${values[0]}:${values[1]}`;
       value = values[2];
     } else if (values.length === 4) {
-      config = config + ':' + values[0] + ':' + values[1] + ':' + values[2];
+      config = `${config}:${values[0]}:${values[1]}:${values[2]}`;
       value = values[3];
     } else {
       logger.showError('Unknown configuration property or missing property value.');
       return;
     }
-    nconf.set('config:' + config, value);
+    nconf.set(`config:${config}`, value);
     this.saveConfig(true);
-    logger.showResult(config + ' updated successfully.');
+    logger.showResult(`${config} updated successfully.`);
   } else {
     logger.showError('Unknown configuration property or missing property value.');
   }
 };
 
 // Removes an existing wizzy config property
-Config.prototype.removeProperty = function(commands) {
+Config.prototype.removeProperty = function removeProperty(commands) {
   this.checkConfigPrereq();
-  nconf.use('file', {file: confFile});
-  var config = commands[0] + ':' + commands[1];
+  nconf.use('file', { file: confFile });
+  const config = `${commands[0]}:${commands[1]}`;
   if (_.includes(validConfigs, config)) {
-    var parent;
-    var property;
+    let parent;
+    let property;
     if (commands.length < 2) {
       logger.showError('Missing configuration property value.');
       return;
-    } else if (commands.length === 2) {
+    } if (commands.length === 2) {
       parent = commands[0];
       property = commands[1];
     } else if (commands.length === 3) {
-      parent = commands[0] + ':' + commands[1];
+      parent = `${commands[0]}:${commands[1]}`;
       property = commands[2];
     } else if (commands.length === 4) {
-      parent = commands[0] + ':' + commands[1] + ':' + commands[2];
+      parent = `${commands[0]}:${commands[1]}:${commands[2]}`;
       property = commands[3];
     } else {
       logger.showError('Unknown configuration property or missing property value.');
@@ -135,16 +130,16 @@ Config.prototype.removeProperty = function(commands) {
       logger.showError('Unknown configuration property or missing property value.');
       return;
     }
-    var parentConfig = nconf.get('config:' + parent);
+    const parentConfig = nconf.get(`config:${parent}`);
     if (!(property in parentConfig)) {
       logger.showError('Unknown configuration property or missing property value.');
       return;
     }
     delete parentConfig[property];
-    nconf.set('config:' + parent, parentConfig);
+    nconf.set(`config:${parent}`, parentConfig);
     this.saveConfig(true);
-    logger.showResult(property + ' removed successfully.');
-    logger.showResult(parent + ' updated successfully.');
+    logger.showResult(`${property} removed successfully.`);
+    logger.showResult(`${parent} updated successfully.`);
   } else {
     logger.showError('Unknown configuration property or missing property value.');
   }
@@ -153,8 +148,8 @@ Config.prototype.removeProperty = function(commands) {
 // Shows all wizzy configuration properties
 Config.prototype.showProperty = function(config) {
   this.checkConfigPrereq();
-  nconf.use('file', {file: confFile});
-  var value = nconf.get(config);
+  nconf.use('file', { file: confFile });
+  const value = nconf.get(config);
   if (value !== undefined) {
     logger.showOutput(logger.stringify(value));
   } else {
@@ -165,22 +160,20 @@ Config.prototype.showProperty = function(config) {
 // Gets a config property from wizzy configuration file
 Config.prototype.getProperty = function(config) {
   this.checkConfigPrereq();
-  nconf.use('file', {file: confFile});
-  return(nconf.get(config));
+  nconf.use('file', { file: confFile });
+  return (nconf.get(config));
 };
 
 // Save wizzy config file
 Config.prototype.saveConfig = function(showOutput) {
-  nconf.use('file', {file: confFile});
-  nconf.save(function (err) {
+  nconf.use('file', { file: confFile });
+  nconf.save((err) => {
     if (err) {
       if (showOutput) {
         logger.showError('Error in saving wizzy conf file.');
       }
-    } else {
-      if (showOutput) {
-        logger.showResult('conf file saved.');
-      }
+    } else if (showOutput) {
+      logger.showResult('conf file saved.');
     }
   });
 };

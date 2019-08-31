@@ -1,22 +1,19 @@
-#!/usr/bin/env node
-"use strict";
+const _ = require('lodash');
+const request = require('request');
+const Table = require('cli-table');
 
-// Initializing logger
-var Logger = require('../util/logger.js');
-var logger = new Logger('grafana');
-var LocalFS = require('../util/localfs.js');
-var localfs = new LocalFS();
-var ImportSrv = require('./grafana/importSrv.js');
-var importSrv;
-var ExportSrv = require('./grafana/exportSrv.js');
-var exportSrv;
-var ClipSrv = require('./grafana/clipSrv.js');
-var clipSrv;
+const ClipSrv = require('./grafana/clipSrv.js');
+const ExportSrv = require('./grafana/exportSrv.js');
 const formatter = require('../util/formatter');
+const ImportSrv = require('./grafana/importSrv.js');
+const LocalFS = require('../util/localfs.js');
+const Logger = require('../util/logger.js');
 
-var _ = require('lodash');
-var request = require('request');
-var Table = require('cli-table');
+const logger = new Logger('grafana');
+const localfs = new LocalFS();
+let importSrv;
+let exportSrv;
+let clipSrv;
 
 function Grafana(conf, comps) {
   if (conf && conf.grafana) {
@@ -26,19 +23,19 @@ function Grafana(conf, comps) {
       }
     }
     if (conf.grafana.url) {
-      if (conf.grafana.url.slice(-1) === "/") {
-        conf.grafana.url = conf.grafana.url.slice(0,-1);
+      if (conf.grafana.url.slice(-1) === '/') {
+        conf.grafana.url = conf.grafana.url.slice(0, -1);
       }
       this.grafanaUrl = conf.grafana.url;
     }
     if (conf.grafana.api_key) {
       this.auth = {
-        bearer: conf.grafana.api_key
+        bearer: conf.grafana.api_key,
       };
     } else if (conf.grafana.username && conf.grafana.password) {
       this.auth = {
         username: conf.grafana.username,
-        password: conf.grafana.password
+        password: conf.grafana.password,
       };
     }
     if (conf.grafana.headers) {
@@ -61,25 +58,24 @@ function Grafana(conf, comps) {
 
 // creates an org
 Grafana.prototype.create = function(commands) {
-  var self = this;
-  var successMessage;
-  var failureMessage;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var body = {};
+  let successMessage;
+  let failureMessage;
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  const body = {};
   if (entityType === 'org') {
     body.name = entityValue;
-    successMessage = 'Created Grafana org ' + entityValue + ' successfully.';
-    failureMessage = 'Error in creating Grafana org ' + entityValue + '.';
+    successMessage = `Created Grafana org ${entityValue} successfully.`;
+    failureMessage = `Error in creating Grafana org ${entityValue}.`;
   } else {
-    logger.showError('Unsupported entity type ' + entityType);
+    logger.showError(`Unsupported entity type ${entityType}`);
     return;
   }
-  var options = self.setURLOptions();
-  options.url = self.grafanaUrl + self.createURL('create', entityType, entityValue);
+  const options = this.setURLOptions();
+  options.url = this.grafanaUrl + this.createURL('create', entityType, entityValue);
   options.body = body;
-  request.post(options, function printResponse(error, response, body) {
-    var output = '';
+  request.post(options, (error, response, body) => {
+    let output = '';
     if (!error && response.statusCode === 200) {
       output += logger.stringify(body);
       logger.showOutput(output);
@@ -94,51 +90,49 @@ Grafana.prototype.create = function(commands) {
 
 // deletes a dashboard or an org
 Grafana.prototype.delete = function(commands) {
-  var self = this;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var successMessage;
-  var failureMessage;
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  let successMessage;
+  // eslint-disable-next-line no-unused-vars
+  let failureMessage;
   if (entityType === 'org') {
-    successMessage = 'Deleted Grafana org ' + entityValue + ' successfully.';
-    failureMessage = 'Error in deleting Grafana org ' + entityValue + '.';
+    successMessage = `Deleted Grafana org ${entityValue} successfully.`;
+    failureMessage = `Error in deleting Grafana org ${entityValue}.`;
   } else if (entityType === 'dashboard') {
-    successMessage = 'Deleted Grafana dashboard ' + entityValue + ' successfully.';
-    failureMessage = 'Error in deleting Grafana dashboard ' + entityValue + '.';
+    successMessage = `Deleted Grafana dashboard ${entityValue} successfully.`;
+    failureMessage = `Error in deleting Grafana dashboard ${entityValue}.`;
   } else {
-    logger.showError('Unsupported entity type ' + entityType);
+    logger.showError(`Unsupported entity type ${entityType}`);
     return;
   }
-  var options = self.setURLOptions();
-  options.url = self.grafanaUrl + self.createURL('delete', entityType, entityValue);
+  const options = this.setURLOptions();
+  options.url = this.grafanaUrl + this.createURL('delete', entityType, entityValue);
   request.delete(options, printResponse);
   logger.showResult(successMessage);
 };
 
 // shows Grafana entities
 Grafana.prototype.show = function(commands) {
-  var self = this;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var options = self.setURLOptions();
-  options.url = self.grafanaUrl + self.createURL('show', entityType, entityValue);
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  const options = this.setURLOptions();
+  options.url = this.grafanaUrl + this.createURL('show', entityType, entityValue);
   request.get(options, printResponse);
 };
 
 // Switches an org
 Grafana.prototype.switch = function(commands) {
-  var self = this;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var successMessage = 'Org switched to ' + entityValue + ' successfully.';
-  var failureMessage = 'Org switch to ' + entityValue + ' failed.';
+  const entityType = commands[0];
+  const entityValue = commands[1];
+  const successMessage = `Org switched to ${entityValue} successfully.`;
+  const failureMessage = `Org switch to ${entityValue} failed.`;
   if (entityType !== 'org') {
-    logger.showError('Unsupported entity type ' + entityType);
+    logger.showError(`Unsupported entity type ${entityType}`);
     return;
   }
-  var options = self.setURLOptions();
-  options.url = self.grafanaUrl + self.createURL('switch', entityType, entityValue);
-  request.post(options, function saveHandler(error, response, body) {
+  const options = this.setURLOptions();
+  options.url = this.grafanaUrl + this.createURL('switch', entityType, entityValue);
+  request.post(options, (error, response, body) => {
     if (error) {
       logger.showOutput(error);
       logger.showError(failureMessage);
@@ -157,122 +151,83 @@ Grafana.prototype.switch = function(commands) {
 
 // imports a dashboard or all dashboards from Grafana
 Grafana.prototype.import = function(commands) {
-  var self = this;
-  var successMessage;
-  var failureMessage;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var url;
-  var output = '';
-  // imports a dashboard from Grafana
+  const entityType = commands[0];
+  const entityValue = commands[1];
+
   if (entityType === 'dashboard') {
-    importSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // import all dashboards from Grafana
-  else if (entityType === 'dashboards') {
-    importSrv.dashboards(self.grafanaUrl, self.setURLOptions());
-  }
-  // imports an org from Grafana
-  else if (entityType === 'org') {
-    importSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // imports all orgs from Grafana
-  else if (entityType === 'orgs') {
-    importSrv.orgs(self.grafanaUrl, self.setURLOptions());
-  }
-  // import a alert from Grafana
-  else if (entityType === 'alert') {
-    importSrv.alert(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // import all alerts from Grafana
-  else if (entityType === 'alerts') {
-    importSrv.alerts(self.grafanaUrl, self.setURLOptions());
-  }
-  // import a datasource from Grafana
-  else if (entityType === 'datasource') {
-    importSrv.datasource(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // import all datasources from Grafana
-  else if (entityType === 'datasources') {
-    importSrv.datasources(self.grafanaUrl, self.setURLOptions());
+    importSrv.dashboard(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'dashboards') {
+    importSrv.dashboards(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'org') {
+    importSrv.org(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'orgs') {
+    importSrv.orgs(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'alert') {
+    importSrv.alert(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'alerts') {
+    importSrv.alerts(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'datasource') {
+    importSrv.datasource(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'datasources') {
+    importSrv.datasources(this.grafanaUrl, this.setURLOptions());
   } else {
-    logger.showError('Unsupported entity type ' + entityType);
-    return;
+    logger.showError(`Unsupported entity type ${entityType}`);
   }
 };
 
 // export a dashboard to Grafana
 Grafana.prototype.export = function(commands) {
-  var self = this;
-  var successMessage;
-  var failureMessage;
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var url;
-  var body;
-  // exporting a dashboard to Grafana
+  const entityType = commands[0];
+  const entityValue = commands[1];
+
   if (entityType === 'dashboard') {
-    exportSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // exporting all local dashbaords to Grafana
-  else if (entityType === 'dashboards') {
-    exportSrv.dashboards(self.grafanaUrl, self.setURLOptions());
-  }
-  // exporting a local org to Grafana
-  else if (entityType === 'org') {
-    exportSrv.org(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // exporting a local org to Grafana
-  else if (entityType === 'orgs') {
-    exportSrv.orgs(self.grafanaUrl, self.setURLOptions());
-  }
-  // exporting a single local alert notification to Grafana
-  else if (entityType === 'alert') {
-    exportSrv.alert(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // exporting all local alert notifications to Grafana
-  else if (entityType === 'alerts') {
-    exportSrv.alerts(self.grafanaUrl, self.setURLOptions());
-  }
-  // exporting a single local datasource to Grafana
-  else if (entityType === 'datasource') {
-    exportSrv.datasource(self.grafanaUrl, self.setURLOptions(), entityValue);
-  }
-  // exporting all local datasources to Grafana
-  else if (entityType === 'datasources') {
-    exportSrv.datasources(self.grafanaUrl, self.setURLOptions());
-  }
-  else {
-    logger.showError('Unsupported entity type ' + entityType);
-    return;
+    exportSrv.dashboard(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'dashboards') {
+    exportSrv.dashboards(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'org') {
+    exportSrv.org(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'orgs') {
+    exportSrv.orgs(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'alert') {
+    exportSrv.alert(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'alerts') {
+    exportSrv.alerts(this.grafanaUrl, this.setURLOptions());
+  } else if (entityType === 'datasource') {
+    exportSrv.datasource(this.grafanaUrl, this.setURLOptions(), entityValue);
+  } else if (entityType === 'datasources') {
+    exportSrv.datasources(this.grafanaUrl, this.setURLOptions());
+  } else {
+    logger.showError(`Unsupported entity type ${entityType}`);
   }
 };
 
 // list all dashboards
 Grafana.prototype.list = function(commands) {
-  var self = this;
-  var successMessage;
-  var failureMessage;
-  var entityType = commands[0];
-  var url;
-  var options = self.setURLOptions();
+  let successMessage;
+  let failureMessage;
+  const entityType = commands[0];
+  const options = this.setURLOptions();
   if (entityType === 'dashboards') {
     successMessage = 'Displayed dashboards list successfully.';
     failureMessage = 'Dashboards list display failed';
-    options.url = self.grafanaUrl + self.createURL('list', entityType);
-    request.get(options, function saveHandler(error, response, body) {
-      var output = '';
+    options.url = this.grafanaUrl + this.createURL('list', entityType);
+    request.get(options, (error, response, body) => {
+      let output = '';
       if (!error && response.statusCode === 200) {
-        var table = new Table({
-	    			head: ['Title', 'Slug', 'ID / UID', 'Type', 'folderTitle'],
-	  				colWidths: [30, 30, 30, 30, 30]
-				});
-				_.each(body, function(dashboard){
-					table.push([dashboard.title, dashboard.uri.substring(3), dashboard.id + " / " + dashboard.uid, dashboard.type, dashboard.folderTitle || ""]); //removing db/
-				});
+        const table = new Table({
+          head: ['Title', 'Slug', 'ID / UID', 'Type', 'folderTitle'],
+          colWidths: [30, 30, 30, 30, 30],
+        });
+        _.each(body, (dashboard) => {
+          table.push([dashboard.title,
+            dashboard.uri.substring(3),
+            `${dashboard.id} / ${dashboard.uid}`,
+            dashboard.type,
+            dashboard.folderTitle || '']); // removing db/
+        });
         output += table.toString();
         logger.showOutput(output);
-        logger.showResult('Total dashboards: ' + body.length);
+        logger.showResult(`Total dashboards: ${body.length}`);
         logger.showResult(successMessage);
       } else {
         output += formatter.formatError(error, response);
@@ -283,20 +238,20 @@ Grafana.prototype.list = function(commands) {
   } else if (entityType === 'dash-tags') {
     successMessage = 'Displayed dashboard tags list successfully.';
     failureMessage = 'Dashboard tags list display failed';
-    options.url = self.grafanaUrl + this.createURL('list', entityType);
-    request.get(options, function saveHandler(error, response, body) {
-      var output = '';
+    options.url = this.grafanaUrl + this.createURL('list', entityType);
+    request.get(options, (error, response, body) => {
+      let output = '';
       if (!error && response.statusCode === 200) {
-        var table = new Table({
+        const table = new Table({
           head: ['Tag', 'Count'],
-          colWidths: [50, 50]
+          colWidths: [50, 50],
         });
-        _.each(body, function(tag) {
+        _.each(body, (tag) => {
           table.push([tag.term, tag.count]);
         });
         output += table.toString();
         logger.showOutput(output);
-        logger.showResult('Total dashboard tags: ' + body.length);
+        logger.showResult(`Total dashboard tags: ${body.length}`);
         logger.showResult(successMessage);
       } else {
         output += formatter.formatError(error, response);
@@ -305,58 +260,55 @@ Grafana.prototype.list = function(commands) {
       }
     });
   } else {
-    logger.showError('Unsupported entity type ' + entityType);
-    return;
+    logger.showError(`Unsupported entity type ${entityType}`);
   }
 };
 
 // Creates a 8 second clip of a dashboard for last 24 hours
 Grafana.prototype.clip = function(commands) {
-  var self = this;
-  if (!self.clipConfig || self.clipConfig.length < 6) {
+  if (!this.clipConfig || this.clipConfig.length < 6) {
     logger.showError('Clip configs not set. Please set all 6 clip config properties stated in README.');
     return;
   }
-  var entityType = commands[0];
-  var entityValue = commands[1];
-  var url;
+  const entityType = commands[0];
+  const entityValue = commands[1];
   localfs.createDirIfNotExists('temp', true);
   // creating a gif of a dashboard
   if (entityType === 'dashboard') {
-    clipSrv.dashboard(self.grafanaUrl, self.setURLOptions(), entityValue);
+    clipSrv.dashboard(this.grafanaUrl, this.setURLOptions(), entityValue);
   } else if (entityType === 'dashboards-by-tag') {
-    clipSrv.dashboardByTag(self.grafanaUrl, self.setURLOptions(), entityValue);
+    clipSrv.dashboardByTag(this.grafanaUrl, this.setURLOptions(), entityValue);
   } else if (entityType === 'dash-list') {
-    clipSrv.dashList(self.grafanaUrl, self.setURLOptions(), entityValue);
+    clipSrv.dashList(this.grafanaUrl, this.setURLOptions(), entityValue);
   } else {
-    logger.showError('Unsupported set of commands ' + commands + '.');
+    logger.showError(`Unsupported set of commands ${commands}.`);
   }
 };
 
 // Create url for calling Grafana API
 Grafana.prototype.createURL = function(command, entityType, entityValue) {
-  var url = '';
+  let url = '';
 
   // Editing URL depending on entityType
   if (entityType === 'org') {
     if (command === 'switch') {
-      url += '/api/user/using/' + entityValue;
+      url += `/api/user/using/${entityValue}`;
     } else {
       url += '/api/orgs';
       if (command === 'show' || command === 'delete' || command === 'import' || command === 'export') {
-        url += '/' + entityValue;
+        url += `/${entityValue}`;
       }
     }
   } else if (entityType === 'orgs') {
     url += '/api/orgs';
   } else if (entityType === 'dashboard') {
     if (command === 'clip') {
-      url += '/render/dashboard/db/' + entityValue;
+      url += `/render/dashboard/db/${entityValue}`;
     } else {
       url += '/api/dashboards/db';
     }
     if (command === 'import' || command === 'delete' || command === 'show') {
-      url += '/' + entityValue;
+      url += `/${entityValue}`;
     }
   } else if (entityType === 'dashboards') {
     url += '/api/search';
@@ -368,9 +320,9 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
     url += '/api/datasources';
   } else if (entityType === 'datasource') {
     if (command === 'show' || command === 'import') {
-      url += '/api/datasources/name/' + entityValue;
+      url += `/api/datasources/name/${entityValue}`;
     } else if (command === 'export') {
-      url += '/api/datasources/' + entityValue;
+      url += `/api/datasources/${entityValue}`;
     }
   }
   return url;
@@ -378,13 +330,12 @@ Grafana.prototype.createURL = function(command, entityType, entityValue) {
 
 // add options to request
 Grafana.prototype.setURLOptions = function() {
-  var self = this;
-  var options = {};
-  if (self.auth) {
-    options.auth = self.auth;
+  const options = {};
+  if (this.auth) {
+    options.auth = this.auth;
   }
-  if (self.headers) {
-    options.headers = self.headers;
+  if (this.headers) {
+    options.headers = this.headers;
   }
   options.json = true;
   return options;
@@ -392,7 +343,7 @@ Grafana.prototype.setURLOptions = function() {
 
 // prints HTTP response from Grafana
 function printResponse(error, response, body) {
-  var output = '';
+  let output = '';
   if (!error && response.statusCode === 200) {
     output += logger.stringify(body);
     logger.showOutput(output);

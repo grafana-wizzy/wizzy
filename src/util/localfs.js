@@ -1,11 +1,9 @@
-#!/usr/bin/env node
+const _ = require('lodash');
+const fs = require('fs');
 
-"use strict";
+const Logger = require('./logger.js');
 
-var fs = require('fs');
-var _ = require('lodash');
-var Logger = require('./logger.js');
-var logger = new Logger('localfs');
+const logger = new Logger('localfs');
 
 function LocalFS() {}
 
@@ -14,12 +12,10 @@ LocalFS.prototype.createDirIfNotExists = function(name, showResult) {
   if (!fs.existsSync(name)) {
     fs.mkdirSync(name);
     if (showResult) {
-      logger.showResult(name + ' directory created.');
+      logger.showResult(`${name} directory created.`);
     }
-  } else {
-    if (showResult) {
-      logger.showResult(name + ' directory already exists.');
-    }
+  } else if (showResult) {
+    logger.showResult(`${name} directory already exists.`);
   }
 };
 
@@ -27,23 +23,22 @@ LocalFS.prototype.createDirIfNotExists = function(name, showResult) {
 LocalFS.prototype.checkExists = function(name, output, showOutput) {
   if (fs.existsSync(name)) {
     if (showOutput) {
-      logger.showResult(output + ' exists.');
+      logger.showResult(`${output} exists.`);
     }
     return true;
-  } else {
-    if (showOutput) {
-      logger.justShow(output + ' does not exists.');
-    }
-    return false;
   }
+  if (showOutput) {
+    logger.justShow(`${output} does not exists.`);
+  }
+  return false;
 };
 
-LocalFS.prototype.readFile = function(name, showOnError) {
-  return fs.readFileSync(name, 'utf8', function(error, data) {
+LocalFS.prototype.readFile = function(name, _showOnError) {
+  return fs.readFileSync(name, 'utf8', (error, _data) => {
     if (!error) {
-      logger.showResult('Read file ' + name + ' successfully.');
+      logger.showResult(`Read file ${name} successfully.`);
     } else {
-      logger.showError('Error in reading file ' + name);
+      logger.showError(`Error in reading file ${name}`);
     }
   });
 };
@@ -57,33 +52,30 @@ LocalFS.prototype.readFilesFromDir = function(dirName) {
 };
 
 LocalFS.prototype.getDirListInside = function(path) {
-  return fs.readdirSync(path).filter(function(file) {
-    return fs.statSync(path + '/' + file).isDirectory();
-  });
+  return fs.readdirSync(path).filter((file) => fs.statSync(`${path}/${file}`).isDirectory());
 };
 
 LocalFS.prototype.createDir = function(name, output) {
   fs.mkdirSync(name);
   if (output) {
-    logger.showResult(output + ' created.');
+    logger.showResult(`${output} created.`);
   }
 };
 
 LocalFS.prototype.deleteDir = function(name, output) {
   fs.rmdir(name);
   if (output) {
-    logger.showResult(output + ' deleted.');
+    logger.showResult(`${output} deleted.`);
   }
 };
 
-LocalFS.prototype.deleteDirRecursive = function(name, output) {
-  var self = this;
-  var files = self.readFilesFromDir(name);
-  _.each(files, function(file) {
-    console.log(name + '/' + file);
-    fs.unlinkSync(name + '/' + file);
+LocalFS.prototype.deleteDirRecursive = function(name, _output) {
+  const files = this.readFilesFromDir(name);
+  _.each(files, (file) => {
+    logger.justShow(`${name}/${file}`);
+    fs.unlinkSync(`${name}/${file}`);
   });
-  self.deleteDir(name);
+  this.deleteDir(name);
 };
 
 LocalFS.prototype.writeStream = function(name) {
@@ -91,7 +83,7 @@ LocalFS.prototype.writeStream = function(name) {
 };
 
 LocalFS.prototype.getFileName = function(fileNameWithExtension) {
-  return fileNameWithExtension.replace(/\.[^/.]+$/, "");
+  return fileNameWithExtension.replace(/\.[^/.]+$/, '');
 };
 
 module.exports = LocalFS;

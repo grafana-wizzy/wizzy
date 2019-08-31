@@ -1,23 +1,21 @@
 function formatError(error, response) {
-  var output = '';
+  let output = '';
 
   if (response) {
     output += `Grafana API response status code = ${response.statusCode}\n`;
-  }
-  else {
+  } else {
     output += 'No Grafana API response\n';
   }
 
   if (error) {
     output += error;
-  }
-  else {
+  } else {
     output += 'No error body from Grafana API.';
   }
 
-  return output
+  return output;
 }
 
 module.exports = {
-  formatError
+  formatError,
 };
