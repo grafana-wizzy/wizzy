@@ -14,7 +14,7 @@ function add(url, options) {
   } else {
     logger.showError('Missing authentication');
   }
-  return { authenticatedUrl, headers };
+  return { url: authenticatedUrl, headers };
 }
 
 module.exports = {
