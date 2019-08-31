@@ -1,13 +1,14 @@
 const _ = require('lodash');
 const GIFEncoder = require('gifencoder');
 const pngFileStream = require('png-file-stream');
-const syncReq = require('sync-request');
 
-const DashList = require('../../local/dashlist.js');
-const LocalFS = require('../../util/localfs.js');
-const Logger = require('../../util/logger.js');
+const authentication = require('../../util/authentication');
+const DashList = require('../../local/dashlist');
+const LocalFS = require('../../util/localfs');
+const Logger = require('../../util/logger');
+const request = require('../../util/request');
 
-const logger = new Logger('exportSrv');
+const logger = new Logger('clipSrv');
 const localfs = new LocalFS();
 let encoder;
 let clipConfig;
@@ -17,8 +18,11 @@ function ClipSrv(config) {
 }
 
 ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
-  let url = createURL(grafanaURL, 'render-dashboard', dashboardName);
-  url += `?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`;
+  const { url, headers } = authentication.add(
+    // eslint-disable-next-line max-len
+    `${createURL(grafanaURL, 'render-dashboard', dashboardName)}?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`,
+    options,
+  );
   const now = (new Date()).getTime();
   // Taking 24 screenshots for last 24 hours
   logger.justShow('Taking 24 snapshots.');
@@ -26,9 +30,8 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
   while (i < 24) {
     const from = now - ((i + 1) * 60 * 60000);
     const to = now - (i * 60 * 60000);
-    let completeUrl = `${url}&from=${from}&to=${to}`;
-    completeUrl = sanitizeUrl(completeUrl, options.auth);
-    const response = syncReq('GET', completeUrl, { headers: options.headers });
+    const completeUrl = `${url}&from=${from}&to=${to}`;
+    const response = request.getSync(completeUrl, { headers });
     if (response.statusCode === 200) {
       const filename = `temp/${String.fromCharCode(120 - i)}.png`;
       localfs.writeFile(filename, response.getBody());
@@ -46,18 +49,22 @@ ClipSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 };
 
 ClipSrv.prototype.dashboardByTag = function(grafanaURL, options, tagName) {
-  let url = `${createURL(grafanaURL, 'search-dashboard')}?tag=${tagName}`;
-  url = sanitizeUrl(url, options.auth);
-  const searchResponse = syncReq('GET', url, { headers: options.headers });
+  const { url, headers } = authentication.add(
+    `${createURL(grafanaURL, 'search-dashboard')}?tag=${tagName}`,
+    options,
+  );
+  const searchResponse = request.getSync(url, { headers });
   const responseBody = JSON.parse(searchResponse.getBody('utf8'));
   if (searchResponse.statusCode === 200 && responseBody.length > 0) {
     logger.showOutput('Taking dashboard snapshots.');
     _.each(responseBody, (dashboard) => {
       const dashName = dashboard.uri.substring(3);
-      let dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
-      dashUrl += `?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`;
-      dashUrl = sanitizeUrl(dashUrl, options.auth);
-      const response = syncReq('GET', dashUrl, { headers: options.headers });
+      const { dashUrl, dashHeaders } = authentication.add(
+        // eslint-disable-next-line max-len
+        `${createURL(grafanaURL, 'render-dashboard', dashName)}?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`,
+        options,
+      );
+      const response = request.getSync(dashUrl, { headers: dashHeaders });
       if (response.statusCode === 200) {
         const filename = `temp/${dashName}.png`;
         localfs.writeFile(filename, response.getBody());
@@ -83,10 +90,12 @@ ClipSrv.prototype.dashList = function(grafanaURL, options, listName) {
     logger.showOutput(`No dashboard found in dashboard list ${listName}`);
   } else {
     _.each(list, (dashName) => {
-      let dashUrl = createURL(grafanaURL, 'render-dashboard', dashName);
-      dashUrl += `?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`;
-      dashUrl = sanitizeUrl(dashUrl, options.auth);
-      const response = syncReq('GET', dashUrl, { headers: options.headers });
+      const { dashUrl, dashHeaders } = authentication.add(
+        // eslint-disable-next-line max-len
+        `${createURL(grafanaURL, 'render-dashboard', dashName)}?width=${clipConfig.render_width}&height=${clipConfig.render_height}&timeout=${clipConfig.render_timeout}`,
+        options,
+      );
+      const response = request.getSync(dashUrl, { headers: dashHeaders });
       if (response.statusCode === 200) {
         const filename = `temp/${dashName}.png`;
         localfs.writeFile(filename, response.getBody());
@@ -120,15 +129,6 @@ function createURL(grafanaURL, entityType, entityValue) {
     grafanaURL += '/api/search';
   }
   return grafanaURL;
-}
-
-// add auth to sync request
-function sanitizeUrl(url, auth) {
-  if (auth && auth.username && auth.password) {
-    const urlParts = url.split('://');
-    return `${urlParts[0]}://${auth.username}:${auth.password}@${urlParts[1]}`;
-  }
-  return url;
 }
 
 // interval function for delay

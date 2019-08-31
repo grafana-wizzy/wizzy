@@ -1,9 +1,9 @@
 const _ = require('lodash');
-const request = require('request');
-const syncReq = require('sync-request');
 
+const authentication = require('../../util/authentication');
 const formatter = require('../../util/formatter');
-const Logger = require('../../util/logger.js');
+const Logger = require('../../util/logger');
+const request = require('../../util/request');
 
 const logger = new Logger('exportSrv');
 let components;
@@ -70,24 +70,24 @@ ExportSrv.prototype.alerts = function(grafanaURL, options) {
 
     // Here we try exporting (either updating or creating) a alert
     _.forEach(names, (name) => {
-      let url;
+      let baseUrl;
       let method;
       const body = components.alerts.read(name);
       // if local dashboard exists in Grafana we update
       if (body.name in ids) {
         body.id = ids[body.name];
-        url = createURL(grafanaURL, 'alert', body.id);
+        baseUrl = createURL(grafanaURL, 'alert', body.id);
         method = 'PUT';
       } else { // otherwise we create the alert
         delete body.id;
-        url = createURL(grafanaURL, 'alerts');
+        baseUrl = createURL(grafanaURL, 'alerts');
         method = 'POST';
       }
       // Use sync-request to avoid table lockdown
-      url = sanitizeUrl(url, options.auth);
-      const response = syncReq(method, url, {
+      const { url, headers } = authentication.add(baseUrl, options);
+      const response = request.reqSync(method, url, {
         json: body,
-        headers: options.headers,
+        headers,
       });
       if (response.statusCode !== 200) {
         logger.showOutput(response.getBody('utf8'));
@@ -187,20 +187,14 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
     _.forEach(folderList, (folder) => {
       const dashList = components.readEntityNamesFromDir(`dashboards/${folder}`);
 
-      const headers = options.headers || {};
-      if (options.auth.bearer) {
-        headers.Authorization = `Bearer ${options.auth.bearer}`;
-      }
-
       if (!(folder in folderSlugs)) {
         logger.justShow(`Exporting ${folder}`);
-        let url = createURL(grafanaURL, 'folders');
-        url = sanitizeUrl(url, options.auth);
+        const { url, headers } = authentication.add(createURL(grafanaURL, 'folders'), options);
         const body = {
           title: folder,
         };
         try {
-          const response = syncReq('POST', url, { json: body, headers });
+          const response = request.postSync(url, { json: body, headers });
           logger.showOutput(response.getBody('utf8'));
           folderSlugs[folder] = JSON.parse(response.getBody('utf8'));
         } catch (error) {
@@ -215,8 +209,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
       // Here we try exporting (either updating or creating) a dashboard
       _.forEach(dashList, (dashboard) => {
-        let url = createURL(grafanaURL, 'dashboards');
-        url = sanitizeUrl(url, options.auth);
+        const { url, headers } = authentication.add(createURL(grafanaURL, 'dashboards'), options);
         const body = {
           dashboard: components.dashboards.readDashboard(dashboard, folder),
           folderId: folderSlugs[folder].id,
@@ -233,7 +226,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
         // Use sync-request to avoid table lockdown
         try {
-          const response = syncReq('POST', url, { json: body, headers });
+          const response = request.post(url, { json: body, headers });
           try {
             logger.showOutput(response.getBody('utf8'));
           } catch (error) {
@@ -311,7 +304,7 @@ ExportSrv.prototype.orgs = function(grafanaURL, options) {
       }
       // Use sync-request to avoid table lockdown
       url = sanitizeUrl(url, options.auth);
-      const response = syncReq(method, url, { json: body, headers: options.headers });
+      const response = request.reqSync(method, url, { json: body, headers: options.headers });
       logger.showOutput(response.getBody('utf8'));
       if (response.statusCode === 200) {
         logger.showResult(`Org ${name} exported successfully.`);
@@ -407,7 +400,7 @@ ExportSrv.prototype.datasources = function(grafanaURL, options) {
       }
       // Use sync-request to avoid table lockdown
       url = sanitizeUrl(url, options.auth);
-      const response = syncReq(method, url, { json: body, headers: options.headers });
+      const response = request.reqSync(method, url, { json: body, headers: options.headers });
       if (response.statusCode !== 200) {
         logger.showOutput(response.getBody('utf8'));
         logger.showError(`Datasource ${ds} export failed.`);

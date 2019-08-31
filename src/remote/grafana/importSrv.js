@@ -1,9 +1,9 @@
 const _ = require('lodash');
-const request = require('request');
-const syncReq = require('sync-request');
 
+const authentication = require('../../util/authentication');
 const formatter = require('../../util/formatter');
-const Logger = require('../../util/logger.js');
+const Logger = require('../../util/logger');
+const request = require('../../util/request');
 
 const logger = new Logger('importSrv');
 let components;
@@ -55,17 +55,15 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
     });
     logger.justShow(`Importing ${dashList.length} dashboards:`);
 
-    const headers = options.headers || {};
-    if (options.auth.bearer) {
-      headers.Authorization = `Bearer ${options.auth.bearer}`;
-    }
 
     // Here we try importing a dashboard
     _.forEach(dashList, (dashboard) => {
-      let url = createURL(grafanaURL, 'dashboard', dashboard);
-      url = sanitizeUrl(url, options.auth);
+      const { url, headers } = authentication.add(
+        createURL(grafanaURL, 'dashboard', dashboard),
+        options,
+      );
       try {
-        const response = syncReq('GET', url, { headers });
+        const response = request.getSync(url, { headers });
         if (response.statusCode !== 200) {
           logger.showError(`Dashboard ${dashboard} import failed: ${response.getBody('utf8')}`);
           failed++;
@@ -219,15 +217,6 @@ ImportSrv.prototype.alerts = function(grafanaURL, options) {
     }
   });
 };
-
-// add auth to sync request
-function sanitizeUrl(url, auth) {
-  if (auth && auth.username && auth.password) {
-    const urlParts = url.split('://');
-    return `${urlParts[0]}://${encodeURIComponent(auth.username)}:${encodeURIComponent(auth.password)}@${urlParts[1]}`;
-  }
-  return url;
-}
 
 function createURL(grafanaURL, entityType, entityValue) {
   if (entityType === 'dashboard') {
