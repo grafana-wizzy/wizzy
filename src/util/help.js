@@ -1,10 +1,7 @@
-#!/usr/bin/env node
-"use strict";
+const Logger = require('./logger.js');
 
-var Logger = require('./logger.js');
-var logger = new Logger('help');
-
-var help;
+const logger = new Logger('help');
+let help;
 
 function Help() {
   help = '\nUsage: wizzy [commands]\n';

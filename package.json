@@ -39,6 +39,10 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "coveralls": "^3.0.6",
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2",
+    "eslint-plugin-variables": "^1.0.3",
     "grunt": "^1.0.4",
     "grunt-contrib-jshint": "^1.1.0",
     "mocha": "^6.2.0",

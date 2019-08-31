@@ -1,14 +1,9 @@
-#!/usr/bin/env node
-"use strict";
+const LocalFS = require('../util/localfs.js');
+const Logger = require('../util/logger.js');
 
-var LocalFS = require('../util/localfs.js');
-var localfs = new LocalFS();
-var Logger = require('../util/logger.js');
-var logger = new Logger('temp-vars');
-var Table = require('cli-table');
-var _ = require('lodash');
-
-var panelsDir = 'panels';
+const localfs = new LocalFS();
+const logger = new Logger('temp-vars');
+const panelsDir = 'panels';
 
 function Panels() {}
 
@@ -17,24 +12,24 @@ Panels.prototype.savePanel = function(panelName, content, showResult) {
   localfs.createDirIfNotExists(panelsDir, showResult);
   localfs.writeFile(getPanelsFile(panelName), logger.stringify(content, null, 2));
   if (showResult) {
-    logger.showResult('Panel ' + panelName + ' saved successfully under panels directory.');
+    logger.showResult(`Panel ${panelName} saved successfully under panels directory.`);
   }
 };
 
 // Reads panel json from file.
+// eslint-disable-next-line consistent-return
 Panels.prototype.readPanel = function(panelName) {
   if (localfs.checkExists(getPanelsFile(panelName))) {
     return JSON.parse(localfs.readFile(getPanelsFile(panelName)));
   }
-  else {
-    logger.showError('Panel file ' + getPanelsFile(panelName) + ' does not exist.');
-    process.exit();
-  }
+
+  logger.showError(`Panel file ${getPanelsFile(panelName)} does not exist.`);
+  process.exit();
 };
 
 // Get panels file name from panel name
 function getPanelsFile(panelName) {
-  return panelsDir + '/' + panelName + '.json';
+  return `${panelsDir}/${panelName}.json`;
 }
 
 module.exports = Panels;

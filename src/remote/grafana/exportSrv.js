@@ -1,30 +1,30 @@
-#!/usr/bin/env node
-"use strict";
+const _ = require('lodash');
+const request = require('request');
+const syncReq = require('sync-request');
 
-var request = require('request');
-var Logger = require('../../util/logger.js');
-var logger = new Logger('exportSrv');
-var _ = require('lodash');
-var syncReq = require('sync-request');
-var components;
+const formatter = require('../../util/formatter');
+const Logger = require('../../util/logger.js');
+
+const logger = new Logger('exportSrv');
+let components;
 
 function ExportSrv(comps) {
   components = comps;
 }
 ExportSrv.prototype.alert = function(grafanaURL, options, name) {
-  var body = components.alerts.read(name);
-  var successMessage = 'Alert ' + name + ' export successful.';
-  var failureMessage = 'Alert ' + name + ' export failed.';
+  const body = components.alerts.read(name);
+  const successMessage = `Alert ${name} export successful.`;
+  const failureMessage = `Alert ${name} export failed.`;
   options.url = createURL(grafanaURL, 'show-alert', name);
-  request.get(options, function checkHandler(error_check, response_check, body_check) {
-    if (response_check.statusCode === 404) {
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
+    if (responseCheck.statusCode === 404) {
       logger.justShow('Alert does not exists in Grafana.');
       logger.justShow('Trying to create a new alert.');
       delete body.id;
       options.url = createURL(grafanaURL, 'alerts');
       options.body = body;
-      request.post(options, function responseHandler(error, response, body) {
-        var output = '';
+      request.post(options, (error, response, body) => {
+        let output = '';
         if (!error && response.statusCode === 200) {
           output += logger.stringify(body);
           logger.showOutput(output);
@@ -35,11 +35,11 @@ ExportSrv.prototype.alert = function(grafanaURL, options, name) {
           logger.showResult(failureMessage);
         }
       });
-    } else if (response_check.statusCode === 200) {
-      options.url = createURL(grafanaURL, 'alert', body_check.id);
+    } else if (responseCheck.statusCode === 200) {
+      options.url = createURL(grafanaURL, 'alert', bodyCheck.id);
       options.body = body;
-      request.put(options, function responseHandler(error, response, body) {
-        var output = '';
+      request.put(options, (error, response, body) => {
+        let output = '';
         if (!error && response.statusCode === 200) {
           output += logger.stringify(body);
           logger.showOutput(output);
@@ -57,55 +57,53 @@ ExportSrv.prototype.alert = function(grafanaURL, options, name) {
 };
 
 ExportSrv.prototype.alerts = function(grafanaURL, options) {
-  var names = components.readEntityNamesFromDir('alerts');
+  const names = components.readEntityNamesFromDir('alerts');
   options.url = createURL(grafanaURL, 'alerts');
-  var failed = 0;
-  var success = 0;
-  request.get(options, function saveHandler(error_check, response_check, body_check) {
+  let failed = 0;
+  let success = 0;
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
     // Getting existing list of alerts and making a mapping of names to ids
-    var ids = {};
-    _.forEach(body_check, function(alert) {
+    const ids = {};
+    _.forEach(bodyCheck, (alert) => {
       ids[alert.name] = alert.id;
     });
 
     // Here we try exporting (either updating or creating) a alert
-    _.forEach(names, function(name) {
-      var url;
-      var method;
-      var body = components.alerts.read(name);
+    _.forEach(names, (name) => {
+      let url;
+      let method;
+      const body = components.alerts.read(name);
       // if local dashboard exists in Grafana we update
       if (body.name in ids) {
         body.id = ids[body.name];
         url = createURL(grafanaURL, 'alert', body.id);
         method = 'PUT';
-      }
-      // otherwise we create the alert
-      else {
+      } else { // otherwise we create the alert
         delete body.id;
         url = createURL(grafanaURL, 'alerts');
         method = 'POST';
       }
       // Use sync-request to avoid table lockdown
       url = sanitizeUrl(url, options.auth);
-      var response = syncReq(method, url, {
+      const response = syncReq(method, url, {
         json: body,
-        headers: options.headers
+        headers: options.headers,
       });
       if (response.statusCode !== 200) {
         logger.showOutput(response.getBody('utf8'));
-        logger.showError('Alert ' + name + ' export failed.');
+        logger.showError(`Alert ${name} export failed.`);
         failed++;
       } else {
         logger.showOutput(response.getBody('utf8'));
-        logger.showResult('Alert ' + name + ' exported successfully.');
+        logger.showResult(`Alert ${name} exported successfully.`);
         success++;
       }
     });
     if (success > 0) {
-      logger.showResult(success + ' alerts exported successfully.');
+      logger.showResult(`${success} alerts exported successfully.`);
     }
     if (failed > 0) {
-      logger.showError(failed + ' alerts export failed.');
+      logger.showError(`${failed} alerts export failed.`);
       process.exit(1);
     } else {
       process.exit(0);
@@ -114,32 +112,30 @@ ExportSrv.prototype.alerts = function(grafanaURL, options) {
 };
 
 ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
-
-  var folder = "";
-  if (dashboardName.includes("/")){
-    folder = dashboardName.split("/")[0];
-    dashboardName = dashboardName.split("/")[1];
+  let folder = '';
+  if (dashboardName.includes('/')) {
+    [folder, dashboardName] = dashboardName.split('/');
   }
 
-  var successMessage = 'Dashboard '+ dashboardName + ' export successful.';
-  var failureMessage = 'Dashboard '+ dashboardName + ' export failed.';
+  const successMessage = `Dashboard ${dashboardName} export successful.`;
+  const failureMessage = `Dashboard ${dashboardName} export failed.`;
   options.url = createURL(grafanaURL, 'dashboard', dashboardName);
-  request.get(options, function responseHandler(error_check, response_check, body_check) {
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
     // this means that dashboard does not exist so will create a new one
-    var dashBody = {
+    const dashBody = {
       dashboard: components.dashboards.readDashboard(dashboardName, folder),
-      overwrite: true
+      overwrite: true,
     };
-    if (response_check.statusCode === 404) {
+    if (responseCheck.statusCode === 404) {
       logger.justShow('Dashboard does not exist. So, creating a new dashboard.');
       dashBody.dashboard.id = null;
     } else {
-      dashBody.dashboard.id = body_check.dashboard.id;
+      dashBody.dashboard.id = bodyCheck.dashboard.id;
     }
     options.url = createURL(grafanaURL, 'dashboards', dashboardName);
     options.body = dashBody;
-    request.post(options, function responseHandler(error, response, body) {
-      var output = '';
+    request.post(options, (error, response, body) => {
+      let output = '';
       if (!error && response.statusCode === 200) {
         output += logger.stringify(body);
         logger.showOutput(output);
@@ -154,13 +150,13 @@ ExportSrv.prototype.dashboard = function(grafanaURL, options, dashboardName) {
 };
 
 ExportSrv.prototype.dashboards = function(grafanaURL, options) {
-  var output = '';
-  var failed = 0;
-  var success = 0;
+  let output = '';
+  let failed = 0;
+  let success = 0;
 
   options.url = createURL(grafanaURL, 'dashboard-search');
 
-  request.get(options, function saveHandler(error, response, body) {
+  request.get(options, (error, response, body) => {
     if (error || response.statusCode !== 200) {
       output += formatter.formatError(error, response);
       logger.showOutput(output);
@@ -169,61 +165,61 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
     }
 
     // Getting existing list of dashboards and making a mapping of names to ids
-    var dashSlugs = {};
-    _.forEach(body, function(dashboard) {
+    const dashSlugs = {};
+    _.forEach(body, (dashboard) => {
       if (dashboard.type === 'dash-db') {
-        //Removing "db/" from the uri
+        // Removing "db/" from the uri
         dashSlugs[dashboard.uri.substring(3)] = dashboard.id;
       }
     });
 
-    var folderSlugs = {
-      'General': { id: null },
+    const folderSlugs = {
+      General: { id: null },
     };
 
-    _.forEach(body, function(entity) {
+    _.forEach(body, (entity) => {
       if (entity.type === 'dash-folder') {
-        folderSlugs[entity.title] = entity
+        folderSlugs[entity.title] = entity;
       }
-    })
+    });
 
-    var folderList = components.getDashboardFolders('dashboards');
-    _.forEach(folderList, function(folder) {
-      var dashList = components.readEntityNamesFromDir('dashboards/' + folder);
+    const folderList = components.getDashboardFolders('dashboards');
+    _.forEach(folderList, (folder) => {
+      const dashList = components.readEntityNamesFromDir(`dashboards/${folder}`);
 
-      var headers = options.headers || {};
+      const headers = options.headers || {};
       if (options.auth.bearer) {
-        headers.Authorization = 'Bearer ' + options.auth.bearer;
+        headers.Authorization = `Bearer ${options.auth.bearer}`;
       }
 
       if (!(folder in folderSlugs)) {
-        logger.justShow('Exporting ' + folder);
-        var url = createURL(grafanaURL, "folders");
+        logger.justShow(`Exporting ${folder}`);
+        let url = createURL(grafanaURL, 'folders');
         url = sanitizeUrl(url, options.auth);
-        var body = {
-          title: folder
+        const body = {
+          title: folder,
         };
         try {
-          var response = syncReq('POST', url, {json: body, headers: headers});
+          const response = syncReq('POST', url, { json: body, headers });
           logger.showOutput(response.getBody('utf8'));
           folderSlugs[folder] = JSON.parse(response.getBody('utf8'));
-        } catch(error) {
-          logger.showError('Folder ' + folder + ' export failed.');
+        } catch (error) {
+          logger.showError(`Folder ${folder} export failed.`);
           failed += dashList.length;
           return;
         }
-        logger.showResult('Folder ' + folder + ' exported successfully.');
+        logger.showResult(`Folder ${folder} exported successfully.`);
       }
 
-      logger.justShow('Exporting ' + dashList.length + ' dashboards/' + folder);
+      logger.justShow(`Exporting ${dashList.length} dashboards/${folder}`);
 
       // Here we try exporting (either updating or creating) a dashboard
-      _.forEach(dashList, function(dashboard) {
-        var url = createURL(grafanaURL, 'dashboards');
+      _.forEach(dashList, (dashboard) => {
+        let url = createURL(grafanaURL, 'dashboards');
         url = sanitizeUrl(url, options.auth);
-        var body = {
+        const body = {
           dashboard: components.dashboards.readDashboard(dashboard, folder),
-          folderId: folderSlugs[folder]['id'],
+          folderId: folderSlugs[folder].id,
         };
         // Updating an existing dashboard
         if (dashboard in dashSlugs) {
@@ -237,46 +233,45 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
         // Use sync-request to avoid table lockdown
         try {
-          var response = syncReq('POST', url, {json: body, headers: headers});
+          const response = syncReq('POST', url, { json: body, headers });
           try {
             logger.showOutput(response.getBody('utf8'));
           } catch (error) {
             logger.showOutput(response.body.toString('utf8'));
           }
           if (response.statusCode !== 200) {
-            logger.showError('Dashboard ' + dashboard + ' export failed.');
+            logger.showError(`Dashboard ${dashboard} export failed.`);
             failed++;
           } else {
-            logger.showResult('Dashboard ' + dashboard + ' exported successfully.');
+            logger.showResult(`Dashboard ${dashboard} exported successfully.`);
             success++;
           }
         } catch (error) {
-          logger.showError('Dashboard ' + dashboard + ' export failed: ' + error);
+          logger.showError(`Dashboard ${dashboard} export failed: ${error}`);
           failed++;
         }
       });
 
       if (success > 0) {
-        logger.showResult(success + ' dashboards exported successfully.');
+        logger.showResult(`${success} dashboards exported successfully.`);
       }
 
       if (failed > 0) {
-        logger.showError(failed + ' dashboards export failed.');
+        logger.showError(`${failed} dashboards export failed.`);
         process.exit(1);
       }
     });
-
   });
 };
 
 ExportSrv.prototype.org = function(grafanaURL, options, orgName) {
-  var body = components.orgs.readOrg(orgName);
-  var successMessage = 'Org '+ orgName + ' export successful.';
-  var failureMessage = 'Org '+ orgName + ' export failed.';
+  const body = components.orgs.readOrg(orgName);
+  const successMessage = `Org ${orgName} export successful.`;
+  const failureMessage = `Org ${orgName} export failed.`;
   options.url = createURL(grafanaURL, 'org', orgName);
   options.body = body;
-  request.put(options, function responseHandler(error, response, body) {
-    var output = '';
+  request.put(options, (error, response, body) => {
+    let output = '';
     if (!error && response.statusCode === 200) {
       output += logger.stringify(body);
       logger.showOutput(output);
@@ -290,49 +285,47 @@ ExportSrv.prototype.org = function(grafanaURL, options, orgName) {
 };
 
 ExportSrv.prototype.orgs = function(grafanaURL, options) {
-  var names = components.readEntityNamesFromDir('orgs');
+  const names = components.readEntityNamesFromDir('orgs');
   options.url = createURL(grafanaURL, 'orgs');
-  var failed = 0;
-  var success = 0;
-  request.get(options, function saveHandler(error_check, response_check, body_check) {
-    var ids = {};
-    _.forEach(body_check, function(org) {
+  let failed = 0;
+  let success = 0;
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
+    const ids = {};
+    _.forEach(bodyCheck, (org) => {
       ids[org.name] = org.id;
     });
 
-    _.forEach(names, function(name) {
-      var url;
-      var method;
-      var body = components.orgs.readOrg(name);
+    _.forEach(names, (name) => {
+      let url;
+      let method;
+      const body = components.orgs.readOrg(name);
       // if local dashboard exists in Grafana we update
       if (body.name in ids) {
         body.id = ids[body.name];
         url = createURL(grafanaURL, 'org', body.id);
         method = 'PUT';
-      }
-      // otherwise we create the datasource
-      else {
+      } else { // otherwise we create the datasource
         delete body.id;
         url = createURL(grafanaURL, 'orgs');
         method = 'POST';
       }
       // Use sync-request to avoid table lockdown
       url = sanitizeUrl(url, options.auth);
-      var response = syncReq(method, url, {json: body, headers: options.headers });
+      const response = syncReq(method, url, { json: body, headers: options.headers });
       logger.showOutput(response.getBody('utf8'));
       if (response.statusCode === 200) {
-        logger.showResult('Org ' + name + ' exported successfully.');
+        logger.showResult(`Org ${name} exported successfully.`);
         success++;
       } else {
-        logger.showError('Org ' + name + ' export failed.');
+        logger.showError(`Org ${name} export failed.`);
         failed++;
       }
     });
     if (success > 0) {
-      logger.showResult(success + ' orgs exported successfully.');
+      logger.showResult(`${success} orgs exported successfully.`);
     }
     if (failed > 0) {
-      logger.showError(failed + ' orgs export failed.');
+      logger.showError(`${failed} orgs export failed.`);
       process.exit(1);
     } else {
       process.exit(0);
@@ -341,19 +334,19 @@ ExportSrv.prototype.orgs = function(grafanaURL, options) {
 };
 
 ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
-  var body = components.datasources.readDatasource(datasourceName);
-  var successMessage = 'Datasource '+ datasourceName + ' export successful.';
-  var failureMessage = 'Datasource '+ datasourceName + ' export failed.';
+  const body = components.datasources.readDatasource(datasourceName);
+  const successMessage = `Datasource ${datasourceName} export successful.`;
+  const failureMessage = `Datasource ${datasourceName} export failed.`;
   options.url = createURL(grafanaURL, 'show-datasource', datasourceName);
-  request.get(options, function checkHandler(error_check, response_check, body_check) {
-    if (response_check.statusCode === 404) {
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
+    if (responseCheck.statusCode === 404) {
       logger.justShow('Datasource does not exists in Grafana.');
       logger.justShow('Trying to create a new datasource.');
       delete body.id;
       options.url = createURL(grafanaURL, 'datasources');
       options.body = body;
-      request.post(options, function responseHandler(error, response, body) {
-        var output = '';
+      request.post(options, (error, response, body) => {
+        let output = '';
         if (!error && response.statusCode === 200) {
           output += logger.stringify(body);
           logger.showOutput(output);
@@ -364,11 +357,11 @@ ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
           logger.showResult(failureMessage);
         }
       });
-    } else if (response_check.statusCode === 200) {
-      options.url = createURL(grafanaURL, 'datasource', body_check.id);
+    } else if (responseCheck.statusCode === 200) {
+      options.url = createURL(grafanaURL, 'datasource', bodyCheck.id);
       options.body = body;
-      request.put(options, function responseHandler(error, response, body) {
-        var output = '';
+      request.put(options, (error, response, body) => {
+        let output = '';
         if (!error && response.statusCode === 200) {
           output += logger.stringify(body);
           logger.showOutput(output);
@@ -386,52 +379,50 @@ ExportSrv.prototype.datasource = function(grafanaURL, options, datasourceName) {
 };
 
 ExportSrv.prototype.datasources = function(grafanaURL, options) {
-  var dsNames = components.readEntityNamesFromDir('datasources');
+  const dsNames = components.readEntityNamesFromDir('datasources');
   options.url = createURL(grafanaURL, 'datasources');
-  var failed = 0;
-  var success = 0;
-  request.get(options, function saveHandler(error_check, response_check, body_check) {
+  let failed = 0;
+  let success = 0;
+  request.get(options, (errorCheck, responseCheck, bodyCheck) => {
     // Getting existing list of datasources and making a mapping of names to ids
-    var ids = {};
-    _.forEach(body_check, function(datasource) {
+    const ids = {};
+    _.forEach(bodyCheck, (datasource) => {
       ids[datasource.name] = datasource.id;
     });
 
     // Here we try exporting (either updating or creating) a datasource
-    _.forEach(dsNames, function(ds) {
-      var url;
-      var method;
-      var body = components.datasources.readDatasource(ds);
+    _.forEach(dsNames, (ds) => {
+      let url;
+      let method;
+      const body = components.datasources.readDatasource(ds);
       // if local dashboard exists in Grafana we update
       if (body.name in ids) {
         body.id = ids[body.name];
         url = createURL(grafanaURL, 'datasource', body.id);
         method = 'PUT';
-      }
-      // otherwise we create the datasource
-      else {
+      } else { // otherwise we create the datasource
         delete body.id;
         url = createURL(grafanaURL, 'datasources');
         method = 'POST';
       }
       // Use sync-request to avoid table lockdown
       url = sanitizeUrl(url, options.auth);
-      var response = syncReq(method, url, {json: body, headers: options.headers });
+      const response = syncReq(method, url, { json: body, headers: options.headers });
       if (response.statusCode !== 200) {
         logger.showOutput(response.getBody('utf8'));
-        logger.showError('Datasource ' + ds + ' export failed.');
+        logger.showError(`Datasource ${ds} export failed.`);
         failed++;
       } else {
         logger.showOutput(response.getBody('utf8'));
-        logger.showResult('Datasource ' + ds + ' exported successfully.');
+        logger.showResult(`Datasource ${ds} exported successfully.`);
         success++;
       }
     });
     if (success > 0) {
-      logger.showResult(success + ' datasources exported successfully.');
+      logger.showResult(`${success} datasources exported successfully.`);
     }
     if (failed > 0) {
-      logger.showError(failed + ' datasources export failed.');
+      logger.showError(`${failed} datasources export failed.`);
       process.exit(1);
     } else {
       process.exit(0);
@@ -442,36 +433,35 @@ ExportSrv.prototype.datasources = function(grafanaURL, options) {
 // add auth to sync request
 function sanitizeUrl(url, auth) {
   if (auth && auth.username && auth.password) {
-    var urlParts = url.split('://');
-    return urlParts[0] + '://' + auth.username + ':' + auth.password + '@' + urlParts[1];
-  } else {
-    return url;
+    const urlParts = url.split('://');
+    return `${urlParts[0]}://${auth.username}:${auth.password}@${urlParts[1]}`;
   }
+  return url;
 }
 
 function createURL(grafanaURL, entityType, entityValue) {
   if (entityType === 'dashboard') {
-    grafanaURL += '/api/dashboards/db/' + entityValue;
+    grafanaURL += `/api/dashboards/db/${entityValue}`;
   } else if (entityType === 'dashboards') {
     grafanaURL += '/api/dashboards/db/';
   } else if (entityType === 'dashboard-search') {
     grafanaURL += '/api/search';
   } else if (entityType === 'org') {
-    grafanaURL += '/api/orgs/' + entityValue;
+    grafanaURL += `/api/orgs/${entityValue}`;
   } else if (entityType === 'orgs') {
     grafanaURL += '/api/orgs';
   } else if (entityType === 'show-datasource') {
-    grafanaURL += '/api/datasources/name/' + entityValue;
+    grafanaURL += `/api/datasources/name/${entityValue}`;
   } else if (entityType === 'datasource') {
-    grafanaURL += '/api/datasources/' + entityValue;
+    grafanaURL += `/api/datasources/${entityValue}`;
   } else if (entityType === 'datasources') {
     grafanaURL += '/api/datasources';
   } else if (entityType === 'alert') {
-    grafanaURL += '/api/alert-notifications/' + entityValue;
+    grafanaURL += `/api/alert-notifications/${entityValue}`;
   } else if (entityType === 'alerts') {
     grafanaURL += '/api/alert-notifications';
-  } else if (entityType == 'folders') {
-    grafanaURL += '/api/folders'
+  } else if (entityType === 'folders') {
+    grafanaURL += '/api/folders';
   }
 
   return grafanaURL;
