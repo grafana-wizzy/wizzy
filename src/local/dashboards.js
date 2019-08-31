@@ -21,7 +21,12 @@ function Dashboards() {
 
 // summarize dashboard
 Dashboards.prototype.summarize = function(dashboardSlug) {
-  const dashboard = this.readDashboard(dashboardSlug);
+  let folder = '';
+  if (dashboardSlug.includes('/')) {
+    [folder, dashboardSlug] = dashboardSlug.split('/');
+  }
+
+  const dashboard = this.readDashboard(dashboardSlug, folder);
   const arch = {};
 
   // Extracting row information
