@@ -1,48 +1,40 @@
 #!/usr/bin/env node
 "use strict";
 
-var expect = require('chai').expect;
-var assert = require('chai').assert;
-var sinon  = require("sinon");
-var colors = require('colors');
+const expect = require('chai').expect;
+const sinon  = require("sinon");
+const nconf = require('nconf');
 
-var LocalFS = require('../../src/util/localfs.js');
-var localfs = new LocalFS();
-var nconf = require('nconf');
+const Config = require('../../src/util/config.js');
 
-var Config = require('../../src/util/config.js');
 var config;
+var storedConfig;
 
-var confDir = 'conf';
-var confFile = 'conf/wizzy.json';
-
-var conf;
-// Create a new Logger object for each test
 beforeEach(function() {
-  config = new Config(confDir, confFile);
-  conf = {config: { grafana: {url: 'http://localhost:3000'}}};
+  config = new Config();
+  storedConfig = {config: { grafana: {url: 'http://localhost:3000'}}};
 });
 
 afterEach(function() {
   config = null;
-  conf = {};
+  storedConfig = {};
 });
 
 describe('Checking show config function', function() {
 
   beforeEach(function() {
-    sinon.stub(localfs, "checkExists").returns(true);
-    sinon.stub(nconf, "get").returns(conf);
+    sinon.stub(config.localfs, "checkExists").returns(true);
+    sinon.stub(nconf, "get").returns(storedConfig);
   });
 
   afterEach(function() {
-    localfs.checkExists.restore();
+    config.localfs.checkExists.restore();
     nconf.get.restore();
   });
 
   it('should display wizzy conf', function() {
     var configuration = config.getProperty('config');
-    expect(configuration).to.equal(conf);
+    expect(configuration).to.equal(storedConfig);
   });
 
   it('should find configuration', function() {
