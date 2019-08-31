@@ -226,7 +226,7 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
 
         // Use sync-request to avoid table lockdown
         try {
-          const response = request.post(url, { json: body, headers });
+          const response = request.postSync(url, { json: body, headers });
           try {
             logger.showOutput(response.getBody('utf8'));
           } catch (error) {
