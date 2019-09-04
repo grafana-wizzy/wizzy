@@ -4,8 +4,8 @@
 
 `wizzy` is a rich user-friendly command line tool written in node.js to manage Grafana entities. It can save you hundreds of clicks in a day when editing and managing your Grafana dashboards. It can also be used to store dashboards in a Github repo making Grafana dashboards version controlled.
 
-* [Documentation](https://utkarshcmu.github.io/wizzy-site/home/)
-* [Examples](https://utkarshcmu.github.io/wizzy-site/examples/)
+* [Documentation](https://grafana-wizzy.com/home/)
+* [Examples](https://grafana-wizzy.com/examples/)
 
 ## Contributors
 - Author: [Utkarsh Bhatnagar](https://github.com/utkarshcmu)
