@@ -13,7 +13,7 @@ const logger = new Logger('dashboards');
 const dashDir = 'dashboards';
 
 function Dashboards() {
-	this.schemaVersion = 0;
+  this.schemaVersion = 0;
   this.rows = new Rows();
   this.panels = new Panels();
   this.tempVars = new TempVars();
@@ -53,13 +53,13 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
     });
   } else {
     // summarize about GridLayout instead of rows
-    let getMaxPos = function(panels, f) {
+    let getMaxPos = function(f) {
       return _.max(_.map(dashboard.panels,
         (panel) => f(panel.gridPos)));
     };
     arch.gridSize = {
-      x: getMaxPos(dashboard.panels, (pos) => pos.x + pos.w),
-      y: getMaxPos(dashboard.panels, (pos) => pos.y + pos.h)
+      x: getMaxPos((pos) => pos.x + pos.w),
+      y: getMaxPos((pos) => pos.y + pos.h)
     };
     arch.panelCount = _.size(dashboard.panels);
   }
@@ -188,9 +188,10 @@ Dashboards.prototype.readDashboard = function(slug, folder) {
   if (localfs.checkExists(getDashboardFile(slug, folder))) {
     let dashboard = JSON.parse(localfs.readFile(getDashboardFile(slug, folder)));
     if (dashboard.schemaVersion < 16) {
-      // this dashboard is from non-GridLayout era
+      // this dashboard is from non-GridLayout era; wizzy needs to assign global ids for panels
       return sanitizePanels(dashboard);
     } else {
+      // GridLayout's panels have global ids by their nature
       return dashboard;
     }
   }
