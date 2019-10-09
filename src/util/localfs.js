@@ -77,6 +77,9 @@ LocalFS.prototype.readFile = function(name, _showOnError) {
 };
 
 LocalFS.prototype.writeFile = function(name, content) {
+  if (fs.existsSync(`${name}.hbs`)) {
+    logger.showError(`The ${name} file will be ignored since ${name}.hbs exists`);
+  }
   fs.writeFileSync(name, content);
 };
 
