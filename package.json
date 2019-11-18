@@ -1,15 +1,16 @@
 {
   "name": "wizzy",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Lets you automate Grafana interaction",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint --ext .js .",
     "test": "nyc --reporter=html --reporter=text mocha --recursive",
     "coverage": "nyc report --reporter=text-lcov | coveralls"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/utkarshcmu/wizzy.git"
+    "url": "git+https://github.com/grafana-wizzy/wizzy.git"
   },
   "keywords": [
     "Grafana"
@@ -17,9 +18,9 @@
   "author": "Utkarsh Bhatnagar <utkarsh.cmu@gmail.com> (https://github.com/utkarshcmu)",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/utkarshcmu/wizzy/issues"
+    "url": "https://github.com/grafana-wizzy/wizzy/issues"
   },
-  "homepage": "https://github.com/utkarshcmu/wizzy#readme",
+  "homepage": "https://github.com/grafana-wizzy/wizzy",
   "bin": {
     "wizzy": "src/index.js"
   },

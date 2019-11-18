@@ -1,8 +1,15 @@
-[0.5.1]
+# 0.7.0
+## Features / Enhancements
+- Add support for bearer token in export/import of dashboard
+- Document API key usage
 
-New Features:
-- Store/Upload/Download dashboards in S3.
+## Bug fixes
+- Updated vulnerable dependencies
+- Fix missing folder in local dashboard summarize
+- Fix logging causing an exception in case of missing response
 
-Breaking Changes:
-- `wizzy export new-dashboard` is changed to `wizzy export dashboard`.
-- `wizzy datasource` commands are using names now instead of ids.
+## Breaking changes
+- Now requires at least Node 8
+
+## Know bugs
+-  Local commands are still broken
