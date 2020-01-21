@@ -75,7 +75,7 @@ Dashboards.prototype.saveDashboard = function(slug, dashboard, meta, showResult)
   delete dashboard.version;
   localfs.writeFile(getDashboardFile(slug, folder), logger.stringify(dashboard, null, 2));
   if (showResult) {
-    logger.showResult(`${slug} dashboard saved successfully under dashboards directory.`);
+    logger.showResult(`${slug} dashboard saved successfully under dashboards/${folder} directory.`);
   }
 };
 

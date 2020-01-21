@@ -51,7 +51,7 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
 
     const dashList = [];
     _.forEach(body, (dashboard) => {
-      dashList.push(dashboard.uri.substring(3)); // removing db/
+      dashList.push(dashboard); 
     });
     logger.justShow(`Importing ${dashList.length} dashboards:`);
 
@@ -59,22 +59,23 @@ ImportSrv.prototype.dashboards = function(grafanaURL, options) {
     // Here we try importing a dashboard
     _.forEach(dashList, (dashboard) => {
       const { url, headers } = authentication.add(
-        createURL(grafanaURL, 'dashboard', dashboard),
+        createURL(grafanaURL, 'dashboard-uid', dashboard.uid),
         options,
       );
       try {
         const response = request.getSync(url, { headers });
+        const dashboardName = dashboard.uri.substring(3);
         if (response.statusCode !== 200) {
           logger.showError(`Dashboard ${dashboard} import failed: ${response.getBody('utf8')}`);
           failed++;
         } else {
           const dashResponse = JSON.parse(response.getBody('utf8'));
-          components.dashboards.saveDashboard(dashboard, dashResponse.dashboard, dashResponse.meta, false);
-          logger.showResult(`Dashboard ${dashboard} imported successfully.`);
+          components.dashboards.saveDashboard(dashboardName, dashResponse.dashboard, dashResponse.meta, true);
+          logger.showResult(`Dashboard ${dashboardName} imported successfully.`);
           success++;
         }
       } catch (error) {
-        logger.showError(`Dashboard ${dashboard} import failed: ${error}`);
+        logger.showError(`Dashboard ${dashboardName} import failed: ${error}`);
         failed++;
       }
     });
@@ -221,8 +222,8 @@ ImportSrv.prototype.alerts = function(grafanaURL, options) {
 function createURL(grafanaURL, entityType, entityValue) {
   if (entityType === 'dashboard') {
     grafanaURL += `/api/dashboards/db/${entityValue}`;
-  // } else if (entityType === 'dashboard-uid') {              -> For the future
-  //   grafanaURL += '/api/dashboards/uid/' + entityValue;
+  } else if (entityType === 'dashboard-uid') {
+    grafanaURL += '/api/dashboards/uid/' + entityValue;
   } else if (entityType === 'folders') {
     grafanaURL += '/api/search?type=dash-folder';
   } else if (entityType === 'dashboards') {
