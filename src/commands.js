@@ -9,6 +9,7 @@ const Dashlist = require('./local/dashlist.js');
 const Logger = require('./util/logger.js');
 const Help = require('./util/help.js');
 const LocalFS = require('./util/localfs.js');
+const pkg = require('../package.json')
 
 const localfs = new LocalFS();
 const logger = new Logger('Commands');
@@ -44,7 +45,8 @@ Commands.prototype.instructions = function() {
 
   switch (command) {
     case 'version':
-      logger.justShow('0.6.0');
+      const { version } = pkg
+      logger.justShow(version);
       break;
     case 'help':
       help.showHelp();
