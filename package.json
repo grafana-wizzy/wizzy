@@ -2,7 +2,7 @@
   "name": "wizzy",
   "version": "0.7.0",
   "description": "Lets you automate Grafana interaction",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "lint": "eslint --ext .js .",
     "test": "nyc --reporter=html --reporter=text mocha --recursive",
