@@ -13,6 +13,7 @@ const logger = new Logger('dashboards');
 const dashDir = 'dashboards';
 
 function Dashboards() {
+  this.schemaVersion = 0;
   this.rows = new Rows();
   this.panels = new Panels();
   this.tempVars = new TempVars();
@@ -31,22 +32,37 @@ Dashboards.prototype.summarize = function(dashboardSlug) {
 
   // Extracting row information
   arch.title = dashboard.title;
-  arch.rowCount = _.size(dashboard.rows);
-  arch.rows = [];
-  _.forEach(dashboard.rows, (row) => {
-    const panelInfo = _.map(row.panels, (panel) => {
-      if (panel.datasource === null) {
-        return `${panel.title}(default)`;
-      }
-      return `${panel.title}(${panel.datasource})`;
-    });
+  arch.schemaVersion = dashboard.SchemaVersion;
 
-    arch.rows.push({
-      title: row.title,
-      panelCount: _.size(row.panels),
-      panels: _.join(panelInfo, ', '),
+  if (dashboard.schemaVersion < 16) {
+    arch.rowCount = _.size(dashboard.rows);
+    arch.rows = [];
+    _.forEach(dashboard.rows, (row) => {
+      const panelInfo = _.map(row.panels, (panel) => {
+        if (panel.datasource === null) {
+          return `${panel.title}(default)`;
+        }
+        return `${panel.title}(${panel.datasource})`;
+      });
+
+      arch.rows.push({
+        title: row.title,
+        panelCount: _.size(row.panels),
+        panels: _.join(panelInfo, ', '),
+      });
     });
-  });
+  } else {
+    // summarize about GridLayout instead of rows
+    let getMaxPos = function(f) {
+      return _.max(_.map(dashboard.panels,
+        (panel) => f(panel.gridPos)));
+    };
+    arch.gridSize = {
+      x: getMaxPos((pos) => pos.x + pos.w),
+      y: getMaxPos((pos) => pos.y + pos.h)
+    };
+    arch.panelCount = _.size(dashboard.panels);
+  }
   if ('templating' in dashboard && dashboard.templating.list.length > 0) {
     arch.templateVariableCount = _.size(dashboard.templating.list);
     arch.templateValiableNames = _.join(_.map(dashboard.templating.list, 'name'), ', ');
@@ -170,7 +186,14 @@ Dashboards.prototype.list = function(entityValue, datasource) {
 // eslint-disable-next-line consistent-return
 Dashboards.prototype.readDashboard = function(slug, folder) {
   if (localfs.checkExists(getDashboardFile(slug, folder))) {
-    return sanitizePanels(JSON.parse(localfs.readFile(getDashboardFile(slug, folder))));
+    let dashboard = JSON.parse(localfs.readFile(getDashboardFile(slug, folder)));
+    if (dashboard.schemaVersion < 16) {
+      // this dashboard is from non-GridLayout era; wizzy needs to assign global ids for panels
+      return sanitizePanels(dashboard);
+    } else {
+      // GridLayout's panels have global ids by their nature
+      return dashboard;
+    }
   }
 
   logger.showError(`Dashboard file ${getDashboardFile(slug, folder)} does not exist.`);
