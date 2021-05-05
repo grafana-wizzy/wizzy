@@ -165,11 +165,11 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
     }
 
     // Getting existing list of dashboards and making a mapping of names to ids
-    const dashSlugs = {};
+    const dashUIDs = {};
     _.forEach(body, (dashboard) => {
       if (dashboard.type === 'dash-db') {
         // Removing "db/" from the uri
-        dashSlugs[dashboard.uri.substring(3)] = dashboard.id;
+        dashUIDs[dashboard.uid] = dashboard.id;
       }
     });
 
@@ -208,16 +208,17 @@ ExportSrv.prototype.dashboards = function(grafanaURL, options) {
       logger.justShow(`Exporting ${dashList.length} dashboards/${folder}`);
 
       // Here we try exporting (either updating or creating) a dashboard
-      _.forEach(dashList, (dashboard) => {
+      _.forEach(dashList, (dashboardFilename) => {
         const { url, headers } = authentication.add(createURL(grafanaURL, 'dashboards'), options);
+        const dashboard = components.dashboards.readDashboard(dashboardFilename, folder);
         const body = {
-          dashboard: components.dashboards.readDashboard(dashboard, folder),
+          dashboard,
           folderId: folderSlugs[folder].id,
         };
         // Updating an existing dashboard
-        if (dashboard in dashSlugs) {
-          body.dashboard.id = dashSlugs[dashboard];
+        if (dashboard.uid in dashUIDs) {
           body.overwrite = true;
+          dashboard.id = dashUIDs[dashboard.uid];
         } else {
           // Creating a new dashboard
           body.dashboard.id = null;
